@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ReservationFragment">
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <View
+                android:id="@+id/reservation_title1"
+                android:layout_width="150dp"
+                android:layout_height="56dp"
+                android:background="@drawable/room_title_field"
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+        />
+
+        <TextView
+                android:id="@+id/reservation_title_text1"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Laboratorium z przymróżeniem oka"
+                android:textSize="15sp"
+                android:textColor="#000000"
+                android:gravity="center"
+                android:layout_alignLeft="@id/reservation_title1"
+                android:layout_alignRight="@id/reservation_title1"
+                android:layout_alignBottom="@id/reservation_title1"
+                android:layout_alignTop="@id/reservation_title1"
+        />
+
+        <View
+                android:id="@+id/reservation_details1A"
+                android:layout_width="150dp"
+                android:layout_height="30dp"
+                android:background="@drawable/room_details_field"
+                android:layout_below="@id/reservation_title1"
+                android:layout_marginTop="-1dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+        />
+
+        <View
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/icon_reservation_sector"
+                android:layout_marginLeft="7dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_alignLeft="@id/reservation_details1A"
+                android:layout_alignTop="@id/reservation_details1A"
+                android:layout_alignBottom="@id/reservation_details1A"
+        />
+
+        <TextView
+                android:id="@+id/reservation_details1A_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Sektor A"
+                android:textSize="12sp"
+                android:textColor="#000000"
+                android:gravity="center"
+                android:layout_alignLeft="@id/reservation_details1A"
+                android:layout_alignRight="@id/reservation_details1A"
+                android:layout_alignBottom="@id/reservation_details1A"
+                android:layout_alignTop="@id/reservation_details1A"
+        />
+
+        <View
+                android:id="@+id/reservation_details1B"
+                android:layout_width="150dp"
+                android:layout_height="30dp"
+                android:background="@drawable/room_details_field"
+                android:layout_below="@id/reservation_details1A"
+                android:layout_marginTop="-1dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+        />
+
+        <View
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/icon_reservation_room"
+                android:layout_marginLeft="7dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_alignLeft="@id/reservation_details1B"
+                android:layout_alignTop="@id/reservation_details1B"
+                android:layout_alignBottom="@id/reservation_details1B"
+        />
+
+        <TextView
+                android:id="@+id/reservation_details1B_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Pokój 1.08"
+                android:textSize="12sp"
+                android:textColor="#000000"
+                android:gravity="center"
+                android:layout_alignLeft="@id/reservation_details1B"
+                android:layout_alignRight="@id/reservation_details1B"
+                android:layout_alignBottom="@id/reservation_details1B"
+                android:layout_alignTop="@id/reservation_details1B"
+        />
+
+        <View
+                android:id="@+id/reservation_details1C"
+                android:layout_width="150dp"
+                android:layout_height="48dp"
+                android:background="@drawable/room_details_field"
+                android:layout_below="@id/reservation_details1B"
+                android:layout_marginTop="-1dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+        />
+
+        <View
+                android:id="@+id/reservation_details1C_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/icon_reservation_description"
+                android:layout_marginLeft="7dp"
+                android:layout_marginTop="3dp"
+                android:layout_alignLeft="@id/reservation_details1C"
+                android:layout_alignTop="@id/reservation_details1C"
+        />
+
+        <TextView
+                android:id="@+id/reservation_details1C_text"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris"
+                android:textSize="11sp"
+                android:textColor="#000000"
+                android:gravity="left"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="3dp"
+                android:layout_alignBottom="@id/reservation_details1C"
+                android:layout_alignTop="@id/reservation_details1C_icon"
+                android:layout_alignRight="@id/reservation_details1C"
+                android:layout_toRightOf="@+id/reservation_details1C_icon"
+        />
+
+        <TextView
+                android:id="@+id/times_left"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/reservation_details1C"
+                android:text="Pozostały czas: 45s"
+                android:textColor="#000000"
+                android:textSize="25sp"
+                android:gravity="center|top"
+                android:layout_marginTop="15dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+        />
+
+        <View
+                android:id="@+id/others_decisions"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:background="@drawable/room_others_decisions"
+                android:layout_below="@id/times_left"
+                android:layout_marginTop="18dp"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+        />
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="Tutaj będzie GridView (ewentualnie rozwijany) z obecnymi decyzjami grup wyżej w kolejce"
+                android:gravity="center"
+                android:layout_alignLeft="@id/others_decisions"
+                android:layout_alignRight="@id/others_decisions"
+                android:layout_alignTop="@id/others_decisions"
+                android:layout_alignBottom="@+id/others_decisions"
+        />
+
+        <TextView
+                android:id="@+id/your_position"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/others_decisions"
+                android:text="Twoja pozycja w kolejce: 5"
+                android:textColor="#000000"
+                android:textSize="25sp"
+                android:gravity="center|top"
+                android:layout_marginTop="15dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+        />
+
+        <TextView
+                android:id="@+id/make_decision_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/your_position"
+                android:text="Podejmij decyzję:"
+                android:textColor="#000000"
+                android:textSize="20sp"
+                android:gravity="center|top"
+                android:layout_marginTop="30dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+        />
+
+        <Button
+                android:id="@+id/make_decision_no"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:layout_below="@id/make_decision_text"
+                android:textAllCaps="false"
+                android:text="Nie"
+                android:textSize="15dp"
+                android:layout_alignParentLeft="true"
+                android:layout_marginTop="22dp"
+                android:layout_marginLeft="30dp"
+        />
+
+        <Button
+                android:id="@+id/make_decision_yes"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:layout_below="@id/make_decision_text"
+                android:textAllCaps="false"
+                android:text="Tak"
+                android:textSize="15dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="22dp"
+                android:layout_marginRight="30dp"
+        />
+
+    </RelativeLayout>
+
+</FrameLayout>

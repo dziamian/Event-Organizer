@@ -1,0 +1,4 @@
+rootProject.name='Event Organizer'
+include ':app'
+include ':NetworkStructures'
+project(':NetworkStructures').projectDir = new File("../NetworkStructures")

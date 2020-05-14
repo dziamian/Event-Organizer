@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".QueueFragment">
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+        <View
+                android:id="@+id/queue1_field"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:background="@drawable/room_details_field"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+        />
+
+        <TextView
+                android:id="@+id/queue1_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Czy beton ma pH?"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_alignTop="@id/queue1_field"
+        />
+
+        <TextView
+                android:id="@+id/queue1_position"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/queue1_name"
+                android:text="Pozycja w kolejce: 10"
+                android:textSize="18sp"
+                android:textColor="#000000"
+                android:gravity="center"
+                android:layout_marginTop="30dp"
+        />
+
+        <Button
+                android:id="@+id/queue1_quit"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:textAllCaps="false"
+                android:text="Wyjdź z kolejki"
+                android:textSize="15sp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginBottom="20dp"
+                android:layout_alignBottom="@id/queue1_field"
+                android:layout_alignLeft="@id/queue1_field"
+        />
+
+        <Button
+                android:id="@+id/queue1_go_room"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:textAllCaps="false"
+                android:text="Przejdź do pokoju"
+                android:textSize="15sp"
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="20dp"
+                android:layout_alignBottom="@id/queue1_field"
+                android:layout_alignRight="@id/queue1_field"
+        />
+
+        <View
+                android:id="@+id/queue2_field"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_below="@id/queue1_field"
+                android:background="@drawable/room_details_field"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+        />
+
+        <TextView
+                android:id="@+id/queue2_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dlaczego świat jest kolorowy?"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_alignTop="@id/queue2_field"
+        />
+
+        <TextView
+                android:id="@+id/queue2_position"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/queue2_name"
+                android:text="Pozycja w kolejce: 3"
+                android:textSize="18sp"
+                android:textColor="#000000"
+                android:gravity="center"
+                android:layout_marginTop="30dp"
+        />
+
+        <Button
+                android:id="@+id/queue2_quit"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:textAllCaps="false"
+                android:text="Wyjdź z kolejki"
+                android:textSize="15sp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginBottom="20dp"
+                android:layout_alignBottom="@id/queue2_field"
+                android:layout_alignLeft="@id/queue2_field"
+        />
+
+        <Button
+                android:id="@+id/queue2_go_room"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:textAllCaps="false"
+                android:text="Przejdź do pokoju"
+                android:textSize="15sp"
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="20dp"
+                android:layout_alignBottom="@id/queue2_field"
+                android:layout_alignRight="@id/queue2_field"
+        />
+
+        <View
+                android:id="@+id/queue3_field"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_below="@id/queue2_field"
+                android:background="@drawable/room_details_field"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginTop="10dp"
+        />
+
+        <TextView
+                android:id="@+id/queue3_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Trójwymiarowe zabawki"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_alignTop="@id/queue3_field"
+        />
+
+        <TextView
+                android:id="@+id/queue3_position"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/queue3_name"
+                android:text="Pozycja w kolejce: 1"
+                android:textSize="18sp"
+                android:textColor="#000000"
+                android:gravity="center"
+                android:layout_marginTop="30dp"
+        />
+
+        <Button
+                android:id="@+id/queue3_quit"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:textAllCaps="false"
+                android:text="Wyjdź z kolejki"
+                android:textSize="15sp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginBottom="20dp"
+                android:layout_alignBottom="@id/queue3_field"
+                android:layout_alignLeft="@id/queue3_field"
+        />
+
+        <Button
+                android:id="@+id/queue3_go_room"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:textAllCaps="false"
+                android:text="Przejdź do pokoju"
+                android:textSize="15sp"
+                android:layout_marginRight="20dp"
+                android:layout_marginBottom="20dp"
+                android:layout_alignBottom="@id/queue3_field"
+                android:layout_alignRight="@id/queue3_field"
+        />
+
+    </RelativeLayout>
+
+</FrameLayout>
