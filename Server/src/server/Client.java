@@ -4,7 +4,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoDatabase;
 import network_structures.LoginData;
 import network_structures.LoginConfirmationData;
+import network_structures.SectorInfo;
 import org.bson.Document;
+import queue.Sector;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -32,9 +34,9 @@ public class Client {
     }
 
     final public void setConnectionSettings(int timeout) throws IOException {
-        socket.setSoTimeout(timeout);
-        in = new ObjectInputStream(socket.getInputStream());
-        out = new ObjectOutputStream(socket.getOutputStream());
+        this.socket.setSoTimeout(timeout);
+        this.in = new ObjectInputStream(socket.getInputStream());
+        this.out = new ObjectOutputStream(socket.getOutputStream());
     }
 
     static protected Client loginToServer(Client client, MongoDatabase database) throws IOException, ClassNotFoundException {
@@ -71,8 +73,8 @@ public class Client {
         return client;
     }
 
-    protected void sendStartingData() {
-
+    protected void sendStartingData() throws IOException {
+        this.out.writeObject(Server.startupData);
     }
 
     /** Empty procedure to override in inherited classes **/

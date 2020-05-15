@@ -2,12 +2,15 @@ package com.example.eventorganizer;
 
 import network_structures.LoginData;
 import network_structures.LoginConfirmationData;
+import network_structures.SectorInfo;
+import org.bson.types.ObjectId;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Map;
 
 public class ClientConnection {
     final static String host = "10.0.2.2";
@@ -15,6 +18,8 @@ public class ClientConnection {
     static ObjectInputStream in = null;
     static ObjectOutputStream out = null;
     static Socket socket = null;
+
+    static Map<ObjectId, SectorInfo> sectors;
 
     interface printMessageInterface {
         void printMessage(String msg);
@@ -43,12 +48,14 @@ public class ClientConnection {
         }).start();
     }
 
+    @SuppressWarnings("unchecked")
     public static void loginToServer(String noConnectionErrorMessage, LoginData loginData, printMessageInterface callbackMessage, startNewActivityInterface callbackActivity) {
         if (out != null) {
             new Thread(() -> {
                 try {
                     out.writeObject(loginData);
                     final LoginConfirmationData loginConfirmation = (LoginConfirmationData) in.readObject();
+                    sectors = (Map<ObjectId, SectorInfo>) in.readObject();
                     callbackMessage.printMessage(loginConfirmation.message);
                     if (loginConfirmation.isLogged)
                         callbackActivity.startNewActivity();

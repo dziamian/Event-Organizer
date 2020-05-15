@@ -38,4 +38,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     implementation project(':NetworkStructures')
+    implementation files('../../Libraries/mongo-java-driver-3.12.1.jar')
 }

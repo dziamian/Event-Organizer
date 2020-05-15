@@ -1,12 +1,13 @@
 package queue;
 
+import network_structures.RoomInfo;
+
 import java.util.ArrayList;
 import java.util.Date;
 
 public class Room {
 
-    private String name;
-    private String description;
+    private RoomInfo informations;
 
     public enum State {
         OPEN,
@@ -25,8 +26,7 @@ public class Room {
     protected RoomQueue queue;
 
     public Room(String name, String description, int maxSlots) {
-        this.name = name;
-        this.description = description;
+        this.informations = new RoomInfo(name, description);
         this.maxSlots = maxSlots;
         this.queue = new RoomQueue(this);
         setState(State.OPEN);
@@ -34,13 +34,7 @@ public class Room {
         this.currentReservations = new ArrayList<>();
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
+    public RoomInfo getInformations() { return informations; }
 
     public State getState() {
         return state;
