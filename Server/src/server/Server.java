@@ -2,6 +2,7 @@ package server;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
+import network_structures.EventData;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -26,7 +27,7 @@ public class Server {
     static MongoDatabase database;
 
     static Map<ObjectId, Sector> sectors;
-    static Map<ObjectId, SectorInfo> startupData;
+    static EventData startupData = new EventData();
     static int sectorsSize = 0;
 
     static boolean isOpen = false;
@@ -67,16 +68,18 @@ public class Server {
                 try { sleep(1000); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
             }
 
-            FindIterable<Document> buildingsIterator = database.getCollection("buildings").find();
+            FindIterable<Document> buildingsIterator = database.getCollection("sectors").find();
             sectors = new TreeMap<>();
-            startupData = new TreeMap<>();
+            startupData.sectors = new TreeMap<>();
             for (var buildingIterator : buildingsIterator) {
                 ObjectId buildingId = buildingIterator.getObjectId("_id");
                 String buildingName = buildingIterator.getString("name");
-                FindIterable<Document> instancesOfBuilding = database.getCollection("building" + buildingName).find();
-                Sector building = new Sector(buildingName, "");
+                String buildingAddress = buildingIterator.getString("address");
+                String buildingDescription = buildingIterator.getString("description");
+                FindIterable<Document> instancesOfBuilding = database.getCollection("sector" + buildingId.toString()).find();
+                Sector building = new Sector(buildingName, buildingAddress, buildingDescription);
                 sectors.put(buildingId, building);
-                startupData.put(buildingId, building.getInformations());
+                startupData.sectors.put(buildingId, building.getInformations());
                 ++sectorsSize;
                 for (var instanceDoc : instancesOfBuilding) {
                     ObjectId roomId = instanceDoc.getObjectId("_id");
@@ -98,7 +101,7 @@ public class Server {
             //TourGroup group = new TourGroup();
 
             for (var sector : sectors.values()) {
-                System.out.println("Sector " + sector.getInformations().name + ":");
+                System.out.println(sector.getInformations().name + ":");
                 for (var room : sector.getRooms()) {
                     System.out.println("\tRoom " + room.getInformations().name);
                     //TourGroup group = new TourGroup();

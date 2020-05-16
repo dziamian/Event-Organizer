@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/room_details_field">
+
+        <TextView
+                android:id="@+id/sector_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Sektor A"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="5dp"
+                android:layout_alignParentTop="true"
+        />
+
+        <TextView
+                android:id="@+id/sector_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/sector_name"
+                android:text="al. Tysiąclecia Państwa Polskiego 7"
+                android:textColor="#424242"
+                android:textSize="15sp"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="3dp"
+        />
+
+        <TextView
+                android:id="@+id/sector_available_rooms"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Aktywne atrakcje: 25"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:gravity="right|bottom"
+                android:layout_marginRight="8dp"
+                android:layout_marginBottom="5dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+        />
+
+    </RelativeLayout>
+
+</RelativeLayout>

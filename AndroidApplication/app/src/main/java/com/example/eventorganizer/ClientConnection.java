@@ -1,5 +1,6 @@
 package com.example.eventorganizer;
 
+import network_structures.EventData;
 import network_structures.LoginData;
 import network_structures.LoginConfirmationData;
 import network_structures.SectorInfo;
@@ -19,7 +20,7 @@ public class ClientConnection {
     static ObjectOutputStream out = null;
     static Socket socket = null;
 
-    static Map<ObjectId, SectorInfo> sectors;
+    static EventData eventData;
 
     interface printMessageInterface {
         void printMessage(String msg);
@@ -55,7 +56,7 @@ public class ClientConnection {
                 try {
                     out.writeObject(loginData);
                     final LoginConfirmationData loginConfirmation = (LoginConfirmationData) in.readObject();
-                    sectors = (Map<ObjectId, SectorInfo>) in.readObject();
+                    eventData = (EventData) in.readObject();
                     callbackMessage.printMessage(loginConfirmation.message);
                     if (loginConfirmation.isLogged)
                         callbackActivity.startNewActivity();
