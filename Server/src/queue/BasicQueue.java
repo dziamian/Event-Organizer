@@ -35,6 +35,14 @@ public class BasicQueue<T> {
         return null;
     }
 
+    public boolean removeAt(Iterator where) {
+        if (where != null && where.isValid()) {
+            removeCell(where.currentCell);
+            return true;
+        }
+        return false;
+    }
+
     protected void addBack(T data) {
         QueueCell newCell = new QueueCell(data, null, tail);
         if (tail != null)
@@ -55,6 +63,8 @@ public class BasicQueue<T> {
                 cell.getNext().setPrev(cell.getPrev());
             if (cell.getPrev() != null)
                 cell.getPrev().setNext(cell.getNext());
+            cell.setNext(null);
+            cell.setPrev(null);
             --currentSize;
         }
     }
@@ -76,7 +86,7 @@ public class BasicQueue<T> {
     }
 
     public Iterator getIterator() {
-        return new Iterator(this.head);
+        return new Iterator(this, this.head);
     }
 
     protected class QueueCell {
@@ -126,9 +136,11 @@ public class BasicQueue<T> {
     }
 
     public class Iterator {
+        protected final BasicQueue<T> owner;
         protected QueueCell currentCell;
 
-        Iterator(QueueCell currentCell) {
+        Iterator(BasicQueue<T> owner, QueueCell currentCell) {
+            this.owner = owner;
             this.currentCell = currentCell;
         }
 
@@ -136,17 +148,35 @@ public class BasicQueue<T> {
             return (currentCell != null) ? currentCell.getData() : null;
         }
 
-        public boolean isValid() { return currentCell != null; }
+        public boolean isValid() {
+            if (currentCell != null) {
+                boolean valid = true;
+                if (getNext() != null) {
+                    valid = getNext().getPrev().currentCell == currentCell;
+                }
+                else {
+                    valid = owner.tail == currentCell;
+                }
+                if (getPrev() != null) {
+                    valid = getPrev().getNext().currentCell == currentCell && valid;
+                }
+                else {
+                    valid = owner.head == currentCell && valid;
+                }
+                return valid;
+            }
+            return false;
+        }
 
         public Iterator getNext() {
             if (currentCell != null)
-                return new Iterator(currentCell.getNext());
+                return new Iterator(owner, currentCell.getNext());
             return null;
         }
 
         public Iterator getPrev() {
             if (currentCell != null)
-                return new Iterator(currentCell.getPrev());
+                return new Iterator(owner, currentCell.getPrev());
             return null;
         }
 
