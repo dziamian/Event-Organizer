@@ -1,1 +1,0 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"guideDB.buildingB"}],"uuid":"2a66a70d5d764bbbb8597256b9cd11bb"}

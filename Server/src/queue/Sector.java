@@ -1,5 +1,6 @@
 package queue;
 
+import network_structures.SectorInfo;
 import org.bson.types.ObjectId;
 
 import java.util.Collection;
@@ -8,18 +9,19 @@ import java.util.TreeMap;
 
 public class Sector {
 
-    private String name;
+    private SectorInfo informations;
+
     private Map<ObjectId,Room> rooms;
     private int currentSize;
 
-    public Sector(String name) {
-        this.name = name;
+    public Sector(String name, String address, String description) {
+        this.informations = new SectorInfo(name, address, description);
         this.rooms = new TreeMap<>();
         this.currentSize = 0;
     }
 
-    public String getName() {
-        return name;
+    public SectorInfo getInformations() {
+        return informations;
     }
 
     public void addRoom(ObjectId key, Room room) {

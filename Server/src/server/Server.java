@@ -2,8 +2,11 @@ package server;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
+import network_structures.EventData;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+
+import network_structures.SectorInfo;
 
 import java.io.*;
 import java.net.*;
@@ -24,7 +27,9 @@ public class Server {
     static MongoDatabase database;
 
     static Map<ObjectId, Sector> sectors;
+    static EventData startupData = new EventData();
     static int sectorsSize = 0;
+
     static boolean isOpen = false;
 
     public static void main(String[] args) {
@@ -63,25 +68,30 @@ public class Server {
                 try { sleep(1000); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
             }
 
-            FindIterable<Document> buildingsIterator = database.getCollection("buildings").find();
+            FindIterable<Document> buildingsIterator = database.getCollection("sectors").find();
             sectors = new TreeMap<>();
+            startupData.sectors = new TreeMap<>();
             for (var buildingIterator : buildingsIterator) {
                 ObjectId buildingId = buildingIterator.getObjectId("_id");
                 String buildingName = buildingIterator.getString("name");
-                FindIterable<Document> instancesOfBuilding = database.getCollection("building" + buildingName).find();
-                Sector building = new Sector(buildingName);
+                String buildingAddress = buildingIterator.getString("address");
+                String buildingDescription = buildingIterator.getString("description");
+                FindIterable<Document> instancesOfBuilding = database.getCollection("sector" + buildingId.toString()).find();
+                Sector building = new Sector(buildingName, buildingAddress, buildingDescription);
                 sectors.put(buildingId, building);
+                startupData.sectors.put(buildingId, building.getInformations());
                 ++sectorsSize;
                 for (var instanceDoc : instancesOfBuilding) {
                     ObjectId roomId = instanceDoc.getObjectId("_id");
                     String roomName = instanceDoc.getString("instance_name");
-                    assert roomName != null;
-                    try {
+                    //assert roomName != null;
+                    //try {
                         Room newRoom = new Room(roomName,"", 1);
                         building.addRoom(roomId, newRoom);
-                    } catch(Exception ex) {
-                        System.out.println();
-                    }
+                        building.getInformations().rooms.put(roomId, newRoom.getInformations());
+                    //} catch(Exception ex) {
+                       //System.out.println();
+                    //}
                 }
             }
 
@@ -91,9 +101,9 @@ public class Server {
             //TourGroup group = new TourGroup();
 
             for (var sector : sectors.values()) {
-                System.out.println("Sector " + sector.getName() + ":");
+                System.out.println(sector.getInformations().name + ":");
                 for (var room : sector.getRooms()) {
-                    System.out.println("\tRoom " + room.getName());
+                    System.out.println("\tRoom " + room.getInformations().name);
                     //TourGroup group = new TourGroup();
                     //room.addToQueue(group);
                     System.out.println("\t\tRoom State: " + room.getState());

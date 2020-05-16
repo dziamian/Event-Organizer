@@ -1,6 +1,10 @@
 package com.example.eventorganizer;
 
 import android.os.Bundle;
+import android.text.Layout;
+import android.widget.FrameLayout;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -8,8 +12,12 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import network_structures.SectorInfo;
 
+import java.util.ArrayList;
 import java.util.Objects;
+
+import static android.view.View.inflate;
 
 
 /**
@@ -21,10 +29,13 @@ public class SectorFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
     // TODO: Rename and change types of parameters
     private String mTitle;
+
+    private void createSector() {
+
+    }
 
     public SectorFragment() {
         // Required empty public constructor
@@ -55,14 +66,16 @@ public class SectorFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        View sectorField = Objects.requireNonNull(getView()).findViewById(R.id.sector1_field);
-        TextView sectorName = Objects.requireNonNull(getView()).findViewById(R.id.sector1_name);
-        sectorField.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((HomeActivity) Objects.requireNonNull(getActivity())).setRoomActivity(sectorName.getText().toString());
-            }
-        });
+        FrameLayout layout = Objects.requireNonNull(getView()).findViewById(R.id.sector_layout);
+        //RelativeLayout sectorField = getView().findViewById(R.id.first_element);
+        //LayoutInflater layoutInflater = getLayoutInflater();
+        //TextView sectorName = getView().findViewById(R.id.first_element_name);
+
+        //layout.addView(new View(getContext()));
+
+        //sectorField.setOnClickListener(v -> {
+            //((HomeActivity) Objects.requireNonNull(getActivity())).setRoomActivity(sectorName.getText().toString());
+        //});
     }
 
     @Override
@@ -72,6 +85,22 @@ public class SectorFragment extends Fragment {
         Objects.requireNonNull(getActivity()).setTitle(mTitle);
         ((HomeActivity)getActivity()).navigationView.setCheckedItem(R.id.nav_sectors);
         ((HomeActivity) getActivity()).setSelectedItemId(R.id.nav_sectors);
-        return inflater.inflate(R.layout.fragment_sector, container, false);
+
+        View rootView = inflater.inflate(R.layout.fragment_sector, container, false);
+
+        /*sectorList.add(new SectorLayout("Sektor A", "al. Tysiąclecia Państwa Polskiego 7", 25));
+        sectorList.add(new SectorLayout("Sektor B", "al. Tysiąclecia Państwa Polskiego 7", 10));
+        sectorList.add(new SectorLayout("Sektor C", "al. Tysiąclecia Państwa Polskiego 7", 8));
+
+        sectorList.add(new SectorLayout("Sektor C", "al. Tysiąclecia Państwa Polskiego 7", 8));
+        sectorList.add(new SectorLayout("Sektor C", "al. Tysiąclecia Państwa Polskiego 7", 8));
+        sectorList.add(new SectorLayout("Sektor C", "al. Tysiąclecia Państwa Polskiego 7", 8));*/
+
+        ArrayList<SectorInfo> sectorList = new ArrayList<>(ClientConnection.eventData.sectors.values());
+
+        ListView listView = rootView.findViewById(R.id.sector_list_view);
+        listView.setAdapter(new CustomListAdapter(getActivity(), sectorList));
+
+        return rootView;
     }
 }
