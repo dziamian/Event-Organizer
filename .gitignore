@@ -1,5 +1,6 @@
 /out
 /gradle
 /.idea/caches/build_file_checksums.ser
+/.idea/libraries
 /.idea/uiDesigner.xml
 /local.properties
