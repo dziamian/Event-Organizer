@@ -46,7 +46,7 @@ public class Server {
             new OpeningAllQueues().start();
 
             while (true) {
-                new SocketThread(serverSocket.accept()).start();
+                new Thread(new ClientHandler(serverSocket.accept())).start();
             }
 
         } catch (IOException ex) {
@@ -121,11 +121,11 @@ public class Server {
         }
     }
 
-    private static class SocketThread extends Thread {
+    private static class ClientHandler implements Runnable {
 
         Client client;
 
-        public SocketThread(Socket socket) {
+        public ClientHandler(Socket socket) {
             this.client = new Client(socket);
         }
 
