@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
 
     <RelativeLayout
-            android:id="@+id/sector_field"
+            android:id="@+id/room_field"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:layout_marginTop="10dp"
@@ -16,10 +15,10 @@
             android:background="@drawable/room_details_field">
 
         <TextView
-                android:id="@+id/sector_name"
+                android:id="@+id/room_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sektor A"
+                android:text="Czy beton ma pH?"
                 android:textSize="20sp"
                 android:textColor="#000000"
                 android:gravity="center_horizontal"
@@ -28,11 +27,11 @@
         />
 
         <TextView
-                android:id="@+id/sector_address"
+                android:id="@+id/room_location"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/sector_name"
-                android:text="al. Tysiąclecia Państwa Polskiego 7"
+                android:layout_below="@id/room_name"
+                android:text="Pokój 1.08"
                 android:textColor="#424242"
                 android:textSize="15sp"
                 android:gravity="center_horizontal"
@@ -40,16 +39,30 @@
         />
 
         <TextView
-                android:id="@+id/sector_available_rooms"
+                android:id="@+id/room_state_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Aktywne atrakcje: 25"
+                android:text="Grup w kolejce: 0"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 android:gravity="right|bottom"
                 android:layout_marginRight="8dp"
                 android:layout_marginBottom="5dp"
                 android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+        />
+
+        <TextView
+                android:id="@+id/room_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dostępny!"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:gravity="left|bottom"
+                android:layout_marginLeft="8dp"
+                android:layout_marginBottom="5dp"
+                android:layout_alignParentLeft="true"
                 android:layout_alignParentBottom="true"
         />
 

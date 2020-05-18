@@ -12,6 +12,8 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import com.google.android.material.navigation.NavigationView;
+import network_structures.SectorInfo;
+import org.bson.types.ObjectId;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -25,10 +27,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         selectedItemId = id;
     }
 
-    public void setRoomActivity(String sectorName) {
+    public void setRoomActivity(ObjectId sectorId) {
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.fragment_layout, SectorRoomsFragment.newInstance(sectorName))
+                .replace(R.id.fragment_layout, SectorRoomsFragment.newInstance(sectorId.toString()))
                 .addToBackStack(null)
                 .commit();
     }
@@ -96,13 +98,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, SectorFragment.newInstance("Sektory")).commit();
                 }
-                mNavDrawer.closeDrawer(GravityCompat.START);
-            } break;
-            case R.id.nav_rooms: {
-                if (selectedItemId != R.id.nav_rooms) {
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, new SectorRoomsFragment()).commit();
-                }
-                mNavDrawer.closeDrawer(GravityCompat.START);
             } break;
             /// DO POPRAWY JAK WYŻEJ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             case R.id.nav_queues: {
@@ -112,7 +107,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, new QueueFragment()).commit();
                     rooms.setVisible(false);
                 }
-                mNavDrawer.closeDrawer(GravityCompat.START);
             } break;
             case R.id.nav_reservations: {
                 if (selectedItemId != R.id.nav_reservations) {
@@ -121,9 +115,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, new ReservationFragment()).commit();
                     rooms.setVisible(false);
                 }
-                mNavDrawer.closeDrawer(GravityCompat.START);
             } break;
         }
+        mNavDrawer.closeDrawer(GravityCompat.START);
         return true;
     }
 

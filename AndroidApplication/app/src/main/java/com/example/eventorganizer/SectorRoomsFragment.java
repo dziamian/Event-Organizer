@@ -1,15 +1,17 @@
 package com.example.eventorganizer;
 
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.widget.ListView;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import org.bson.types.ObjectId;
 
+import network_structures.SectorInfo;
+
+import java.util.ArrayList;
 import java.util.Objects;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -22,7 +24,7 @@ public class SectorRoomsFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
 
     // TODO: Rename and change types of parameters
-    private String mSectorName;
+    private String mSectorId;
 
     public SectorRoomsFragment() {
         // Required empty public constructor
@@ -35,10 +37,10 @@ public class SectorRoomsFragment extends Fragment {
      *
      * @return A new instance of fragment SectorRoomsFragment.
      */
-    public static SectorRoomsFragment newInstance(String sectorName) {
+    public static SectorRoomsFragment newInstance(String sectorId) {
         SectorRoomsFragment fragment = new SectorRoomsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, sectorName);
+        args.putString(ARG_PARAM1, sectorId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -47,17 +49,29 @@ public class SectorRoomsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mSectorName = getArguments().getString(ARG_PARAM1);
+            mSectorId = getArguments().getString(ARG_PARAM1);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        ObjectId sectorId = new ObjectId(mSectorId);
+        SectorInfo sectorInfo = ClientConnection.eventData.sectors.get(sectorId);
+
         ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(true);
-        ((HomeActivity) getActivity()).rooms.setTitle("Sektory - " + mSectorName);
-        getActivity().setTitle(mSectorName);
+        ((HomeActivity) getActivity()).rooms.setTitle("Sektory - " + sectorInfo.name);
+        getActivity().setTitle(sectorInfo.name);
         ((HomeActivity) getActivity()).navigationView.setCheckedItem(R.id.nav_rooms);
         ((HomeActivity) getActivity()).setSelectedItemId(R.id.nav_rooms);
-        return inflater.inflate(R.layout.fragment_sector_rooms, container, false);
+
+        View rootView = inflater.inflate(R.layout.fragment_sector_rooms, container, false);
+
+        ArrayList<RoomLayout> roomList = new ArrayList<>();
+        sectorInfo.rooms.values().forEach(roomInfo -> roomList.add(new RoomLayout(roomInfo)));
+
+        ListView listView = rootView.findViewById(R.id.room_list_view);
+        listView.setAdapter(new ItemListAdapter<>(getActivity(), roomList));
+
+        return rootView;
     }
 }
