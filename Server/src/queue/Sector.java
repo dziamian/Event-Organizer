@@ -14,8 +14,8 @@ public class Sector {
     private Map<ObjectId,Room> rooms;
     private int currentSize;
 
-    public Sector(String name, String address, String description) {
-        this.informations = new SectorInfo(name, address, description);
+    public Sector(ObjectId id, String name, String address, String description) {
+        this.informations = new SectorInfo(id, name, address, description);
         this.rooms = new TreeMap<>();
         this.currentSize = 0;
     }

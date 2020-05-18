@@ -80,21 +80,18 @@ public class Server {
                 String buildingAddress = buildingIterator.getString("address");
                 String buildingDescription = buildingIterator.getString("description");
                 FindIterable<Document> instancesOfBuilding = database.getCollection("sector" + buildingId.toString()).find();
-                Sector building = new Sector(buildingName, buildingAddress, buildingDescription);
+                Sector building = new Sector(buildingId, buildingName, buildingAddress, buildingDescription);
                 sectors.put(buildingId, building);
                 startupData.sectors.put(buildingId, building.getInformations());
                 ++sectorsSize;
                 for (var instanceDoc : instancesOfBuilding) {
                     ObjectId roomId = instanceDoc.getObjectId("_id");
-                    String roomName = instanceDoc.getString("instance_name");
-                    //assert roomName != null;
-                    //try {
-                        Room newRoom = new Room(roomName,"", 1);
-                        building.addRoom(roomId, newRoom);
-                        building.getInformations().rooms.put(roomId, newRoom.getInformations());
-                    //} catch(Exception ex) {
-                       //System.out.println();
-                    //}
+                    String roomName = instanceDoc.getString("name");
+                    String roomLocation = instanceDoc.getString("location");
+                    String roomDescription = instanceDoc.getString("description");
+                    Room newRoom = new Room(roomName, roomLocation, roomDescription, 1);
+                    building.addRoom(roomId, newRoom);
+                    building.getInformations().rooms.put(roomId, newRoom.getInformations());
                 }
             }
 

@@ -25,8 +25,8 @@ public class Room {
 
     protected RoomQueue queue;
 
-    public Room(String name, String description, int maxSlots) {
-        this.informations = new RoomInfo(name, description);
+    public Room(String name, String location, String description, int maxSlots) {
+        this.informations = new RoomInfo(name, location, description);
         this.maxSlots = maxSlots;
         this.queue = new RoomQueue(this);
         setState(State.OPEN);
