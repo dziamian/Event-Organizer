@@ -1,9 +1,7 @@
 package com.example.eventorganizer;
 
-import network_structures.EventData;
-import network_structures.LoginData;
-import network_structures.LoginConfirmationData;
-import network_structures.SectorInfo;
+import android.util.Log;
+import network_structures.*;
 import org.bson.types.ObjectId;
 
 import java.io.IOException;
@@ -12,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ClientConnection {
     final static String host = "10.0.2.2";
@@ -21,6 +20,9 @@ public class ClientConnection {
     static Socket socket = null;
 
     static EventData eventData;
+    static UpdateData updateData;
+
+    static ReentrantLock updateDataLock = new ReentrantLock();
 
     interface printMessageInterface {
         void printMessage(String msg);
@@ -66,5 +68,22 @@ public class ClientConnection {
             }).start();
         } else
             callbackMessage.printMessage(noConnectionErrorMessage);
+    }
+
+    public static void handlingServer() {
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Object object = in.readObject();
+                    if (object instanceof UpdateData) {
+                        updateData = (UpdateData) object;
+                    }
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }

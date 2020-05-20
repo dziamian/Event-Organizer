@@ -1,6 +1,7 @@
 package queue;
 
 import network_structures.SectorInfo;
+import network_structures.SectorUpdate;
 import org.bson.types.ObjectId;
 
 import java.util.Collection;
@@ -9,13 +10,16 @@ import java.util.TreeMap;
 
 public class Sector {
 
-    private SectorInfo informations;
+    public SectorInfo informations;
 
-    private Map<ObjectId,Room> rooms;
+    private Map<ObjectId, Room> rooms;
     private int currentSize;
+
+    private SectorUpdate update;
 
     public Sector(ObjectId id, String name, String address, String description) {
         this.informations = new SectorInfo(id, name, address, description);
+        this.update = new SectorUpdate(id);
         this.rooms = new TreeMap<>();
         this.currentSize = 0;
     }
@@ -24,9 +28,13 @@ public class Sector {
         return informations;
     }
 
+    public SectorUpdate getUpdate() { return update; }
+
     public void addRoom(ObjectId key, Room room) {
         rooms.put(key,room);
         ++currentSize;
+        // JEŻELI STATE OZNACZA AKTYWNY TO ++
+        ++update.currentActive;
     }
 
     public Collection<Room> getRooms() {

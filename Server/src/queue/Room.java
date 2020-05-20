@@ -1,6 +1,8 @@
 package queue;
 
 import network_structures.RoomInfo;
+import network_structures.RoomUpdate;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -8,11 +10,31 @@ import java.util.Date;
 public class Room {
 
     private RoomInfo informations;
+    private Sector sector;
+
+    private RoomUpdate update;
 
     public enum State {
-        OPEN,
-        RESERVED,
-        TAKEN
+        OPEN {
+            public String toString() {
+                return "Dostępne!";
+            }
+        },
+        RESERVING { ///////////////// NALEŻY DODAC
+            public String toString() {
+                return "W trakcie rezerwowania!";
+            }
+        },
+        RESERVED {
+            public String toString() {
+                return "Zarezerwowane!";
+            }
+        },
+        TAKEN {
+            public String toString() {
+                return "Zajęte!";
+            }
+        }
     }
 
     private State state;
@@ -25,16 +47,20 @@ public class Room {
 
     protected RoomQueue queue;
 
-    public Room(String name, String location, String description, int maxSlots) {
-        this.informations = new RoomInfo(name, location, description);
+    public Room(ObjectId id, String name, String location, String description, int maxSlots, Sector sector) {
+        this.informations = new RoomInfo(id, name, location, description);
+        this.update = new RoomUpdate(id);
         this.maxSlots = maxSlots;
         this.queue = new RoomQueue(this);
         setState(State.OPEN);
+        this.sector = sector;
         this.currentVisitors = new ArrayList<>();
         this.currentReservations = new ArrayList<>();
     }
 
     public RoomInfo getInformations() { return informations; }
+
+    public RoomUpdate getUpdate() { return update; }
 
     public State getState() {
         return state;
@@ -42,7 +68,9 @@ public class Room {
 
     private void setState(State state) {
         this.state = state;
+        update.state = state.toString();
         stateChanged = new Date();
+        /// JEŻELI USTAWIAMY ŻE POKÓJ JEST NIEAKTYWNY TO --sector.currentActive
     }
 
     private Reservation createReservation(TourGroup group) {
@@ -112,8 +140,10 @@ public class Room {
 
     public void addToQueue(TourGroup group) {
         TourGroup.QueueTicket queueTicket = group.createTicket(this);
-        if (queueTicket != null)
+        if (queueTicket != null) {
             queue.enqueue(queueTicket);
+            ++update.queueSize;
+        }
     }
 
     //INNER CLASSES-------------------------------------------------------------------------------------------------

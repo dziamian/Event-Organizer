@@ -16,7 +16,7 @@ public class Guide extends Client {
     @Override
     final protected void handlingRequests() throws IOException, ClassNotFoundException {
         while(true) {
-            Object obj = in.readObject();
+            //Object obj = in.readObject();
             //if (obj instanceof ClassName1) ...
             //else if (obj instanceof ClassName2) ...
         }

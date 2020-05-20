@@ -4,9 +4,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoDatabase;
 import network_structures.LoginData;
 import network_structures.LoginConfirmationData;
-import network_structures.SectorInfo;
 import org.bson.Document;
-import queue.Sector;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -32,6 +30,8 @@ public class Client {
     public String getSocketInfo() {
         return socket.getInetAddress().getHostName() + ":" + socket.getPort();
     }
+
+    public ObjectOutputStream getOutputStream() { return out; }
 
     final public void setConnectionSettings(int timeout) throws IOException {
         this.socket.setSoTimeout(timeout);

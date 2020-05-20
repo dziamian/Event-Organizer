@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
                         () -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()),
 
                 () -> {
+                    ClientConnection.handlingServer();
+
                     Intent newActivity = new Intent(MainActivity.this, HomeActivity.class);
                     MainActivity.this.startActivity(newActivity);
 

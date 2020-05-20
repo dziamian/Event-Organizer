@@ -3,6 +3,7 @@ package server;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
 import network_structures.EventData;
+import network_structures.UpdateData;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -31,6 +32,7 @@ public class Server {
 
     static Map<ObjectId, Sector> sectors;
     static EventData startupData = new EventData();
+    static UpdateData updateData = new UpdateData();
     static int sectorsSize = 0;
 
     static boolean isOpen = false;
@@ -74,6 +76,7 @@ public class Server {
             FindIterable<Document> buildingsIterator = database.getCollection("sectors").find();
             sectors = new TreeMap<>();
             startupData.sectors = new TreeMap<>();
+            updateData.sectors = new TreeMap<>();
             for (var buildingIterator : buildingsIterator) {
                 ObjectId buildingId = buildingIterator.getObjectId("_id");
                 String buildingName = buildingIterator.getString("name");
@@ -83,41 +86,38 @@ public class Server {
                 Sector building = new Sector(buildingId, buildingName, buildingAddress, buildingDescription);
                 sectors.put(buildingId, building);
                 startupData.sectors.put(buildingId, building.getInformations());
+                updateData.sectors.put(buildingId, building.getUpdate());
                 ++sectorsSize;
                 for (var instanceDoc : instancesOfBuilding) {
                     ObjectId roomId = instanceDoc.getObjectId("_id");
                     String roomName = instanceDoc.getString("name");
                     String roomLocation = instanceDoc.getString("location");
                     String roomDescription = instanceDoc.getString("description");
-                    Room newRoom = new Room(roomName, roomLocation, roomDescription, 1);
+                    Room newRoom = new Room(roomId, roomName, roomLocation, roomDescription, 1, building);
                     building.addRoom(roomId, newRoom);
                     building.getInformations().rooms.put(roomId, newRoom.getInformations());
+                    building.getUpdate().rooms.put(roomId, newRoom.getUpdate());
                 }
             }
 
             isOpen = true;
             System.out.println("All queues in server are opened!");
 
-            //TourGroup group = new TourGroup();
-
-            for (var sector : sectors.values()) {
-                System.out.println(sector.getInformations().name + ":");
-                for (var room : sector.getRooms()) {
-                    System.out.println("\tRoom " + room.getInformations().name);
-                    //TourGroup group = new TourGroup();
-                    //room.addToQueue(group);
-                    System.out.println("\t\tRoom State: " + room.getState());
-                    //System.out.println("\t\tTicket expiration date: " + group.getReservation().getExpirationDate());
+            int i = 0;
+            while (true) {
+                clients.forEach(client -> {
+                    try {
+                        client.getOutputStream().reset();
+                        client.getOutputStream().writeObject(updateData);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+                try { sleep(1000); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
+                if (i++ % 7 == 0) {
+                    sectors.values().forEach(sector -> ++sector.getUpdate().currentActive);
                 }
             }
-
-            /*while (true) {
-                for (var writer : writers) {
-                    writer.println("UPDATE");
-                }
-                try { sleep(2000); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
-            }*/
-
         }
     }
 
@@ -135,10 +135,10 @@ public class Server {
                 System.out.println("Client (" + client.getSocketInfo() + ") connected!");
 
                 client.setConnectionSettings(15 * 60 * 1000);
-                clients.add(client);
 
                 client = Client.loginToServer(client, database);
                 client.sendStartingData();
+                clients.add(client);
 
                 client.handlingRequests();
 

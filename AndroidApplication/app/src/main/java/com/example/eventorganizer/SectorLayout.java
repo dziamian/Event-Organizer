@@ -1,14 +1,16 @@
 package com.example.eventorganizer;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import network_structures.SectorInfo;
+import network_structures.SectorUpdate;
 
 public class SectorLayout extends ItemLayout {
 
     private final SectorInfo sectorInfo;
-    private SectorLayoutHolder sectorLayoutHolder;
+    public SectorLayoutHolder sectorLayoutHolder;
 
     public SectorLayout(SectorInfo sectorInfo) {
         super(R.layout.sector_item);
@@ -27,13 +29,23 @@ public class SectorLayout extends ItemLayout {
         sectorLayoutHolder.textViewAddress = view.findViewById(R.id.sector_address);
         sectorLayoutHolder.textViewAvailableRooms = view.findViewById(R.id.sector_available_rooms);
 
+        Log.d("LOG", "wtf " + sectorInfo.name);
+
         sectorLayoutHolder.textViewName.setText(sectorInfo.name);
         sectorLayoutHolder.textViewAddress.setText(sectorInfo.address);
-        sectorLayoutHolder.textViewAvailableRooms.setText("Aktywne atrakcje: " + sectorInfo.rooms.size());
+        sectorLayoutHolder.textAvailableRooms = "Aktywne atrakcje: ";
+        sectorLayoutHolder.textViewAvailableRooms.setText(sectorLayoutHolder.textAvailableRooms + sectorInfo.rooms.size());
 
         view.findViewById(R.id.sector_field).setOnClickListener(v -> {
             ((HomeActivity) context).setRoomActivity(sectorInfo.id);
         });
+    }
+
+    public void updateLayout(SectorUpdate update) {
+        if (update != null) {
+            Log.d("LOG2", "WTF " + sectorInfo.name + " " + update.currentActive);
+            sectorLayoutHolder.textViewAvailableRooms.setText(sectorLayoutHolder.textAvailableRooms + update.currentActive);
+        }
     }
 
     @Override
@@ -43,7 +55,8 @@ public class SectorLayout extends ItemLayout {
         }
     }
 
-    private static class SectorLayoutHolder extends ItemHolder {
+    public static class SectorLayoutHolder extends ItemHolder {
+        String textAvailableRooms;
         TextView textViewName, textViewAddress, textViewAvailableRooms;
     }
 }

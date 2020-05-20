@@ -1,6 +1,7 @@
 package com.example.eventorganizer;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import network_structures.SectorUpdate;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -25,6 +27,17 @@ public class SectorFragment extends Fragment {
 
     // TODO: Rename and change types of parameters
     private String mTitle;
+    private ArrayList<SectorLayout> arrayList;
+
+    private void updateInterface() {
+        while (ClientConnection.updateData == null) { }
+        while (true) {
+            int i = 0;
+            for (SectorUpdate update : ClientConnection.updateData.sectors.values()) {
+                arrayList.get(i++).sectorLayoutHolder.textViewName.setText("JD");
+            }
+        }
+    }
 
     public SectorFragment() {
         // Required empty public constructor
@@ -55,7 +68,7 @@ public class SectorFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
+        new Thread(this::updateInterface).start();
     }
 
     @Override
@@ -70,6 +83,7 @@ public class SectorFragment extends Fragment {
 
         ArrayList<SectorLayout> sectorList = new ArrayList<>();
         ClientConnection.eventData.sectors.values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
+        this.arrayList = sectorList;
 
         ListView listView = rootView.findViewById(R.id.sector_list_view);
         listView.setAdapter(new ItemListAdapter<>(getActivity(), sectorList));
