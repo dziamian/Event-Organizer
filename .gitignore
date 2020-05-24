@@ -6,3 +6,4 @@
 /.idea/.name
 /.idea/uiDesigner.xml
 /local.properties
+*.class
