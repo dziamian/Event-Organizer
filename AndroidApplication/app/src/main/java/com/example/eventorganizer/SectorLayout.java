@@ -15,7 +15,11 @@ public class SectorLayout extends ItemLayout {
     public SectorLayout(SectorInfo sectorInfo) {
         super(R.layout.sector_item);
         this.sectorInfo = sectorInfo;
-        this.sectorLayoutHolder = new SectorLayoutHolder();
+    }
+
+    @Override
+    public void createItemHolder(View view) {
+        this.sectorLayoutHolder = new SectorLayoutHolder(view);
     }
 
     @Override
@@ -25,20 +29,13 @@ public class SectorLayout extends ItemLayout {
 
     @Override
     public void setLayout(View view, Context context) {
-        sectorLayoutHolder.textViewName = view.findViewById(R.id.sector_name);
-        sectorLayoutHolder.textViewAddress = view.findViewById(R.id.sector_address);
-        sectorLayoutHolder.textViewAvailableRooms = view.findViewById(R.id.sector_available_rooms);
-
-        Log.d("LOG", "wtf " + sectorInfo.name);
-
         sectorLayoutHolder.textViewName.setText(sectorInfo.name);
         sectorLayoutHolder.textViewAddress.setText(sectorInfo.address);
-        sectorLayoutHolder.textAvailableRooms = "Aktywne atrakcje: ";
         sectorLayoutHolder.textViewAvailableRooms.setText(sectorLayoutHolder.textAvailableRooms + sectorInfo.rooms.size());
 
-        view.findViewById(R.id.sector_field).setOnClickListener(v -> {
+        /*view.findViewById(R.id.sector_field).setOnClickListener(v -> {
             ((HomeActivity) context).setRoomActivity(sectorInfo.id);
-        });
+        });*/
     }
 
     public void updateLayout(SectorUpdate update) {
@@ -58,5 +55,13 @@ public class SectorLayout extends ItemLayout {
     public static class SectorLayoutHolder extends ItemHolder {
         String textAvailableRooms;
         TextView textViewName, textViewAddress, textViewAvailableRooms;
+
+        public SectorLayoutHolder(View view) {
+            textViewName = view.findViewById(R.id.sector_name);
+            textViewAddress = view.findViewById(R.id.sector_address);
+            textViewAvailableRooms = view.findViewById(R.id.sector_available_rooms);
+
+            textAvailableRooms = "Aktywne atrakcje: ";
+        }
     }
 }

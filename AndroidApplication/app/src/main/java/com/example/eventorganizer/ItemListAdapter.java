@@ -16,6 +16,7 @@ public class ItemListAdapter<T extends ItemLayout> extends BaseAdapter {
     public Context context;
 
     public ItemListAdapter(Context context, ArrayList<T> layoutList) {
+        super();
         this.layoutList = layoutList;
         this.context = context;
     }
@@ -41,12 +42,13 @@ public class ItemListAdapter<T extends ItemLayout> extends BaseAdapter {
         T layout = layoutList.get(position);
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(layout.getResourceId(), null);
-            layout.setLayout(convertView, context);
-
+            layout.createItemHolder(convertView);
             convertView.setTag(layout.getItemHolder());
         } else {
             layout.setItemHolder(convertView.getTag());
         }
+
+        layout.setLayout(convertView, context);
 
         return convertView;
     }

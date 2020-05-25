@@ -27,14 +27,15 @@ public class SectorFragment extends Fragment {
 
     // TODO: Rename and change types of parameters
     private String mTitle;
-    private ArrayList<SectorLayout> arrayList;
+    private ArrayList<SectorLayout> sectorLayouts;
 
     private void updateInterface() {
         while (ClientConnection.updateData == null) { }
+        while (sectorLayouts.get(0).sectorLayoutHolder == null) { }
         while (true) {
             int i = 0;
             for (SectorUpdate update : ClientConnection.updateData.sectors.values()) {
-                arrayList.get(i++).sectorLayoutHolder.textViewName.setText("JD");
+                sectorLayouts.get(i++).updateLayout(update);
             }
         }
     }
@@ -68,7 +69,11 @@ public class SectorFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        new Thread(this::updateInterface).start();
+        /*Log.d("LIST", itemListAdapter.layoutList.get(1).sectorLayoutHolder.textViewName.getText().toString());
+        for (SectorLayout sectorLayout : itemListAdapter.layoutList) {
+            Log.d("LIST", sectorLayout.sectorLayoutHolder.textViewName.getText().toString());
+        }*/
+        //new Thread(this::updateInterface).start();
     }
 
     @Override
@@ -83,10 +88,13 @@ public class SectorFragment extends Fragment {
 
         ArrayList<SectorLayout> sectorList = new ArrayList<>();
         ClientConnection.eventData.sectors.values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
-        this.arrayList = sectorList;
+        sectorLayouts = sectorList;
 
         ListView listView = rootView.findViewById(R.id.sector_list_view);
-        listView.setAdapter(new ItemListAdapter<>(getActivity(), sectorList));
+        ItemListAdapter<SectorLayout> itemListAdapter = new ItemListAdapter<>(getActivity(), sectorList);
+        listView.setAdapter(itemListAdapter);
+
+        //Log.d("TEST", sectorList.get(0).sectorLayoutHolder.textViewName.getText().toString());
 
         return rootView;
     }

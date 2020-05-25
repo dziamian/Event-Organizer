@@ -13,7 +13,11 @@ public class RoomLayout extends ItemLayout {
     public RoomLayout(RoomInfo roomInfo) {
         super(R.layout.room_item);
         this.roomInfo = roomInfo;
-        this.roomLayoutHolder = new RoomLayoutHolder();
+    }
+
+    @Override
+    public void createItemHolder(View view) {
+
     }
 
     @Override

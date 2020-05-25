@@ -13,13 +13,15 @@ public abstract class ItemLayout {
 
     public int getResourceId() { return resourceId; }
 
+    public abstract void createItemHolder(View view);
+
     protected abstract Object getItemHolder();
 
     public abstract void setLayout(View view, Context context);
 
     public abstract void setItemHolder(Object itemHolder);
 
-    protected abstract static class ItemHolder extends Object {
+    protected abstract static class ItemHolder {
 
     }
 }
