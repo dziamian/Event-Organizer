@@ -9,7 +9,7 @@ import java.util.TreeMap;
 
 public class Sector {
 
-    private SectorInfo informations;
+    private final SectorInfo informations;
 
     private Map<ObjectId,Room> rooms;
     private int currentSize;

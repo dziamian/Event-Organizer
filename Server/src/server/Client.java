@@ -2,16 +2,14 @@ package server;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoDatabase;
-import network_structures.LoginData;
-import network_structures.LoginConfirmationData;
-import network_structures.SectorInfo;
+import network_structures.BaseNetworkMessage;
 import org.bson.Document;
-import queue.Sector;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Client {
 
@@ -33,52 +31,63 @@ public class Client {
         return socket.getInetAddress().getHostName() + ":" + socket.getPort();
     }
 
-    final public void setConnectionSettings(int timeout) throws IOException {
+    public final void setConnectionSettings(int timeout) throws IOException {
         this.socket.setSoTimeout(timeout);
         this.in = new ObjectInputStream(socket.getInputStream());
         this.out = new ObjectOutputStream(socket.getOutputStream());
     }
 
-    static protected Client loginToServer(Client client, MongoDatabase database) throws IOException, ClassNotFoundException {
+    private static Client setPrivileges(Client client, String role) {
+        switch (role) {
+            case "G": {
+                client = new Guide(client);
+            } break;
+            case "P": {
+                client = new Presenter(client);
+            } break;
+            case "M": {
+                client = new Moderator(client);
+            } break;
+            case "A": {
+                client = new Administrator(client);
+            } break;
+        }
+        return client;
+    }
+
+    protected static Client loginToServer(Client client, MongoDatabase database) throws IOException, ClassNotFoundException {
         while (true) {
-            Object obj = client.in.readObject();
-            if (obj instanceof LoginData) {
-                LoginData user = (LoginData) obj;
-                BasicDBObject userPreferences = new BasicDBObject();
-                userPreferences.put("login", user.login);
-                userPreferences.put("password", user.password);
-                Document userFindResult = database.getCollection("users").find(userPreferences).first();
+            BaseNetworkMessage message = (BaseNetworkMessage) client.in.readObject();
+            if ("login".equals(message.getCommand())) {
+                BasicDBObject userData = new BasicDBObject();
+                userData.put("login", message.getArgs()[0]);
+                userData.put("password", message.getArgs()[1]);
+                Document userFindResult = database.getCollection("users").find(userData).first();
                 if (userFindResult != null) {
-                    switch (userFindResult.getString("role")) {
-                        case "G": {
-                            client = new Guide(client);
-                        } break;
-                        case "P": {
-                            client = new Presenter(client);
-                        } break;
-                        case "M": {
-                            client = new Moderator(client);
-                        } break;
-                        case "A": {
-                            client = new Administrator(client);
-                        } break;
-                    }
-                    client.out.writeObject(new LoginConfirmationData(true, "Successfully logged in!"));
+                    client = setPrivileges(client, userFindResult.getString("role"));
+                    client.out.writeObject(new BaseNetworkMessage("login", new String[] {"true"}, "Successfully logged in!"));
                     break;
+                } else {
+                    client.out.writeObject(new BaseNetworkMessage("login", new String[] {"false"}, "Invalid login or password!"));
                 }
-                else
-                    client.out.writeObject(new LoginConfirmationData(false, "Invalid login or password!"));
+            } else if ("ping".equals(message.getCommand())) {
+                ///.....
             }
         }
         return client;
     }
 
-    protected void sendStartingData() throws IOException {
-        this.out.writeObject(Server.startupData);
+    protected final void sendStartingData() throws IOException {
+        this.out.writeObject(new BaseNetworkMessage("eventDetails", null, Server.getStartupData()));
     }
 
     /** Empty procedure to override in inherited classes **/
-    protected void handlingRequests() throws IOException, ClassNotFoundException {
+    protected void handlingRequests(ConcurrentLinkedQueue<BaseNetworkMessage> clientTaskQueue) throws IOException, ClassNotFoundException {
+
+    }
+
+    /** Empty procedure to override in inherited classes **/
+    protected void chooseProcedure() {
 
     }
 }

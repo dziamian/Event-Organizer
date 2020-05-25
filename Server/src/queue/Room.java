@@ -16,20 +16,21 @@ public class Room {
     }
 
     private State state;
-    private Date stateChanged;
+    private Date lastStateChange;
 
     private server.Presenter presenter;
     private ArrayList<TourGroup> currentVisitors;
     private ArrayList<Reservation> currentReservations;
     private int maxSlots;
 
+    private static final int RESERVATIONS_UPDATE_CHECK_DELAY = 1000;
     protected RoomQueue queue;
 
     public Room(String name, String location, String description, int maxSlots) {
         this.informations = new RoomInfo(name, location, description);
         this.maxSlots = maxSlots;
         this.queue = new RoomQueue(this);
-        setState(State.OPEN);
+        changeState(State.OPEN);
         this.currentVisitors = new ArrayList<>();
         this.currentReservations = new ArrayList<>();
     }
@@ -40,9 +41,9 @@ public class Room {
         return state;
     }
 
-    private void setState(State state) {
+    private void changeState(State state) {
         this.state = state;
-        stateChanged = new Date();
+        this.lastStateChange = new Date();
     }
 
     private Reservation createReservation(TourGroup group) {
@@ -54,9 +55,9 @@ public class Room {
         return null;
     }
 
-    private void checkReservations() {
+    private void updateReservations() {
         for (var reservation : currentReservations) {
-            if (!reservation.hasBeenUsed() && reservation.expirationDate.getTime() < new Date().getTime()) {
+            if (!reservation.isActive() && reservation.expirationDate.getTime() < new Date().getTime()) {
                 currentReservations.remove(reservation);
                 reservation.getGroup().removeReservation(reservation);
             }
@@ -64,37 +65,41 @@ public class Room {
     }
 
     private boolean areReservationsValid() {
-        checkReservations();
         for (var reservation : currentReservations) {
-            if (!reservation.hasBeenUsed())
+            if (!reservation.isActive())
                 return true;
         }
         return false;
     }
 
-    private void reservationsTimer() {
-        while (areReservationsValid()) {
-            //////////////////// opoznienie sekunde moze?
+    private void launchReservationTimer() {
+        while (true) {
+            if (!areReservationsValid()) {
+                break;
+            }
+            updateReservations();
+
+            try { Thread.sleep(RESERVATIONS_UPDATE_CHECK_DELAY); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
         }
 
         if (currentReservations.size() > 0) {
-            setState(State.TAKEN);
+            changeState(State.TAKEN);
             for (var reservation : currentReservations) {
                 currentVisitors.add(reservation.group);
                 reservation.group.setCurrentRoom(this);
             }
         } else {
-            setState(State.OPEN);
+            changeState(State.OPEN);
             if (queue.requestedGrouping)
-                queue.tryStartGrouping();
+                queue.tryGrouping();
         }
     }
 
-    private boolean checkIfRoomIsEmpty() {
+    private boolean isEmpty() {
         return currentVisitors.size() == 0;
     }
 
-    public void groupHasLeft(TourGroup group) {
+    public void removeVisitingGroup(TourGroup group) {
         if (group != null) {
             for (var visitor : currentVisitors) {
                 if (visitor == group) {
@@ -103,14 +108,15 @@ public class Room {
                 }
             }
         }
-        if (checkIfRoomIsEmpty()) {
-            setState(State.OPEN);
+
+        if (isEmpty()) {
+            changeState(State.OPEN);
             if (queue.requestedGrouping)
-                queue.tryStartGrouping();
+                queue.tryGrouping();
         }
     }
 
-    public void addToQueue(TourGroup group) {
+    public void addGroupToQueue(TourGroup group) {
         TourGroup.QueueTicket queueTicket = group.createTicket(this);
         if (queueTicket != null)
             queue.enqueue(queueTicket);
@@ -123,25 +129,25 @@ public class Room {
         private final TourGroup group;
         private final Date expirationDate;
         private final static long duration = 5 * 60 * 1000;
-        private boolean hasBeenUsed;
+        private boolean active;
 
         Reservation(Room reservedRoom, TourGroup group) {
             this.reservedRoom = reservedRoom;
             this.group = group;
             this.expirationDate = new Date(System.currentTimeMillis() + duration);
-            this.hasBeenUsed = false;
+            this.active = false;
         }
 
         public TourGroup getGroup() {
             return group;
         }
 
-        public boolean hasBeenUsed() {
-            return hasBeenUsed;
+        public boolean isActive() {
+            return active;
         }
 
-        public void groupHasJoined() {
-            hasBeenUsed = true;
+        public void activate() {
+            active = true;
         }
     }
 
@@ -149,9 +155,12 @@ public class Room {
 
         private final Room owner;
         protected final static int maxAsksForTicket = 3;
+
+        // DO SFORMATOWANIA KODZIK
         private boolean requestedGrouping;
         private boolean isDuringGrouping;
         private boolean isFullyGrouped;
+        //
 
         private RoomQueue(Room owner) {
             this.owner = owner;
@@ -160,26 +169,22 @@ public class Room {
             this.requestedGrouping = false;
         }
 
-        protected void setFullyGrouped() {
+        protected void updateFullyGroupedStatus() {
             this.isFullyGrouped = isFullyGrouped();
         }
 
         @Override
         public void enqueue(TourGroup.QueueTicket ticket) {
             super.enqueue(ticket);
-            if (!isDuringGrouping)
-                tryStartGrouping();
-            else
+            if (isDuringGrouping) {
                 getTail().sendNotificationAboutGrouping();
+                return;
+            }
+            tryGrouping();
         }
 
-        private void stateChanged() {
-            if (!isDuringGrouping)
-                tryStartGrouping();
-        }
-
-        private void sendGroupingData() {
-            /// wyslij stany odpowiedzi do wszystkich ktorzy biora udzial w grupowaniu
+        private void sendGroupingStateInformation() {
+            /// wyslij stany ich grupowania do wszystkich ktorzy biora udzial w grupowaniu
         }
 
         protected boolean isFullyGrouped() {
@@ -199,7 +204,11 @@ public class Room {
             return false;
         }
 
-        private ArrayList<TourGroup> pollGroups() {
+        private boolean shouldDelete(TourGroup.QueueTicket ticket) {
+            return ticket.getTimesAsked() == Room.RoomQueue.maxAsksForTicket;
+        }
+
+        private ArrayList<TourGroup> pullGroups() {
             int maxSlots = owner.maxSlots;
             int size = 0;
             ArrayList<TourGroup> groups = new ArrayList<>();
@@ -209,12 +218,13 @@ public class Room {
                     int response = ticket.getGroupingResponse();
                     if (response == -1 || response == 0) {
                         ticket.increaseTimesAsked();
-                        if (ticket.shouldDelete())
+                        if (shouldDelete(ticket))
                             removeFirstOccurrence(ticket); ///ZMIENIC NA REMOVETICKET!
                     }
                     else if (response == 1) {
                         groups.add(ticket.getOwner());
                         removeFirstOccurrence(ticket); ///ZMIENIC NA REMOVETICKET!
+                        ++size;
                     }
                 }
                 if (size == maxSlots)
@@ -223,16 +233,18 @@ public class Room {
             return groups;
         }
 
-        private void tryStartGrouping() {
+        private void tryGrouping() {
+            if (isDuringGrouping)
+                return;
             if (owner.state == State.OPEN) {
                 //////////////////////////////////////////////////////////// ustaw rozpoczecie grupowania (w nowym watku np)
-                new Thread(this::startGrouping).start();
+                new Thread(this::launchGrouping).start();
             } else {
                 requestedGrouping = true;
             }
         }
 
-        private void startGrouping() {
+        private void launchGrouping() {
             isDuringGrouping = true;
 
             for (var iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
@@ -249,7 +261,7 @@ public class Room {
             /// czekaj na zakonczenie grupowania (zakonczenie czasu albo max liczba grup)
             while (finish > new Date().getTime() && !isFullyGrouped) {
                 /// opoznienie co sekunde
-                sendGroupingData();
+                sendGroupingStateInformation();
             }
 
             requestedGrouping = false;
@@ -257,13 +269,14 @@ public class Room {
             isFullyGrouped = false;
 
             /// stworz ewentualne rezerwacje dla tych co sie zgodzili
-            ArrayList<TourGroup> groups = pollGroups();
+            ArrayList<TourGroup> groups = pullGroups();
             if (groups.size() > 0) {
-                setState(State.RESERVED);
+                changeState(State.RESERVED);
                 for (var group : groups) {
+                    // co jesli bral udzial w innym grupowaniu i tez sie zgodzil 'w tym samym czasie'? (nie moze dostac dwoch rezerwacji!)
                     group.addReservation(createReservation(group));
                 }
-                owner.reservationsTimer();
+                owner.launchReservationTimer();
             }
         }
     }

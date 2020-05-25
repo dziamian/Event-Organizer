@@ -1,14 +1,11 @@
 package com.example.eventorganizer;
 
 import android.content.Intent;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-
-import network_structures.LoginData;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,12 +39,5 @@ public class MainActivity extends AppCompatActivity {
 
                     finish();
                 }));
-
-        /*loginBtn.setOnClickListener((v) -> {
-            Intent newActivity = new Intent(MainActivity.this, HomeActivity.class);
-            MainActivity.this.startActivity(newActivity);
-
-            finish();
-        });*/
     }
 }

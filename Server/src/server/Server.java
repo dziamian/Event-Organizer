@@ -1,12 +1,10 @@
 package server;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.*;
-import network_structures.EventData;
+import network_structures.BaseNetworkMessage;
+import network_structures.EventInfo;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-
-import network_structures.SectorInfo;
 
 import java.io.*;
 import java.net.*;
@@ -23,30 +21,38 @@ import queue.Room;
 
 public class Server {
 
-    final static Set<Client> clients = new HashSet<>();
-    final static int port = 9999;
+    /// USED COMMANDS: ping, login, eventInfo, error
 
-    static MongoClient mongoClient;
-    static MongoDatabase database;
+    private static final ConcurrentLinkedQueue<Task> taskManager = new ConcurrentLinkedQueue<>();
 
-    static Map<ObjectId, Sector> sectors;
-    static EventData startupData = new EventData();
-    static int sectorsSize = 0;
+    private static final Set<Client> clients = new HashSet<>();
+    private static final int port = 9999;
 
-    static boolean isOpen = false;
+    //private static MongoClient mongoClient;
+    private static MongoDatabase database;
+
+    private static Map<ObjectId, Sector> sectors = new TreeMap<>();
+    //private static Map<ObjectId, Room.RoomQueue>
+    private static EventInfo startupData = new EventInfo();
+    private static int sectorsSize = 0;
+
+    private static final long DATE_CHECKING_DELAY = 1000;
+    private static long eventStartingDate;
+    private static boolean eventHasStarted = false;
 
     public static void main(String[] args) {
 
         Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
         mongoLogger.setLevel(Level.SEVERE);
 
-        mongoClient = MongoClients.create();
-        database = mongoClient.getDatabase("guideDB");
+        database = MongoClients.create().getDatabase("guideDB");
+
+        serverSetup();
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Listening on port " + serverSocket.getLocalPort() + "...\n");
 
-            new OpeningAllQueues().start();
+            new Thread(new MainServerTask()).start();
 
             while (true) {
                 new Thread(new ClientHandler(serverSocket.accept())).start();
@@ -57,66 +63,102 @@ public class Server {
         }
     }
 
-    private static class OpeningAllQueues extends Thread {
+    public static EventInfo getStartupData() {
+        return startupData;
+    }
+
+    public static void enqueueTask(Task task) {
+        taskManager.offer(task);
+    }
+
+    //private static void
+
+    private static void serverSetup() {
+
+        FindIterable<Document> sectorsIterator = database.getCollection("sectors").find();
+        for (var sectorIterator : sectorsIterator) {
+            ObjectId sectorId = sectorIterator.getObjectId("_id");
+            String sectorName = sectorIterator.getString("name");
+            String sectorAddress = sectorIterator.getString("address");
+            String sectorDescription = sectorIterator.getString("description");
+            FindIterable<Document> roomsOfSector = database.getCollection("sector" + sectorId.toString()).find();
+            Sector sector = new Sector(sectorId, sectorName, sectorAddress, sectorDescription);
+            sectors.put(sectorId, sector);
+            startupData.getSectors().put(sectorId, sector.getInformations());
+            ++sectorsSize;
+            for (var room : roomsOfSector) {
+                ObjectId roomId = room.getObjectId("_id");
+                String roomName = room.getString("name");
+                String roomLocation = room.getString("location");
+                String roomDescription = room.getString("description");
+                Room newRoom = new Room(roomName, roomLocation, roomDescription, 1);
+                sector.addRoom(roomId, newRoom);
+                sector.getInformations().rooms.put(roomId, newRoom.getInformations());
+            }
+        }
+
+        MongoCollection<Document> serverVariablesCollection = database.getCollection("serverVariables");
+        Document serverVariables = serverVariablesCollection.find().first();
+        eventStartingDate = Objects.requireNonNull(serverVariables).getDate("serverOpenDate").getTime();
+    }
+
+    private static class MainServerTask implements Runnable {
+
+        private void handleTask(Task task) {
+
+        }
 
         @Override
         public void run() {
-
-            MongoCollection<Document> serverVariablesColl = database.getCollection("serverVariables");
-            Document serverVariables = serverVariablesColl.find().first();
-            assert serverVariables != null : "Cannot get document from collection!";
-
-            long serverOpenDate = serverVariables.getDate("serverOpenDate").getTime();
-            while (new Date().getTime() < serverOpenDate) {
-                try { sleep(1000); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
+            
+            while (new Date().getTime() < eventStartingDate) {
+                try { Thread.sleep(DATE_CHECKING_DELAY); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
             }
 
-            FindIterable<Document> buildingsIterator = database.getCollection("sectors").find();
-            sectors = new TreeMap<>();
-            startupData.sectors = new TreeMap<>();
-            for (var buildingIterator : buildingsIterator) {
-                ObjectId buildingId = buildingIterator.getObjectId("_id");
-                String buildingName = buildingIterator.getString("name");
-                String buildingAddress = buildingIterator.getString("address");
-                String buildingDescription = buildingIterator.getString("description");
-                FindIterable<Document> instancesOfBuilding = database.getCollection("sector" + buildingId.toString()).find();
-                Sector building = new Sector(buildingId, buildingName, buildingAddress, buildingDescription);
-                sectors.put(buildingId, building);
-                startupData.sectors.put(buildingId, building.getInformations());
-                ++sectorsSize;
-                for (var instanceDoc : instancesOfBuilding) {
-                    ObjectId roomId = instanceDoc.getObjectId("_id");
-                    String roomName = instanceDoc.getString("name");
-                    String roomLocation = instanceDoc.getString("location");
-                    String roomDescription = instanceDoc.getString("description");
-                    Room newRoom = new Room(roomName, roomLocation, roomDescription, 1);
-                    building.addRoom(roomId, newRoom);
-                    building.getInformations().rooms.put(roomId, newRoom.getInformations());
-                }
-            }
+            eventHasStarted = true;
+            System.out.println("Event has started! All queues are open!");
 
-            isOpen = true;
-            System.out.println("All queues in server are opened!");
-
+            // Checking if every sector and room has been loaded properly //
             for (var sector : sectors.values()) {
                 System.out.println(sector.getInformations().name + ":");
                 for (var room : sector.getRooms()) {
-                    System.out.println("\tRoom " + room.getInformations().name);
-                    //TourGroup group = new TourGroup();
-                    //room.addToQueue(group);
+                    System.out.println("\tRoom " + room.getInformations().getName());
                     System.out.println("\t\tRoom State: " + room.getState());
-                    //System.out.println("\t\tTicket expiration date: " + group.getReservation().getExpirationDate());
+                }
+            }
+
+            // Main server task queue
+            while (true) {
+                Task task = taskManager.poll();
+                if (task != null) {
+                    handleTask(task);
                 }
             }
         }
     }
 
+    public static class Task extends BaseNetworkMessage {
+
+        private final ClientHandler.ClientTaskQueueInterface taskQueueInterface;
+
+        public Task(BaseNetworkMessage message, ClientHandler.ClientTaskQueueInterface taskQueueInterface) {
+            super(message.getCommand(), message.getArgs(), message.getData());
+            this.taskQueueInterface = taskQueueInterface;
+        }
+
+        public ClientHandler.ClientTaskQueueInterface getTaskQueueInterface() {
+            return taskQueueInterface;
+        }
+    }
+
     private static class ClientHandler implements Runnable {
 
+        ConcurrentLinkedQueue<BaseNetworkMessage> clientTaskQueue;
         Client client;
 
         public ClientHandler(Socket socket) {
             this.client = new Client(socket);
+            this.clientTaskQueue = new ConcurrentLinkedQueue<>();
         }
 
         @Override
@@ -125,12 +167,13 @@ public class Server {
                 System.out.println("Client (" + client.getSocketInfo() + ") connected!");
 
                 client.setConnectionSettings(15 * 60 * 1000);
-                clients.add(client);
 
                 client = Client.loginToServer(client, database);
                 client.sendStartingData();
 
-                client.handlingRequests();
+                clients.add(client);
+
+                client.handlingRequests(clientTaskQueue);
 
             } catch (NoSuchElementException ex) {
                 System.out.println("Client (" + client.getSocketInfo() + ") is not responding!");
@@ -145,6 +188,10 @@ public class Server {
                 try { client.socket.close(); } catch(Exception ex) { System.out.println(ex.getMessage()); }
                 System.out.println("Connection with (" + client.getSocketInfo() + ") has been closed!");
             }
+        }
+
+        public interface ClientTaskQueueInterface {
+            boolean enqueue(BaseNetworkMessage message);
         }
     }
 }

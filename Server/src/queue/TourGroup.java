@@ -52,8 +52,9 @@ public class TourGroup {
     protected QueueTicket createTicket(Room destination) {
         if (destination != null) {
             QueueTicket ticket = new QueueTicket(this,destination);
-            if (canAddTicket() && !hasTicketFor(destination) && tickets.add(ticket))
+            if (canAddTicket() && !hasTicketFor(destination) && tickets.add(ticket)) {
                 return ticket;
+            }
         }
         return null;
     }
@@ -90,8 +91,8 @@ public class TourGroup {
             return groupingResponse;
         }
 
-        protected boolean shouldDelete() {
-            return timesAsked == Room.RoomQueue.maxAsksForTicket;
+        public int getTimesAsked() {
+            return timesAsked;
         }
 
         protected void increaseTimesAsked() {
@@ -112,7 +113,7 @@ public class TourGroup {
 
         public void respondAboutGrouping(int response) {
             groupingResponse = response;
-            destination.queue.setFullyGrouped();
+            destination.queue.updateFullyGroupedStatus();
         }
     }
 }
