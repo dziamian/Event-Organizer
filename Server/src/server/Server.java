@@ -98,8 +98,6 @@ public class Server {
             isOpen = true;
             System.out.println("All queues in server are opened!");
 
-            //TourGroup group = new TourGroup();
-
             for (var sector : sectors.values()) {
                 System.out.println(sector.getInformations().name + ":");
                 for (var room : sector.getRooms()) {
@@ -110,14 +108,6 @@ public class Server {
                     //System.out.println("\t\tTicket expiration date: " + group.getReservation().getExpirationDate());
                 }
             }
-
-            /*while (true) {
-                for (var writer : writers) {
-                    writer.println("UPDATE");
-                }
-                try { sleep(2000); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
-            }*/
-
         }
     }
 
