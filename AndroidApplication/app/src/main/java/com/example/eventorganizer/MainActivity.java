@@ -54,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
                     "login",
                     new String[] { loginText.getText().toString(), passwordText.getText().toString() },
                     new Runnable[] { () -> { // prawidlowe zalogowanie
-
+                        runOnUiThread(() -> Toast.makeText(this, "Successfully logged in!", Toast.LENGTH_SHORT).show());
                     }, () -> { // blad logowania
-                        runOnUiThread(() -> Toast.makeText(this, "Successfully logged in!", Toast.LENGTH_LONG));
+                        runOnUiThread(() -> Toast.makeText(this, "Invalid login or password!", Toast.LENGTH_SHORT).show());
                     }} // tutaj reakcja na odpowiedz serwera o danych logowania
             ));
         });

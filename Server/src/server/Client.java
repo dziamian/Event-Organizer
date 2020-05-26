@@ -68,7 +68,7 @@ public class Client {
                     client.out.writeObject(new BaseMessage("login", new String[] { "true" }, null));
                     break;
                 } else {
-                    client.out.writeObject(new BaseMessage("login", new String[] { "false" }, "Invalid login or password!"));
+                    client.out.writeObject(new BaseMessage("login", new String[] { "false" }, null));
                 }
             } else if ("ping".equals(message.getCommand())) {
                 ///.....

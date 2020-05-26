@@ -86,13 +86,14 @@ public class ConnectionToServer implements Runnable {
                     if (!isConnected) {
                         ((Runnable)task.getData()).run();
                     }
-                    ((Runnable)task.getData()).run();
                 }
             }
 
             while (isConnected) {
                 BaseMessage task = pollTask();
-                Log.d("MESSAGE", task.toString());
+                if (task != null) {
+                    Log.d("MESSAGE", task.toString());
+                }
                 if (task != null)
                     handleTask(task);
             }
@@ -103,10 +104,11 @@ public class ConnectionToServer implements Runnable {
         try {
             this.socket = new Socket();
             this.socket.connect(new InetSocketAddress(host, port), 10000);
-            new Thread(new InputFromServer(new ObjectInputStream(socket.getInputStream()), receivedMessages)).start();
             new Thread(new OutputToServer(new ObjectOutputStream(socket.getOutputStream()), messagesToSend)).start();
+            new Thread(new InputFromServer(new ObjectInputStream(socket.getInputStream()), receivedMessages)).start();
             Log.d("JD", "JD");
         } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
         return true;
