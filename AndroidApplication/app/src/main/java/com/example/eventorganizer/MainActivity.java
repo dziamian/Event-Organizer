@@ -1,16 +1,22 @@
 package com.example.eventorganizer;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import network_structures.BaseMessage;
 
 public class MainActivity extends AppCompatActivity {
 
-    EditText loginText, passwordText;
-    Button loginBtn;
+    private EditText loginText, passwordText;
+    private Button loginBtn;
+    public static ConnectionToServer connectionToServer = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,12 +27,53 @@ public class MainActivity extends AppCompatActivity {
         passwordText = findViewById(R.id.passwordText);
         loginBtn = findViewById(R.id.loginBtn);
 
-        ClientConnection.establishConnection("Connection established!",
+        connectionToServer = new ConnectionToServer();
+
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this)
+                .setTitle("Connection error")
+                .setMessage("Unable to connect with the server. Check your internet connection and try again.");
+
+        alertDialog.setNeutralButton(R.string.connection_error_button, ((dialog, which) -> {
+            connectionToServer.addTask(new BaseMessage(
+                    "connect",
+                    null,
+                    (Runnable) () -> runOnUiThread(alertDialog::show)
+            ));
+        }));
+
+        new Thread(connectionToServer).start();
+
+        connectionToServer.addTask(new BaseMessage(
+                "connect",
+                null,
+                (Runnable) () -> runOnUiThread(alertDialog::show)
+        ));
+
+        loginBtn.setOnClickListener((v) -> {
+            connectionToServer.addTask(new BaseMessage(
+                    "login",
+                    new String[] { loginText.getText().toString(), passwordText.getText().toString() },
+                    new Runnable[] { () -> { // prawidlowe zalogowanie
+
+                    }, () -> { // blad logowania
+                        runOnUiThread(() -> Toast.makeText(this, "Successfully logged in!", Toast.LENGTH_LONG));
+                    }} // tutaj reakcja na odpowiedz serwera o danych logowania
+            ));
+        });
+
+
+
+
+
+
+
+
+        /*ConnectionToServer.establishConnection("Connection established!",
                 (msg) -> this.runOnUiThread(
                         () -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show())
         );
 
-        loginBtn.setOnClickListener((v) -> ClientConnection.loginToServer(
+        loginBtn.setOnClickListener((v) -> ConnectionToServer.loginToServer(
                 "No connection!",
                 new LoginData(loginText.getText().toString(), passwordText.getText().toString()),
 
@@ -38,6 +85,6 @@ public class MainActivity extends AppCompatActivity {
                     MainActivity.this.startActivity(newActivity);
 
                     finish();
-                }));
+                }));*/
     }
 }

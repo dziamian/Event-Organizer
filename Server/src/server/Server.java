@@ -1,7 +1,7 @@
 package server;
 
 import com.mongodb.client.*;
-import network_structures.BaseNetworkMessage;
+import network_structures.BaseMessage;
 import network_structures.EventInfo;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -137,11 +137,11 @@ public class Server {
         }
     }
 
-    public static class Task extends BaseNetworkMessage {
+    public static class Task extends BaseMessage {
 
         private final ClientHandler.ClientTaskQueueInterface taskQueueInterface;
 
-        public Task(BaseNetworkMessage message, ClientHandler.ClientTaskQueueInterface taskQueueInterface) {
+        public Task(BaseMessage message, ClientHandler.ClientTaskQueueInterface taskQueueInterface) {
             super(message.getCommand(), message.getArgs(), message.getData());
             this.taskQueueInterface = taskQueueInterface;
         }
@@ -153,7 +153,7 @@ public class Server {
 
     private static class ClientHandler implements Runnable {
 
-        ConcurrentLinkedQueue<BaseNetworkMessage> clientTaskQueue;
+        ConcurrentLinkedQueue<BaseMessage> clientTaskQueue;
         Client client;
 
         public ClientHandler(Socket socket) {
@@ -183,15 +183,16 @@ public class Server {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             } finally {
-                if (client.out != null)
+                if (client.out != null) {
                     clients.remove(client);
+                }
                 try { client.socket.close(); } catch(Exception ex) { System.out.println(ex.getMessage()); }
                 System.out.println("Connection with (" + client.getSocketInfo() + ") has been closed!");
             }
         }
 
         public interface ClientTaskQueueInterface {
-            boolean enqueue(BaseNetworkMessage message);
+            boolean enqueue(BaseMessage message);
         }
     }
 }

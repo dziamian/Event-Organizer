@@ -69,7 +69,7 @@ public class SectorFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_sector, container, false);
 
         ArrayList<SectorLayout> sectorList = new ArrayList<>();
-        ClientConnection.eventData.sectors.values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
+        ConnectionToServer.eventInfo.getSectors().values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
 
         ListView listView = rootView.findViewById(R.id.sector_list_view);
         listView.setAdapter(new ItemListAdapter<>(getActivity(), sectorList));

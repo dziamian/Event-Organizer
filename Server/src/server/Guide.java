@@ -1,7 +1,6 @@
 package server;
 
-import network_structures.BaseNetworkMessage;
-import org.bson.types.ObjectId;
+import network_structures.BaseMessage;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -32,15 +31,15 @@ public class Guide extends Client {
         return false;
     }
 
-    private static void addToQueue(BaseNetworkMessage msg) {
+    private static void addToQueue(BaseMessage msg) {
 
     }
 
-    private static void removeFromQueue(BaseNetworkMessage msg) {
+    private static void removeFromQueue(BaseMessage msg) {
 
     }
 
-    protected void chooseProcedure(BaseNetworkMessage message) {
+    protected void chooseProcedure(BaseMessage message) {
         switch (message.getCommand()) {
             case "addToQueue":
                 addToQueue(message);
@@ -48,13 +47,13 @@ public class Guide extends Client {
     }
 
     @Override
-    final protected void handlingRequests(ConcurrentLinkedQueue<BaseNetworkMessage> clientTaskQueue) throws IOException, ClassNotFoundException {
+    final protected void handlingRequests(ConcurrentLinkedQueue<BaseMessage> clientTaskQueue) throws IOException, ClassNotFoundException {
         while(true) {
-            BaseNetworkMessage message = (BaseNetworkMessage) in.readObject();
+            BaseMessage message = (BaseMessage) in.readObject();
             if (isCommandRecognized(message.getCommand())) {
                 Server.enqueueTask(new Server.Task(message, clientTaskQueue::offer));
             } else {
-                this.out.writeObject(new BaseNetworkMessage(
+                this.out.writeObject(new BaseMessage(
                         "error",
                         new String[] { "invalidCommand" },
                         null)

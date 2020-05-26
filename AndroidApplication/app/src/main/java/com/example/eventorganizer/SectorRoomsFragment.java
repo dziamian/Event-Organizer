@@ -56,7 +56,7 @@ public class SectorRoomsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ObjectId sectorId = new ObjectId(mSectorId);
-        SectorInfo sectorInfo = ClientConnection.eventData.sectors.get(sectorId);
+        SectorInfo sectorInfo = ConnectionToServer.eventInfo.getSectors().get(sectorId);
 
         ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(true);
         ((HomeActivity) getActivity()).rooms.setTitle("Sektory - " + sectorInfo.name);

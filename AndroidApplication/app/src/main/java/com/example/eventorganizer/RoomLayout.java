@@ -28,8 +28,8 @@ public class RoomLayout extends ItemLayout {
         roomLayoutHolder.textViewStateDetails = view.findViewById(R.id.room_state_details);
         roomLayoutHolder.textViewState = view.findViewById(R.id.room_state);
 
-        roomLayoutHolder.textViewName.setText(roomInfo.name);
-        roomLayoutHolder.textViewLocation.setText(roomInfo.location);
+        roomLayoutHolder.textViewName.setText(roomInfo.getName());
+        roomLayoutHolder.textViewLocation.setText(roomInfo.getLocation());
         roomLayoutHolder.textViewStateDetails.setText("Grup w kolejce: " + 0);
         roomLayoutHolder.textViewState.setText("Dostępny!");
 
