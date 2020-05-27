@@ -5,24 +5,21 @@ import java.util.Arrays;
 
 public class BaseMessage implements Serializable {
 
-    //private final int communicationStream;
     private final String command;
     private final String[] args; //Optional
     private final Object data;
+    private final int communicationStream;
 
-    public BaseMessage(String command, String[] args, Object data) {
-        //super(0, command, args, data);
+    public BaseMessage(String command, String[] args, Object data, int communicationStream) {
+        this.communicationStream = communicationStream;
         this.command = command;
         this.args = args;
         this.data = data;
     }
 
-    /*public BaseNetworkMessage(int communicationStream, String command, String[] args, Serializable data) {
-        this.communicationStream = communicationStream;
-        this.command = command;
-        this.args = args;
-        this.data = data;
-    }*/
+    public BaseMessage(String command, String[] args, Object data) {
+        this(command, args, data, 0);
+    }
 
     public BaseMessage(String command, String[] args) {
         this(command, args, null);
@@ -46,6 +43,10 @@ public class BaseMessage implements Serializable {
 
     public Object getData() {
         return data;
+    }
+
+    public int getCommunicationStream() {
+        return communicationStream;
     }
 
     @Override
