@@ -22,7 +22,7 @@ public class Client {
                 out = new PrintWriter(socket.getOutputStream(),true);
 
                 while(true) {
-                    var line = in.nextLine();
+                    String line = in.nextLine();
                     if(line.startsWith("SUBMIT")) {
                         out.println("R_SUBMIT " + input.nextLine());
                     } else if(line.startsWith("UPDATE")) {

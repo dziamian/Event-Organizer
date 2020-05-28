@@ -32,7 +32,7 @@ public class TourGroup {
     }
 
     private boolean hasTicketFor(Room room) {
-        for (var ticket : tickets) {
+        for (TourGroup.QueueTicket ticket : tickets) {
             if (ticket.destination == room)
                 return true;
         }

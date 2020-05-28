@@ -56,7 +56,7 @@ public class Room {
     }
 
     private void updateReservations() {
-        for (var reservation : currentReservations) {
+        for (Room.Reservation reservation : currentReservations) {
             if (!reservation.isActive() && reservation.expirationDate.getTime() < new Date().getTime()) {
                 currentReservations.remove(reservation);
                 reservation.getGroup().removeReservation(reservation);
@@ -65,7 +65,7 @@ public class Room {
     }
 
     private boolean areReservationsValid() {
-        for (var reservation : currentReservations) {
+        for (Room.Reservation reservation : currentReservations) {
             if (!reservation.isActive())
                 return true;
         }
@@ -84,7 +84,7 @@ public class Room {
 
         if (currentReservations.size() > 0) {
             changeState(State.TAKEN);
-            for (var reservation : currentReservations) {
+            for (Room.Reservation reservation : currentReservations) {
                 currentVisitors.add(reservation.group);
                 reservation.group.setCurrentRoom(this);
             }
@@ -101,7 +101,7 @@ public class Room {
 
     public void removeVisitingGroup(TourGroup group) {
         if (group != null) {
-            for (var visitor : currentVisitors) {
+            for (TourGroup visitor : currentVisitors) {
                 if (visitor == group) {
                     currentVisitors.remove(visitor);
                     visitor.setCurrentRoomNull();
@@ -190,7 +190,7 @@ public class Room {
         protected boolean isFullyGrouped() {
             int maxSlots = owner.maxSlots;
             int currentAccepted = 0;
-            for (var iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
+            for (BasicQueue<TourGroup.QueueTicket>.Iterator iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
                 if (currentAccepted < maxSlots) {
                     int response = iter.getData().getGroupingResponse();
                     if (response == 0)
@@ -212,7 +212,7 @@ public class Room {
             int maxSlots = owner.maxSlots;
             int size = 0;
             ArrayList<TourGroup> groups = new ArrayList<>();
-            for (var iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
+            for (BasicQueue<TourGroup.QueueTicket>.Iterator iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
                 if (size < maxSlots) {
                     TourGroup.QueueTicket ticket = iter.getData();
                     int response = ticket.getGroupingResponse();
@@ -247,7 +247,7 @@ public class Room {
         private void launchGrouping() {
             isDuringGrouping = true;
 
-            for (var iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
+            for (BasicQueue<TourGroup.QueueTicket>.Iterator iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
                 TourGroup.QueueTicket ticket = iter.getData();
                 if (ticket.getOwner().canAddReservation()) {
                     ticket.sendNotificationAboutGrouping();
@@ -272,7 +272,7 @@ public class Room {
             ArrayList<TourGroup> groups = pullGroups();
             if (groups.size() > 0) {
                 changeState(State.RESERVED);
-                for (var group : groups) {
+                for (TourGroup group : groups) {
                     // co jesli bral udzial w innym grupowaniu i tez sie zgodzil 'w tym samym czasie'? (nie moze dostac dwoch rezerwacji!)
                     group.addReservation(createReservation(group));
                 }

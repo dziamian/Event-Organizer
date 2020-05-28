@@ -6,6 +6,9 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * Class containing unchanging information about event
+ */
 public class EventInfo implements Serializable {
 
     private Map<ObjectId, SectorInfo> sectors;

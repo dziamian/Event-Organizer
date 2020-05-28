@@ -1,31 +1,60 @@
 package queue;
 
+/**
+ * Basic bidirectional queue
+ * @param <T> Data type to hold
+ */
 public class BasicQueue<T> {
-
+    /** Queue head (first element) */
     protected QueueCell head;
+    /** Queue tail (last element) */
     protected QueueCell tail;
+    /** Current amount of elements contained within queue */
     private int currentSize;
 
+    /**
+     * Default constructor, explicitly sets all fields to their default values
+     */
     public BasicQueue() {
         this.currentSize = 0;
     }
 
+    /**
+     * Obtain reference to the element at the front of this queue
+     * @return Element from the current front
+     */
     public T getHead() {
         return head.data;
     }
 
+    /**
+     * Obtain reference to the element at the back of this queue
+     * @return Element from the current back
+     */
     public T getTail() {
         return tail.data;
     }
 
+    /**
+     * Provides exact amount of currently contained items
+     * @return Amount of items contained
+     */
     public int size() {
         return currentSize;
     }
 
+    /**
+     * Add given element to the back of this queue
+     * @param data Added element
+     */
     public void enqueue(T data) {
         addBack(data);
     }
 
+    /**
+     * Remove element at the front of this queue
+     * @return Element removed
+     */
     public T dequeue() {
         if (head != null) {
             T data = head.getData();
@@ -35,6 +64,11 @@ public class BasicQueue<T> {
         return null;
     }
 
+    /**
+     * Removes element pointed to by given iterator, if it is part of this queue
+     * @param where Iterator to element for removal
+     * @return True if element has been found and removed, false otherwise
+     */
     public boolean removeAt(Iterator where) {
         if (where != null && where.isValid()) {
             removeCell(where.currentCell);
@@ -43,6 +77,24 @@ public class BasicQueue<T> {
         return false;
     }
 
+    /**
+     * Add given element at the front of this queue
+     * @param data Element to be added
+     */
+    protected void addFront(T data) {
+        QueueCell cell = new QueueCell(data, head, null);
+        if (head != null)
+            head.setPrev(cell);
+        head = cell;
+        if (tail == null)
+            tail = cell;
+        ++currentSize;
+    }
+
+    /**
+     * Add given element at the back of this queue
+     * @param data Element to be added
+     */
     protected void addBack(T data) {
         QueueCell newCell = new QueueCell(data, null, tail);
         if (tail != null)
@@ -53,6 +105,10 @@ public class BasicQueue<T> {
         ++currentSize;
     }
 
+    /**
+     * Remove given cell from the queue, assuming it's currently a valid part of this queue object. In order to use it, you need to be absolutely sure the cell is inside this queue.
+     * @param cell Cell to be removed - providing cell from another queue can cause damage!
+     */
     protected void removeCell(QueueCell cell) {
         if (cell != null) {
             if (head == cell)
@@ -69,6 +125,11 @@ public class BasicQueue<T> {
         }
     }
 
+    /**
+     * Removes first encountered reference to given element, if found
+     * @param data Reference to removed element
+     * @return True if given element has been found, false otherwise
+     */
     protected boolean removeFirstOccurrence(T data) {
         boolean hasElementBeenRemoved = false;
         if (head != null) {
@@ -85,6 +146,10 @@ public class BasicQueue<T> {
         return hasElementBeenRemoved;
     }
 
+    /**
+     * Get simple iterator for this queue
+     * @return Iterator pointing to first element of the queue; could be invalid if queue is empty
+     */
     public Iterator getIterator() {
         return new Iterator(this, this.head);
     }
@@ -135,6 +200,9 @@ public class BasicQueue<T> {
         }
     }
 
+    /**
+     * Simple bidirectional iterator. Does not provide invalidation checking other than basic null cell check, thus make sure to discard it after modifying queue.
+     */
     public class Iterator {
         protected final BasicQueue<T> owner;
         protected QueueCell currentCell;
