@@ -1,6 +1,7 @@
 package server;
 
 import network_structures.BaseMessage;
+import network_structures.NetworkMessage;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -47,11 +48,11 @@ public class Guide extends Client {
     }
 
     @Override
-    final protected void handlingRequests(ConcurrentLinkedQueue<BaseMessage> clientTaskQueue) throws IOException, ClassNotFoundException {
+    final protected void handlingRequests(ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue) throws IOException, ClassNotFoundException {
         while(true) {
             BaseMessage message = (BaseMessage) in.readObject();
             if (isCommandRecognized(message.getCommand())) {
-                Server.enqueueTask(new Server.Task(message, clientTaskQueue::offer));
+                Server.enqueueTask(new Server.Task(message, clientMessageQueue::offer));
             } else {
                 this.out.writeObject(new BaseMessage(
                         "error",

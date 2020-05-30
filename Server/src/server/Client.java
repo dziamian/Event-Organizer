@@ -126,9 +126,25 @@ public class Client {
         this.out.writeObject(new BaseMessage("eventDetails", null, Server.getStartupData()));
     }
 
-    /** Empty procedure to override in inherited classes **/
-    protected void handlingRequests(ConcurrentLinkedQueue<NetworkMessage> clientTaskQueue) throws IOException, ClassNotFoundException {
-
+    /**
+     * Default main loop for handling client communication
+     * @param clientMessageQueue Message queue to poll messages for sending to client from
+     * @throws IOException When socket or stream is closed
+     * @throws ClassNotFoundException When program file structure is incorrect
+     */
+    protected void handlingRequests(ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue) throws IOException, ClassNotFoundException {
+        NetworkMessage outgoingMessage = null;
+        NetworkMessage incomingMessage = null;
+    	while (true) {
+            while ((outgoingMessage = clientMessageQueue.poll()) != null) {
+                out.writeObject(outgoingMessage);
+            }
+            incomingMessage = (NetworkMessage)in.readObject();
+            Server.enqueueTask(new Server.Task(
+                        incomingMessage,
+                        clientMessageQueue::offer
+            ));
+        }
     }
 
     /** Empty procedure to override in inherited classes **/

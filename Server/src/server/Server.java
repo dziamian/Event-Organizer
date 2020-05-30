@@ -4,7 +4,6 @@ import com.mongodb.client.*;
 import network_structures.BaseMessage;
 import network_structures.EventInfo;
 import network_structures.NetworkMessage;
-import network_structures.SectorInfo;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -149,7 +148,7 @@ public class Server {
              */
             switch (task.getCommand()) {
                 case "ping": {
-                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                    task.getResponseInterface().respond(new NetworkMessage(
                         "ping",
                         null,
                         null,
@@ -157,7 +156,7 @@ public class Server {
                     ));
                 } break;
                 case "eventInfo": {
-                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                    task.getResponseInterface().respond(new NetworkMessage(
                         "eventInfo",
                         null,
                         Server.getStartupData(),
@@ -165,7 +164,7 @@ public class Server {
                     ));
                 } break;
                 case "viewTickets": {
-                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                    task.getResponseInterface().respond(new NetworkMessage(
                         "viewTickets",
                         null,
                         null,
@@ -173,7 +172,7 @@ public class Server {
                     ));
                 } break;
                 case "viewReservations": {
-                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                    task.getResponseInterface().respond(new NetworkMessage(
                         "viewReservations",
                         null,
                         null, // todo
@@ -184,7 +183,7 @@ public class Server {
                     Room room = Server.sectors.get(task.getArgs()[0])
                             .getRoomsMapping().get(task.getArgs()[1]);
                     if (room != null) {
-                        task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                        task.getResponseInterface().respond(new NetworkMessage(
                                 "addTicket",
                                 new String[] { "success" },
                                 null,
@@ -192,7 +191,7 @@ public class Server {
                         ));
                     }
                     else {
-                        task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                        task.getResponseInterface().respond(new NetworkMessage(
                                 "error",
                                 new String[]{"invalidRoomIdentifier"},
                                 null,
@@ -205,7 +204,7 @@ public class Server {
                             .getRoomsMapping().get(new ObjectId(task.getArgs()[1]));
                     if (room != null) {
                         room.removeGroupFromQueue(((TourGroup.QueueTicket)task.getData()).getOwner());
-                        task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                        task.getResponseInterface().respond(new NetworkMessage(
                            "removeTicket",
                             new String[] { "success" },
                             null,
@@ -213,7 +212,7 @@ public class Server {
                         ));
                     }
                     else {
-                        task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                        task.getResponseInterface().respond(new NetworkMessage(
                            "error",
                            new String[] { "ticketNotFound" },
                            null,
@@ -228,7 +227,7 @@ public class Server {
                     ((TourGroup.QueueTicket)task.getData()).getOwner().increasePenalty();
                 } break;
                 case "update": {
-                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                    task.getResponseInterface().respond(new NetworkMessage(
                             "update",
                             null,
                             sectors.get(new ObjectId(task.getArgs()[0])).getInformations(),
@@ -236,7 +235,7 @@ public class Server {
                     ));
                 } break;
                 case "details": {
-                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                    task.getResponseInterface().respond(new NetworkMessage(
                         "details",
                             null,
                             sectors
@@ -251,7 +250,7 @@ public class Server {
                     
                 } break;
                 default: {
-                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                    task.getResponseInterface().respond(new NetworkMessage(
                             "error",
                             new String[] { "invalidCommand" },
                             task.getCommand(),
@@ -299,23 +298,23 @@ public class Server {
     public static class Task extends BaseMessage {
 
         /** Client to respond */
-        private final ClientHandler.ClientTaskQueueInterface taskQueueInterface;
+        private final ClientHandler.RespondToClientInterface messageResponseInterface;
 
         /**
          * @param message Base message to copy content from
-         * @param taskQueueInterface Client interface to respond to
+         * @param messageResponseInterface Client interface to respond to
          */
-        public Task(BaseMessage message, ClientHandler.ClientTaskQueueInterface taskQueueInterface) {
-            super(message.getCommand(), message.getArgs(), message.getData());
-            this.taskQueueInterface = taskQueueInterface;
+        public Task(BaseMessage message, ClientHandler.RespondToClientInterface messageResponseInterface) {
+            super(message.getCommand(), message.getArgs(), message.getData(), message.getCommunicationIdentifier());
+            this.messageResponseInterface = messageResponseInterface;
         }
 
         /**
          * Getter for client response interface
          * @return Client response interface
          */
-        public ClientHandler.ClientTaskQueueInterface getTaskQueueInterface() {
-            return taskQueueInterface;
+        public ClientHandler.RespondToClientInterface getResponseInterface() {
+            return messageResponseInterface;
         }
     }
 
@@ -372,8 +371,8 @@ public class Server {
         /**
          * Interface for responding to client who provided task to server
          */
-        public interface ClientTaskQueueInterface {
-            boolean enqueue(NetworkMessage message);
+        public interface RespondToClientInterface {
+            void respond(NetworkMessage message);
         }
     }
 }
