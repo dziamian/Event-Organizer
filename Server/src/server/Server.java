@@ -3,6 +3,8 @@ package server;
 import com.mongodb.client.*;
 import network_structures.BaseMessage;
 import network_structures.EventInfo;
+import network_structures.NetworkMessage;
+import network_structures.SectorInfo;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -18,10 +20,11 @@ import java.util.logging.Logger;
 
 import queue.Sector;
 import queue.Room;
+import queue.TourGroup;
 
 public class Server {
     /** Main server thread task queue */
-    private static final ConcurrentLinkedQueue<Task> taskManager = new ConcurrentLinkedQueue<>();
+    private static final ConcurrentLinkedQueue<Task> receivedTasks = new ConcurrentLinkedQueue<>();
 
     /** Collection containing all active client */
     private static final Set<Client> clients = new HashSet<>();
@@ -85,7 +88,7 @@ public class Server {
      * @param task Task for main thread
      */
     public static void enqueueTask(Task task) {
-        taskManager.offer(task);
+        receivedTasks.offer(task);
     }
 
     /**
@@ -131,21 +134,129 @@ public class Server {
          */
         private void handleTask(Task task) {
             /*
-            * Client messages recognized by server:
-            * 1. error
-            * 2. eventInfo
-            * 3. login
-            * 4. ping
-            */
+             * Recognized client requests:
+             * 1. ping - check if server recognizes this client
+             * 2. login - log in to server providing credentials in args
+             * 3. eventInfo - request essential information about event, such as sectors / attractions list
+             * 4. viewTickets - view my tickets and their states
+             * 5. viewReservations - view my active reservation(s)
+             * 6. addTicket - add my ticket to specified room queue
+             * 7. removeTicket - remove specific one of my tickets
+             * 8. abandonReservation - abandon one of my reservations (will result in penalty)
+             * 9. update - request update on states of rooms and queues
+             * 10. details - request detailed information about specific room
+             * 11. grouping - answer grouping call with decision or send update with changed decision
+             */
             switch (task.getCommand()) {
                 case "ping": {
-                    task.getTaskQueueInterface().enqueue(new BaseMessage(
+                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
                         "ping",
+                        null,
+                        null,
                         task.getCommunicationIdentifier()
                     ));
-                }
-                case "": {
-
+                } break;
+                case "eventInfo": {
+                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                        "eventInfo",
+                        null,
+                        Server.getStartupData(),
+                        task.getCommunicationIdentifier()
+                    ));
+                } break;
+                case "viewTickets": {
+                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                        "viewTickets",
+                        null,
+                        null,
+                        task.getCommunicationIdentifier()
+                    ));
+                } break;
+                case "viewReservations": {
+                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                        "viewReservations",
+                        null,
+                        null, // todo
+                        task.getCommunicationIdentifier()
+                    ));
+                } break;
+                case "addTicket": {
+                    Room room = Server.sectors.get(task.getArgs()[0])
+                            .getRoomsMapping().get(task.getArgs()[1]);
+                    if (room != null) {
+                        task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                                "addTicket",
+                                new String[] { "success" },
+                                null,
+                                task.getCommunicationIdentifier()
+                        ));
+                    }
+                    else {
+                        task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                                "error",
+                                new String[]{"invalidRoomIdentifier"},
+                                null,
+                                task.getCommunicationIdentifier()
+                        ));
+                    }
+                } break;
+                case "removeTicket": {
+                    Room room = sectors.get(new ObjectId(task.getArgs()[0]))
+                            .getRoomsMapping().get(new ObjectId(task.getArgs()[1]));
+                    if (room != null) {
+                        room.removeGroupFromQueue(((TourGroup.QueueTicket)task.getData()).getOwner());
+                        task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                           "removeTicket",
+                            new String[] { "success" },
+                            null,
+                            task.getCommunicationIdentifier()
+                        ));
+                    }
+                    else {
+                        task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                           "error",
+                           new String[] { "ticketNotFound" },
+                           null,
+                           task.getCommunicationIdentifier()
+                        ));
+                    }
+                } break;
+                case "abandonReservation": {
+                    Room room = sectors.get(new ObjectId(task.getArgs()[0]))
+                            .getRoomsMapping().get(new ObjectId(task.getArgs()[1]));
+                    room.removeVisitingGroup(((TourGroup.QueueTicket)task.getData()).getOwner());
+                    ((TourGroup.QueueTicket)task.getData()).getOwner().increasePenalty();
+                } break;
+                case "update": {
+                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                            "update",
+                            null,
+                            sectors.get(new ObjectId(task.getArgs()[0])).getInformations(),
+                            task.getCommunicationIdentifier()
+                    ));
+                } break;
+                case "details": {
+                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                        "details",
+                            null,
+                            sectors
+                                    .get(new ObjectId(task.getArgs()[0]))
+                                    .getRoomsMapping()
+                                    .get(new ObjectId(task.getArgs()[1]))
+                                    .getState(),
+                            task.getCommunicationIdentifier()
+                    ));
+                } break;
+                case "grouping": {
+                    
+                } break;
+                default: {
+                    task.getTaskQueueInterface().enqueue(new NetworkMessage(
+                            "error",
+                            new String[] { "invalidCommand" },
+                            task.getCommand(),
+                            task.getCommunicationIdentifier()
+                    ));
                 }
             }
         }
@@ -174,7 +285,7 @@ public class Server {
 
             // Main server task queue
             while (true) {
-                Task task = taskManager.poll();
+                Task task = receivedTasks.poll();
                 if (task != null) {
                     handleTask(task);
                 }
@@ -213,7 +324,7 @@ public class Server {
      */
     private static class ClientHandler implements Runnable {
         /** Server responses queue */
-        ConcurrentLinkedQueue<BaseMessage> clientTaskQueue;
+        ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue;
         /** Client handled */
         Client client;
 
@@ -222,7 +333,7 @@ public class Server {
          */
         public ClientHandler(Socket socket) {
             this.client = new Client(socket);
-            this.clientTaskQueue = new ConcurrentLinkedQueue<>();
+            this.clientMessageQueue = new ConcurrentLinkedQueue<>();
         }
 
         /**
@@ -240,7 +351,7 @@ public class Server {
 
                 clients.add(client);
 
-                client.handlingRequests(clientTaskQueue);
+                client.handlingRequests(clientMessageQueue);
 
             } catch (NoSuchElementException ex) {
                 System.out.println("Client (" + client.getSocketInfo() + ") is not responding!");
@@ -262,7 +373,7 @@ public class Server {
          * Interface for responding to client who provided task to server
          */
         public interface ClientTaskQueueInterface {
-            boolean enqueue(BaseMessage message);
+            boolean enqueue(NetworkMessage message);
         }
     }
 }

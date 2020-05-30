@@ -23,6 +23,13 @@ public class TourGroup {
         this.guides = new ArrayList<>();
     }
 
+    /**
+     * Increments current level of penalty induced for abandoning reservation
+     */
+    public void increasePenalty() {
+
+    }
+
     protected boolean canAddReservation() {
         return reservations.size() < maxReservations;
     }
@@ -83,7 +90,7 @@ public class TourGroup {
             this.timesAsked = 0;
         }
 
-        protected TourGroup getOwner() {
+        public TourGroup getOwner() {
             return owner;
         }
 
@@ -93,6 +100,14 @@ public class TourGroup {
 
         public int getTimesAsked() {
             return timesAsked;
+        }
+
+        /**
+         * Temporary, for removal
+         * @return Name of this ticket's destination room
+         */
+        public String getRoomIdentifier() {
+            return destination.getInformations().getName();
         }
 
         protected void increaseTimesAsked() {

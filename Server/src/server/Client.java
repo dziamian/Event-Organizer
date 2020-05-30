@@ -3,6 +3,7 @@ package server;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoDatabase;
 import network_structures.BaseMessage;
+import network_structures.NetworkMessage;
 import org.bson.Document;
 
 import java.io.IOException;
@@ -126,7 +127,7 @@ public class Client {
     }
 
     /** Empty procedure to override in inherited classes **/
-    protected void handlingRequests(ConcurrentLinkedQueue<BaseMessage> clientTaskQueue) throws IOException, ClassNotFoundException {
+    protected void handlingRequests(ConcurrentLinkedQueue<NetworkMessage> clientTaskQueue) throws IOException, ClassNotFoundException {
 
     }
 

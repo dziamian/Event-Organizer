@@ -2,6 +2,7 @@ package com.example.eventorganizer;
 
 import network_structures.BaseMessage;
 import network_structures.EventInfo;
+import network_structures.NetworkMessage;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -30,7 +31,7 @@ public class TaskManager implements Runnable {
     /** Lingering tasks, mostly processes waiting for additional data */
     private final ConcurrentLinkedQueue<BaseMessage> lingeringTasks;
     /** Messages enqueued for sending to server */
-    private final ConcurrentLinkedQueue<BaseMessage> messagesToSend;
+    private final ConcurrentLinkedQueue<NetworkMessage> messagesToSend;
 
     /** Server IP address */
     private static final String host = "10.0.2.2";
@@ -55,7 +56,7 @@ public class TaskManager implements Runnable {
 
     /**
      * Polls next message for interpretation
-     * @return Message from immediately completable queue
+     * @return Message from immediately completable queue or null if queue is empty
      */
     private BaseMessage pollIncomingMessage() {
         return incomingMessages.poll();
@@ -75,15 +76,15 @@ public class TaskManager implements Runnable {
      * @param message Message to send
      * @return True if message was successfully added, false otherwise - only returns false if out of memory
      */
-    private boolean sendMessage(BaseMessage message) {
+    private boolean sendMessage(NetworkMessage message) {
         return messagesToSend.offer(message);
     }
 
     /**
-     * Handler method for task from immediately completable tasks queue
-     * @param message Task to handle
+     * Handler method for incoming messages
+     * @param message Message to process
      */
-    private void receiveAndHandleMessage(BaseMessage message) {
+    private void handleMessage(BaseMessage message) {
         BaseMessage[] matchingAwaitingTasks = searchForMatchingLingeringTasks(message);
         if (matchingAwaitingTasks.length > 0) {
             for (BaseMessage matchingAwaitingTask : matchingAwaitingTasks) {
@@ -108,6 +109,20 @@ public class TaskManager implements Runnable {
      */
     @Override
     public void run() {
+        /*
+         * Possible server requests:
+         * 1. ping - check if server recognizes this client
+         * 2. login - log in to server providing credentials in args
+         * 3. eventInfo - request essential information about event, such as sectors / attractions list
+         * 4. viewTickets - view my tickets and their states
+         * 5. viewReservations - view my active reservation(s)
+         * 6. addTicket - add my ticket to specified room queue
+         * 7. removeTicket - remove specific one of my tickets
+         * 8. abandonReservation - abandon one of my reservations (will result in penalty)
+         * 9. update - request update on states of rooms and queues
+         * 10. details - request detailed information about specific room
+         * 11. grouping - answer grouping call with decision or send update with changed decision
+         */
         while (true) {
             while (!isConnected) {
                 BaseMessage task = pollIncomingMessage();
@@ -122,7 +137,7 @@ public class TaskManager implements Runnable {
             while (isConnected) {
                 BaseMessage task = pollIncomingMessage();
                 if (task != null)
-                    receiveAndHandleMessage(task);
+                    handleMessage(task);
             }
         }
     }
@@ -144,27 +159,27 @@ public class TaskManager implements Runnable {
     }
 
     /**
-     * Adds lingering tasks which attempts to login into server
-     * @param currentTask Task which requested login, following structure is expected:
+     * Adds lingering task which attempts to login into server
+     * @param message Incoming message which requested login, following structure is expected:
      *                    command: string "login"
      *                    args: array of two strings - first containing login, second containing password
      *                    data: array of two Runnable callbacks - first for success, second for failure
      */
-    private void loginToServer(BaseMessage currentTask) {
+    private void loginToServer(BaseMessage message) {
         long streamId = TaskManager.nextCommunicationStream();
         lingeringTasks.add(new BaseMessage(
                 "login",
                 null,
                 (CallLingeringTaskInterface) (msg) -> {
                     if (msg.getArgs()[0].equals("true")) {
-                        ((Runnable[]) currentTask.getData())[0].run();
+                        ((Runnable[]) message.getData())[0].run();
                     } else {
-                        ((Runnable[]) currentTask.getData())[1].run();
+                        ((Runnable[]) message.getData())[1].run();
                     }
                     return true;
                 }, streamId)
         );
-        sendMessage(new BaseMessage(currentTask.getCommand(), currentTask.getArgs(), null, streamId));
+        sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
     /**
@@ -207,25 +222,25 @@ public class TaskManager implements Runnable {
         /** Input stream to read data from */
         private final ObjectInputStream in;
         /** Interface for passing received messages to TaskManager */
-        private final PassMessageToTaskManagerInterface passMessageToTaskManagerInterface;
+        private final PassMessageToTaskManagerInterface taskManagerInterface;
 
         /**
          * Basic constructor
          * @param in Input stream linked with server
-         * @param passMessageToTaskManagerInterface Callback to pass message to
+         * @param taskManagerInterface Callback to pass message to
          */
-        public InputFromServer(ObjectInputStream in, PassMessageToTaskManagerInterface passMessageToTaskManagerInterface) {
+        public InputFromServer(ObjectInputStream in, PassMessageToTaskManagerInterface taskManagerInterface) {
             this.in = in;
-            this.passMessageToTaskManagerInterface = passMessageToTaskManagerInterface;
+            this.taskManagerInterface = taskManagerInterface;
         }
 
         /**
          * Reads message from server
          * @return Message from server if one was waiting in the buffer; null otherwise
          */
-        private BaseMessage receive() {
+        private NetworkMessage receive() {
             try {
-                return (BaseMessage) this.in.readObject();
+                return (NetworkMessage) this.in.readObject();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace(); //do zmiany pozniej
             } catch (IOException e) {
@@ -240,9 +255,9 @@ public class TaskManager implements Runnable {
         @Override
         public void run() {
             while (true) {
-                BaseMessage message = receive();
+                NetworkMessage message = receive();
                 if (message != null) {
-                    passMessageToTaskManagerInterface.add(message);
+                    taskManagerInterface.passMessage(message);
                 }
             }
         }
@@ -256,7 +271,7 @@ public class TaskManager implements Runnable {
              * @param message Message to add
              * @return True if successfully added the message, false otherwise
              */
-            boolean add(BaseMessage message);
+            boolean passMessage(BaseMessage message);
         }
     }
 
@@ -268,14 +283,14 @@ public class TaskManager implements Runnable {
         /** Output stream to write messages to */
         private final ObjectOutputStream out;
         /** Queue to send messages from */
-        private final ConcurrentLinkedQueue<BaseMessage> messagesToSend;
+        private final ConcurrentLinkedQueue<NetworkMessage> messagesToSend;
 
         /**
          * Basic constructor
          * @param out Output stream linked with server
          * @param messagesToSend Queue containing messages to send
          */
-        public OutputToServer(ObjectOutputStream out, ConcurrentLinkedQueue<BaseMessage> messagesToSend) {
+        public OutputToServer(ObjectOutputStream out, ConcurrentLinkedQueue<NetworkMessage> messagesToSend) {
             this.out = out;
             this.messagesToSend = messagesToSend;
         }
@@ -284,7 +299,7 @@ public class TaskManager implements Runnable {
          * Sends given message to server
          * @param message Message to send
          */
-        private void send(BaseMessage message) {
+        private void send(NetworkMessage message) {
             try {
                 this.out.writeObject(message);
             } catch (IOException e) {
@@ -298,7 +313,7 @@ public class TaskManager implements Runnable {
         @Override
         public void run() {
             while (true) {
-                BaseMessage message = messagesToSend.poll();
+                NetworkMessage message = messagesToSend.poll();
                 if (message != null) {
                     send(message);
                 }

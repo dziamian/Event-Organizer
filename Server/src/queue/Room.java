@@ -122,6 +122,14 @@ public class Room {
             queue.enqueue(queueTicket);
     }
 
+    /**
+     * Removes given group from this room's queue
+     * @param group Group to remove
+     */
+    public void removeGroupFromQueue(TourGroup group) {
+
+    }
+
     //INNER CLASSES-------------------------------------------------------------------------------------------------
 
     public class Reservation {

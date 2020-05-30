@@ -20,22 +20,6 @@ public class BaseMessage {
         this(command, args, data, 0L);
     }
 
-    public BaseMessage(String command, String[] args) {
-        this(command, args, null);
-    }
-
-    public BaseMessage(String command, Object data) {
-        this(command, null, data);
-    }
-
-    public BaseMessage(String command, long communicationIdentifier) {
-        this(command, null, null, communicationIdentifier);
-    }
-
-    public BaseMessage(String command) {
-        this(command, null, null);
-    }
-
     public String getCommand() {
         return command;
     }

@@ -33,6 +33,8 @@ public class Sector {
         return rooms.values();
     }
 
+    public Map<ObjectId, Room> getRoomsMapping() { return rooms; }
+
     public Room getRoom(ObjectId key) {
         return rooms.get(key);
     }
