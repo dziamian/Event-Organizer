@@ -105,10 +105,10 @@ public class Client {
                 Document userFindResult = database.getCollection("users").find(userData).first();
                 if (userFindResult != null) {
                     client = setPrivileges(client, userFindResult.getString("role"));
-                    client.out.writeObject(new BaseMessage("login", new String[] { "true" }, null, message.getCommunicationStream()));
+                    client.out.writeObject(new BaseMessage("login", new String[] { "true" }, null, message.getCommunicationIdentifier()));
                     break;
                 } else {
-                    client.out.writeObject(new BaseMessage("login", new String[] { "false" }, null, message.getCommunicationStream()));
+                    client.out.writeObject(new BaseMessage("login", new String[] { "false" }, null, message.getCommunicationIdentifier()));
                 }
             } else if ("ping".equals(message.getCommand())) {
                 ///.....

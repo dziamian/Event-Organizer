@@ -1,24 +1,23 @@
 package network_structures;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
-public class BaseMessage implements Serializable {
+public class BaseMessage {
 
     private final String command;
     private final String[] args; //Optional
     private final Object data;
-    private final int communicationStream;
+    private final long communicationIdentifier;
 
-    public BaseMessage(String command, String[] args, Object data, int communicationStream) {
-        this.communicationStream = communicationStream;
-        this.command = command;
-        this.args = args;
+    public BaseMessage(String command, String[] args, Object data, long communicationIdentifier) {
+        this.communicationIdentifier = communicationIdentifier;
+        this.command = (command != null ? command : "");
+        this.args = (args != null ? args : new String[0]);
         this.data = data;
     }
 
     public BaseMessage(String command, String[] args, Object data) {
-        this(command, args, data, 0);
+        this(command, args, data, 0L);
     }
 
     public BaseMessage(String command, String[] args) {
@@ -27,6 +26,10 @@ public class BaseMessage implements Serializable {
 
     public BaseMessage(String command, Object data) {
         this(command, null, data);
+    }
+
+    public BaseMessage(String command, long communicationIdentifier) {
+        this(command, null, null, communicationIdentifier);
     }
 
     public BaseMessage(String command) {
@@ -38,15 +41,15 @@ public class BaseMessage implements Serializable {
     }
 
     public String[] getArgs() {
-        return args != null ? Arrays.copyOf(args, args.length) : null;
+        return Arrays.copyOf(args, args.length);
     }
 
     public Object getData() {
         return data;
     }
 
-    public int getCommunicationStream() {
-        return communicationStream;
+    public long getCommunicationIdentifier() {
+        return communicationIdentifier;
     }
 
     @Override

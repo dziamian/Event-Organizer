@@ -19,15 +19,6 @@ import java.util.logging.Logger;
 import queue.Sector;
 import queue.Room;
 
-import javax.print.Doc;
-
-/*
- * Client messages recognized by server:
- * 1. error
- * 2. eventInfo
- * 3. login
- * 4. ping
- */
 public class Server {
     /** Main server thread task queue */
     private static final ConcurrentLinkedQueue<Task> taskManager = new ConcurrentLinkedQueue<>();
@@ -139,7 +130,24 @@ public class Server {
          * @param task Task to complete
          */
         private void handleTask(Task task) {
+            /*
+            * Client messages recognized by server:
+            * 1. error
+            * 2. eventInfo
+            * 3. login
+            * 4. ping
+            */
+            switch (task.getCommand()) {
+                case "ping": {
+                    task.getTaskQueueInterface().enqueue(new BaseMessage(
+                        "ping",
+                        task.getCommunicationIdentifier()
+                    ));
+                }
+                case "": {
 
+                }
+            }
         }
 
         /**

@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(false);
 
         alertDialog.setNeutralButton(R.string.connection_error_button, ((dialog, which) -> {
-            connectionToServer.addCurrentTask(new BaseMessage(
+            connectionToServer.addIncomingMessage(new BaseMessage(
                     "connect",
                     null,
                     (Runnable) () -> runOnUiThread(alertDialog::show)
@@ -41,14 +41,14 @@ public class MainActivity extends AppCompatActivity {
 
         new Thread(connectionToServer).start();
 
-        connectionToServer.addCurrentTask(new BaseMessage(
+        connectionToServer.addIncomingMessage(new BaseMessage(
                 "connect",
                 null,
                 (Runnable) () -> runOnUiThread(alertDialog::show)
         ));
 
         loginBtn.setOnClickListener((v) -> {
-            connectionToServer.addCurrentTask(new BaseMessage(
+            connectionToServer.addIncomingMessage(new BaseMessage(
                     "login",
                     new String[] { loginText.getText().toString(), passwordText.getText().toString() },
                     new Runnable[] { () -> { // prawidlowe zalogowanie
