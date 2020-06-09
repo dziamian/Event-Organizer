@@ -1,13 +1,18 @@
 package network_structures;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class BaseMessage {
+public class BaseMessage implements Serializable {
 
     private final String command;
     private final String[] args; //Optional
     private final Object data;
     private final long communicationIdentifier;
+
+    public BaseMessage() {
+        this(null, null, null, 0);
+    }
 
     public BaseMessage(String command, String[] args, Object data, long communicationIdentifier) {
         this.communicationIdentifier = communicationIdentifier;

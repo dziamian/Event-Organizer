@@ -3,6 +3,9 @@ package network_structures;
 import java.io.Serializable;
 
 public class NetworkMessage extends BaseMessage implements Serializable {
+
+    public NetworkMessage() { super(null, null, null, 0); }
+
     public NetworkMessage(String command, String[] args, Serializable data, long communicationIdentifier) {
         super(command, args, data, communicationIdentifier);
     }

@@ -2,7 +2,6 @@ package server;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoDatabase;
-import network_structures.BaseMessage;
 import network_structures.NetworkMessage;
 import org.bson.Document;
 
@@ -98,7 +97,7 @@ public class Client {
      */
     protected static Client loginToServer(Client client, MongoDatabase database) throws IOException, ClassNotFoundException {
         while (true) {
-            BaseMessage message = (BaseMessage) client.in.readObject();
+            NetworkMessage message = (NetworkMessage) client.in.readObject();
             if ("login".equals(message.getCommand())) {
                 BasicDBObject userData = new BasicDBObject();
                 userData.put("login", message.getArgs()[0]);
@@ -106,10 +105,10 @@ public class Client {
                 Document userFindResult = database.getCollection("users").find(userData).first();
                 if (userFindResult != null) {
                     client = setPrivileges(client, userFindResult.getString("role"));
-                    client.out.writeObject(new BaseMessage("login", new String[] { "true" }, null, message.getCommunicationIdentifier()));
+                    client.out.writeObject(new NetworkMessage("login", new String[] { "true" }, null, message.getCommunicationIdentifier()));
                     break;
                 } else {
-                    client.out.writeObject(new BaseMessage("login", new String[] { "false" }, null, message.getCommunicationIdentifier()));
+                    client.out.writeObject(new NetworkMessage("login", new String[] { "false" }, null, message.getCommunicationIdentifier()));
                 }
             } else if ("ping".equals(message.getCommand())) {
                 ///.....
@@ -123,7 +122,7 @@ public class Client {
      * @throws IOException When socket is unable to send message
      */
     protected final void sendStartingData() throws IOException {
-        this.out.writeObject(new BaseMessage("eventDetails", null, Server.getStartupData()));
+        this.out.writeObject(new NetworkMessage("eventDetails", null, Server.getStartupData(), 0));
     }
 
     /**
