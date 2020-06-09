@@ -2,7 +2,8 @@ package server;
 
 import com.mongodb.client.*;
 import network_structures.BaseMessage;
-import network_structures.EventInfo;
+import network_structures.EventInfoFixed;
+import network_structures.EventInfoUpdate;
 import network_structures.NetworkMessage;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -35,10 +36,11 @@ public class Server {
 
     // private static MongoClient mongoClient;
 
-    private static Map<ObjectId, Sector> sectors = new TreeMap<>();
-    //private static Map<ObjectId, Room.RoomQueue>
-    private static EventInfo startupData = new EventInfo();
-    private static int sectorsSize = 0;
+    private final static Map<ObjectId, Sector> sectors = new TreeMap<>();
+    //
+    private static EventInfoFixed eventInfoFixed = new EventInfoFixed();
+    //
+    private static EventInfoUpdate eventInfoUpdate = new EventInfoUpdate();
 
     /// Delay defining frequency for passive server to check for activation condition
     private static final long DATE_CHECKING_DELAY = 1000;
@@ -78,8 +80,12 @@ public class Server {
      * Getter for event information
      * @return Event information
      */
-    public static EventInfo getStartupData() {
-        return startupData;
+    public static EventInfoFixed getEventInfoFixed() {
+        return eventInfoFixed;
+    }
+
+    public static EventInfoUpdate getEventInfoUpdate() {
+        return eventInfoUpdate;
     }
 
     /**
@@ -104,16 +110,14 @@ public class Server {
             FindIterable<Document> roomsOfSector = database.getCollection("sector" + sectorId.toString()).find();
             Sector sector = new Sector(sectorId, sectorName, sectorAddress, sectorDescription);
             sectors.put(sectorId, sector);
-            startupData.getSectors().put(sectorId, sector.getInformations());
-            ++sectorsSize;
+            eventInfoFixed.getSectors().put(sectorId, sector.getInfoFixed());
             for (Document room : roomsOfSector) {
                 ObjectId roomId = room.getObjectId("_id");
                 String roomName = room.getString("name");
                 String roomLocation = room.getString("location");
                 String roomDescription = room.getString("description");
-                Room newRoom = new Room(roomName, roomLocation, roomDescription, 1);
+                Room newRoom = new Room(roomId, roomName, roomLocation, roomDescription, 1, sector);
                 sector.addRoom(roomId, newRoom);
-                sector.getInformations().rooms.put(roomId, newRoom.getInformations());
             }
         }
 
@@ -159,7 +163,7 @@ public class Server {
                     task.getResponseInterface().respond(new NetworkMessage(
                         "eventInfo",
                         null,
-                        Server.getStartupData(),
+                        Server.getEventInfoFixed(),
                         task.getCommunicationIdentifier()
                     ));
                 } break;
@@ -230,7 +234,7 @@ public class Server {
                     task.getResponseInterface().respond(new NetworkMessage(
                             "update",
                             null,
-                            sectors.get(new ObjectId(task.getArgs()[0])).getInformations(),
+                            sectors.get(new ObjectId(task.getArgs()[0])).getInfoFixed(),
                             task.getCommunicationIdentifier()
                     ));
                 } break;
@@ -275,9 +279,9 @@ public class Server {
 
             // Checking if every sector and room has been loaded properly //
             for (Sector sector : sectors.values()) {
-                System.out.println(sector.getInformations().name + ":");
+                System.out.println(sector.getInfoFixed().getName() + ":");
                 for (Room room : sector.getRooms()) {
-                    System.out.println("\tRoom " + room.getInformations().getName());
+                    System.out.println("\tRoom " + room.getInfoFixed().getName());
                     System.out.println("\t\tRoom State: " + room.getState());
                 }
             }

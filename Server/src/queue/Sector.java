@@ -1,6 +1,7 @@
 package queue;
 
-import network_structures.SectorInfo;
+import network_structures.SectorInfoFixed;
+import network_structures.SectorInfoUpdate;
 import org.bson.types.ObjectId;
 
 import java.util.Collection;
@@ -9,24 +10,29 @@ import java.util.TreeMap;
 
 public class Sector {
 
-    private final SectorInfo informations;
+    private final SectorInfoFixed infoFixed;
+    private final SectorInfoUpdate infoUpdate;
 
     private Map<ObjectId,Room> rooms;
     private int currentSize;
 
     public Sector(ObjectId id, String name, String address, String description) {
-        this.informations = new SectorInfo(id, name, address, description);
+        this.infoFixed = new SectorInfoFixed(id, name, address, description);
+        this.infoUpdate = new SectorInfoUpdate(id);
         this.rooms = new TreeMap<>();
         this.currentSize = 0;
     }
 
-    public SectorInfo getInformations() {
-        return informations;
+    public SectorInfoFixed getInfoFixed() {
+        return infoFixed;
     }
 
     public void addRoom(ObjectId key, Room room) {
         rooms.put(key,room);
+        infoFixed.getRooms().put(key, room.getInfoFixed());
         ++currentSize;
+        infoUpdate.getRooms().put(key, room.getInfoUpdate());
+        infoUpdate.setActiveRooms(infoUpdate.getActiveRooms()+1);
     }
 
     public Collection<Room> getRooms() {

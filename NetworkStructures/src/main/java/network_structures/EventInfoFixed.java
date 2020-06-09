@@ -9,15 +9,15 @@ import java.util.TreeMap;
 /**
  * Class containing unchanging information about event
  */
-public class EventInfo implements Serializable {
+public class EventInfoFixed implements Serializable {
 
-    private Map<ObjectId, SectorInfo> sectors;
+    private final Map<ObjectId, SectorInfoFixed> sectors;
 
-    public EventInfo() {
+    public EventInfoFixed() {
         this.sectors = new TreeMap<>();
     }
 
-    public Map<ObjectId, SectorInfo> getSectors() {
+    public Map<ObjectId, SectorInfoFixed> getSectors() {
         return sectors;
     }
 }

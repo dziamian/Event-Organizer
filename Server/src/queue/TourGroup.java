@@ -1,7 +1,5 @@
 package queue;
 
-import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.util.ArrayList;
 
 public class TourGroup {
@@ -107,7 +105,7 @@ public class TourGroup {
          * @return Name of this ticket's destination room
          */
         public String getRoomIdentifier() {
-            return destination.getInformations().getName();
+            return destination.getInfoFixed().getName();
         }
 
         protected void increaseTimesAsked() {

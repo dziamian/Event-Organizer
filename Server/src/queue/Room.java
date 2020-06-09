@@ -1,13 +1,18 @@
 package queue;
 
-import network_structures.RoomInfo;
+import network_structures.RoomInfoFixed;
+import network_structures.RoomInfoUpdate;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.Date;
 
 public class Room {
 
-    private RoomInfo informations;
+    private Sector parentSector;
+
+    private RoomInfoFixed infoFixed;
+    private RoomInfoUpdate infoUpdate;
 
     public enum State {
         OPEN,
@@ -26,16 +31,22 @@ public class Room {
     private static final int RESERVATIONS_UPDATE_CHECK_DELAY = 1000;
     protected RoomQueue queue;
 
-    public Room(String name, String location, String description, int maxSlots) {
-        this.informations = new RoomInfo(name, location, description);
+    public Room(ObjectId id, String name, String location, String description, int maxSlots, Sector parentSector) {
+        this.infoFixed = new RoomInfoFixed(id, name, location, description);
+        this.infoUpdate = new RoomInfoUpdate(id);
         this.maxSlots = maxSlots;
         this.queue = new RoomQueue(this);
         changeState(State.OPEN);
         this.currentVisitors = new ArrayList<>();
         this.currentReservations = new ArrayList<>();
+        this.parentSector = parentSector;
     }
 
-    public RoomInfo getInformations() { return informations; }
+    public RoomInfoFixed getInfoFixed() { return infoFixed; }
+
+    public RoomInfoUpdate getInfoUpdate() {
+        return infoUpdate;
+    }
 
     public State getState() {
         return state;
@@ -43,7 +54,10 @@ public class Room {
 
     private void changeState(State state) {
         this.state = state;
+        this.infoUpdate.setState(this.state.toString());
         this.lastStateChange = new Date();
+
+        // if room's state is inactive then --parentSector.roomsActive;
     }
 
     private Reservation createReservation(TourGroup group) {
@@ -118,8 +132,10 @@ public class Room {
 
     public void addGroupToQueue(TourGroup group) {
         TourGroup.QueueTicket queueTicket = group.createTicket(this);
-        if (queueTicket != null)
-            queue.enqueue(queueTicket);
+        if (queueTicket != null) {
+            this.queue.enqueue(queueTicket);
+            this.infoUpdate.setQueueSize(infoUpdate.getQueueSize()+1);
+        }
     }
 
     /**

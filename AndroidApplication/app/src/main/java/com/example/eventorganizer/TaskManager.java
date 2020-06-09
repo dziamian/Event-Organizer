@@ -1,7 +1,7 @@
 package com.example.eventorganizer;
 
 import network_structures.BaseMessage;
-import network_structures.EventInfo;
+import network_structures.EventInfoFixed;
 import network_structures.NetworkMessage;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class TaskManager implements Runnable {
     /** Connection state flag */
     private boolean isConnected;
     /** Event information, mostly unchanging */
-    public static EventInfo eventInfo;
+    public static EventInfoFixed eventInfoFixed;
 
     /**
      * Default constructor, does not initialize this object completely
@@ -98,7 +98,7 @@ public class TaskManager implements Runnable {
                     loginToServer(message);
                 } break;
                 case "eventDetails": {
-                    eventInfo = (EventInfo) message.getData();
+                    eventInfoFixed = (EventInfoFixed) message.getData();
                 } break;
             }
         }

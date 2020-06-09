@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import org.bson.types.ObjectId;
 
-import network_structures.SectorInfo;
+import network_structures.SectorInfoFixed;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -56,18 +56,18 @@ public class SectorRoomsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ObjectId sectorId = new ObjectId(mSectorId);
-        SectorInfo sectorInfo = TaskManager.eventInfo.getSectors().get(sectorId);
+        SectorInfoFixed sectorInfoFixed = TaskManager.eventInfoFixed.getSectors().get(sectorId);
 
         ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(true);
-        ((HomeActivity) getActivity()).rooms.setTitle("Sektory - " + sectorInfo.name);
-        getActivity().setTitle(sectorInfo.name);
+        ((HomeActivity) getActivity()).rooms.setTitle("Sektory - " + sectorInfoFixed.getName());
+        getActivity().setTitle(sectorInfoFixed.getName());
         ((HomeActivity) getActivity()).navigationView.setCheckedItem(R.id.nav_rooms);
         ((HomeActivity) getActivity()).setSelectedItemId(R.id.nav_rooms);
 
         View rootView = inflater.inflate(R.layout.fragment_sector_rooms, container, false);
 
         ArrayList<RoomLayout> roomList = new ArrayList<>();
-        sectorInfo.rooms.values().forEach(roomInfo -> roomList.add(new RoomLayout(roomInfo)));
+        sectorInfoFixed.getRooms().values().forEach(roomInfo -> roomList.add(new RoomLayout(roomInfo)));
 
         ListView listView = rootView.findViewById(R.id.room_list_view);
         listView.setAdapter(new ItemListAdapter<>(getActivity(), roomList));

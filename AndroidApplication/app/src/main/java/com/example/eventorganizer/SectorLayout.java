@@ -3,16 +3,16 @@ package com.example.eventorganizer;
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
-import network_structures.SectorInfo;
+import network_structures.SectorInfoFixed;
 
 public class SectorLayout extends ItemLayout {
 
-    private final SectorInfo sectorInfo;
+    private final SectorInfoFixed sectorInfoFixed;
     private SectorLayoutHolder sectorLayoutHolder;
 
-    public SectorLayout(SectorInfo sectorInfo) {
+    public SectorLayout(SectorInfoFixed sectorInfoFixed) {
         super(R.layout.sector_item);
-        this.sectorInfo = sectorInfo;
+        this.sectorInfoFixed = sectorInfoFixed;
         this.sectorLayoutHolder = new SectorLayoutHolder();
     }
 
@@ -27,12 +27,12 @@ public class SectorLayout extends ItemLayout {
         sectorLayoutHolder.textViewAddress = view.findViewById(R.id.sector_address);
         sectorLayoutHolder.textViewAvailableRooms = view.findViewById(R.id.sector_available_rooms);
 
-        sectorLayoutHolder.textViewName.setText(sectorInfo.name);
-        sectorLayoutHolder.textViewAddress.setText(sectorInfo.address);
-        sectorLayoutHolder.textViewAvailableRooms.setText("Aktywne atrakcje: " + sectorInfo.rooms.size());
+        sectorLayoutHolder.textViewName.setText(sectorInfoFixed.getName());
+        sectorLayoutHolder.textViewAddress.setText(sectorInfoFixed.getAddress());
+        sectorLayoutHolder.textViewAvailableRooms.setText("Aktywne atrakcje: " + sectorInfoFixed.getRooms().size());
 
         view.findViewById(R.id.sector_field).setOnClickListener(v -> {
-            ((HomeActivity) context).setRoomActivity(sectorInfo.id);
+            ((HomeActivity) context).setRoomActivity(sectorInfoFixed.getId());
         });
     }
 

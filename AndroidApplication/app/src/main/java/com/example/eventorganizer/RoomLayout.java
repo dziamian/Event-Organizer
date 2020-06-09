@@ -3,16 +3,16 @@ package com.example.eventorganizer;
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
-import network_structures.RoomInfo;
+import network_structures.RoomInfoFixed;
 
 public class RoomLayout extends ItemLayout {
 
-    private final RoomInfo roomInfo;
+    private final RoomInfoFixed roomInfoFixed;
     private RoomLayoutHolder roomLayoutHolder;
 
-    public RoomLayout(RoomInfo roomInfo) {
+    public RoomLayout(RoomInfoFixed roomInfoFixed) {
         super(R.layout.room_item);
-        this.roomInfo = roomInfo;
+        this.roomInfoFixed = roomInfoFixed;
         this.roomLayoutHolder = new RoomLayoutHolder();
     }
 
@@ -28,8 +28,8 @@ public class RoomLayout extends ItemLayout {
         roomLayoutHolder.textViewStateDetails = view.findViewById(R.id.room_state_details);
         roomLayoutHolder.textViewState = view.findViewById(R.id.room_state);
 
-        roomLayoutHolder.textViewName.setText(roomInfo.getName());
-        roomLayoutHolder.textViewLocation.setText(roomInfo.getLocation());
+        roomLayoutHolder.textViewName.setText(roomInfoFixed.getName());
+        roomLayoutHolder.textViewLocation.setText(roomInfoFixed.getLocation());
         roomLayoutHolder.textViewStateDetails.setText("Grup w kolejce: " + 0);
         roomLayoutHolder.textViewState.setText("Dostępny!");
 

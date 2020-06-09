@@ -122,7 +122,7 @@ public class Client {
      * @throws IOException When socket is unable to send message
      */
     protected final void sendStartingData() throws IOException {
-        this.out.writeObject(new NetworkMessage("eventDetails", null, Server.getStartupData(), 0));
+        this.out.writeObject(new NetworkMessage("eventDetails", null, Server.getEventInfoFixed(), 0));
     }
 
     /**
@@ -139,10 +139,17 @@ public class Client {
                 out.writeObject(outgoingMessage);
             }
             incomingMessage = (NetworkMessage)in.readObject();
-            Server.enqueueTask(new Server.Task(
-                        incomingMessage,
-                        clientMessageQueue::offer
-            ));
+            switch (incomingMessage.getCommand()) {
+                case "update": {
+
+                } break;
+                default: {
+                    Server.enqueueTask(new Server.Task(
+                            incomingMessage,
+                            clientMessageQueue::offer
+                    ));
+                } break;
+            }
         }
     }
 

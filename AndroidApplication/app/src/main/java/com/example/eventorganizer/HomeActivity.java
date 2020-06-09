@@ -1,6 +1,5 @@
 package com.example.eventorganizer;
 
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -12,7 +11,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import com.google.android.material.navigation.NavigationView;
-import network_structures.SectorInfo;
 import org.bson.types.ObjectId;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
