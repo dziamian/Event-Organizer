@@ -1,19 +1,25 @@
 package server;
 
-import java.net.Socket;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * System moderator account class
  */
 public class Moderator extends Client {
 
-    public Moderator(Socket socket) {
-        super(socket);
+    public Moderator(ObjectOutputStream out, ObjectInputStream in) {
+        super(out, in);
     }
 
-    public Moderator(Client client) {
-        super(client);
+    @Override
+    protected void handlingInput() {
+
     }
 
+    @Override
+    protected void handlingOutput() {
+
+    }
 
 }

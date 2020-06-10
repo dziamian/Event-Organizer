@@ -88,6 +88,10 @@ public class Server {
         return eventInfoUpdate;
     }
 
+    public static MongoDatabase getDatabase() {
+        return database;
+    }
+
     /**
      * Enqueues task for completion by system thread
      * @param task Task for main thread
@@ -287,12 +291,12 @@ public class Server {
             }
 
             // Main server task queue
-            while (true) {
+            /*while (true) {
                 Task task = receivedTasks.poll();
                 if (task != null) {
                     handleTask(task);
                 }
-            }
+            }*/
         }
     }
 
@@ -326,17 +330,28 @@ public class Server {
      * Client handler task running on separate thread, responsible for communication between client and main thread
      */
     private static class ClientHandler implements Runnable {
+        /// TODO
+        public static final int TIMEOUT_MS = 15 * 60 * 1000;
         /** Server responses queue */
-        ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue;
-        /** Client handled */
-        Client client;
+        //ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue;
+        /** Socket connected to client */
+        private final Socket socket;
 
         /**
          * @param socket Socket connected to client
          */
         public ClientHandler(Socket socket) {
-            this.client = new Client(socket);
-            this.clientMessageQueue = new ConcurrentLinkedQueue<>();
+            this.socket = socket;
+            //this.clientMessageQueue = new ConcurrentLinkedQueue<>();
+        }
+
+        /**
+         * Information about specific client's socket for use by admin
+         * @return String containing socket address, host name and port used
+         */
+        @Override
+        public String toString() {
+            return socket.getInetAddress().getHostName() + ":" + socket.getPort();
         }
 
         /**
@@ -344,31 +359,40 @@ public class Server {
          */
         @Override
         public void run() {
+            ObjectOutputStream out = null;
+            ObjectInputStream in = null;
+            Client client = null;
             try {
-                System.out.println("Client (" + client.getSocketInfo() + ") connected!");
+                System.out.println("Client (" + this.toString() + ") connected!");
 
-                client.setConnectionSettings(15 * 60 * 1000);
+                this.socket.setSoTimeout(TIMEOUT_MS);
+                out = new ObjectOutputStream(this.socket.getOutputStream());
+                in = new ObjectInputStream(this.socket.getInputStream());
 
-                client = Client.loginToServer(client, database);
+                while (client == null) {
+                    client = Client.createSpecifiedClient(out, in);
+                }
                 client.sendStartingData();
-
                 clients.add(client);
-
-                client.handlingRequests(clientMessageQueue);
-
+                new Thread(client::handlingInput).start();
+                client.handlingOutput();
             } catch (NoSuchElementException ex) {
-                System.out.println("Client (" + client.getSocketInfo() + ") is not responding!");
-                try { client.out.writeObject("TIMED_OUT"); } catch (IOException e) { System.out.println("Server exception: " + ex.getMessage()); }
+                System.err.println("Client (" + this.toString() + ") is not responding!");
+                if (out != null) {
+                    try {
+                        out.writeObject("TIMED_OUT");
+                    } catch (IOException e) {
+                        System.out.println("Server exception: " + ex.getMessage());
+                    }
+                }
             } catch (IOException ex) {
-                System.out.println("Server exception: " + ex.getMessage());
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                System.err.println("Server exception: " + ex.getMessage());
             } finally {
-                if (client.out != null) {
+                if (out != null) {
                     clients.remove(client);
                 }
-                try { client.socket.close(); } catch(Exception ex) { System.out.println(ex.getMessage()); }
-                System.out.println("Connection with (" + client.getSocketInfo() + ") has been closed!");
+                try { socket.close(); } catch(Exception ex) { System.out.println(ex.getMessage()); }
+                System.out.println("Connection with (" + this.toString() + ") has been closed!");
             }
         }
 

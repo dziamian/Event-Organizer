@@ -1,14 +1,12 @@
 package server;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.client.MongoDatabase;
 import network_structures.NetworkMessage;
 import org.bson.Document;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -16,103 +14,61 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * Currently created only when client connects with the system and used only to construct a derived class of
  * specified role (eg. Guide) once identified, should be changed into abstract class in the future
  */
-public class Client {
+public abstract class Client {
 
-    /** Socket connected with client */
-    protected Socket socket;
-    /** Stream for receiving information from this specific client */
-    protected ObjectInputStream in;
+    /// TODO
+    protected ConcurrentLinkedQueue<NetworkMessage> outgoingMessages;
     /** Stream for sending information to this specific client */
     protected ObjectOutputStream out;
+    /** Stream for receiving information from this specific client */
+    protected ObjectInputStream in;
 
-    /**
-     * Base constructor, requires only functioning socket connection for setup
-     * @param socket Valid socket to connect with client - should be exclusive for this object
-     */
-    public Client(Socket socket) {
-        this.socket = socket;
+    /// TODO
+    public Client(ObjectOutputStream out, ObjectInputStream in) {
+        this.outgoingMessages = new ConcurrentLinkedQueue<>();
+        this.out = out;
+        this.in = in;
     }
 
-    /**
-     * Default shallow copy constructor
-     * @param client Client to copy
-     */
-    protected Client(Client client) {
-        this.socket = client.socket;
-        this.in = client.in;
-        this.out = client.out;
-    }
-
-    /**
-     * Information about specific client's socket for use by admin
-     * @return String containing socket address, host name and port used
-     */
-    public String getSocketInfo() {
-        return socket.getInetAddress().getHostName() + ":" + socket.getPort();
-    }
-
-    /**
-     * Sets various characteristics of this connection
-     * @param timeout Time client can be unresponsive before disconnecting with him
-     * @throws IOException When socket does not function properly
-     */
-    public final void setConnectionSettings(int timeout) throws IOException {
-        this.socket.setSoTimeout(timeout);
-        this.in = new ObjectInputStream(socket.getInputStream());
-        this.out = new ObjectOutputStream(socket.getOutputStream());
-    }
-
-    /**
-     * Assigns specific role for this client, creating new representation in the process
-     * @param client Client to receive new role
-     * @param role Role to assign
-     * @return New instance of derived, role-specific class
-     */
-    private static Client setPrivileges(Client client, String role) {
-        switch (role) {
-            case "G": {
-                client = new Guide(client);
-            } break;
-            case "P": {
-                client = new Presenter(client);
-            } break;
-            case "M": {
-                client = new Moderator(client);
-            } break;
-            case "A": {
-                client = new Administrator(client);
-            } break;
-        }
-        return client;
-    }
-
-    /**
-     * @deprecated Attempts to login client to the system by searching for his credentials within provided database
-     * Might be removed during future Client rework
-     * @param client Client to log in
-     * @param database Database containing user credentials
-     * @return Logged-in client
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
-    protected static Client loginToServer(Client client, MongoDatabase database) throws IOException, ClassNotFoundException {
-        while (true) {
-            NetworkMessage message = (NetworkMessage) client.in.readObject();
+    /// TODO
+    public static Client createSpecifiedClient(ObjectOutputStream out, ObjectInputStream in) {
+        Client client = null;
+        try {
+            NetworkMessage message = (NetworkMessage) in.readObject();
             if ("login".equals(message.getCommand())) {
                 BasicDBObject userData = new BasicDBObject();
                 userData.put("login", message.getArgs()[0]);
                 userData.put("password", message.getArgs()[1]);
-                Document userFindResult = database.getCollection("users").find(userData).first();
+                Document userFindResult = Server.getDatabase().getCollection("users").find(userData).first();
                 if (userFindResult != null) {
-                    client = setPrivileges(client, userFindResult.getString("role"));
-                    client.out.writeObject(new NetworkMessage("login", new String[] { "true" }, null, message.getCommunicationIdentifier()));
-                    break;
+                    switch (userFindResult.getString("role")) {
+                        case "G": {
+                            client = new Guide(out, in);
+                        }
+                        break;
+                        case "P": {
+                            client = new Presenter(out, in);
+                        }
+                        break;
+                        case "M": {
+                            client = new Moderator(out, in);
+                        }
+                        break;
+                        case "A": {
+                            client = new Administrator(out, in);
+                        }
+                        break;
+                    }
+                    out.writeObject(new NetworkMessage("login", new String[]{"true"}, null, message.getCommunicationIdentifier()));
                 } else {
-                    client.out.writeObject(new NetworkMessage("login", new String[] { "false" }, null, message.getCommunicationIdentifier()));
+                    out.writeObject(new NetworkMessage("login", new String[]{"false"}, null, message.getCommunicationIdentifier()));
                 }
             } else if ("ping".equals(message.getCommand())) {
-                ///.....
+                out.writeObject(new NetworkMessage("ping", null, null, message.getCommunicationIdentifier()));
             }
+        } catch (IOException | ClassNotFoundException ex) {
+            System.err.println(ex.getMessage());
+            return client;
         }
         return client;
     }
@@ -125,36 +81,14 @@ public class Client {
         this.out.writeObject(new NetworkMessage("eventDetails", null, Server.getEventInfoFixed(), 0));
     }
 
-    /**
-     * Default main loop for handling client communication
-     * @param clientMessageQueue Message queue to poll messages for sending to client from
-     * @throws IOException When socket or stream is closed
-     * @throws ClassNotFoundException When program file structure is incorrect
-     */
-    protected void handlingRequests(ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue) throws IOException, ClassNotFoundException {
-        NetworkMessage outgoingMessage = null;
-        NetworkMessage incomingMessage = null;
-    	while (true) {
-            while ((outgoingMessage = clientMessageQueue.poll()) != null) {
-                out.writeObject(outgoingMessage);
-            }
-            incomingMessage = (NetworkMessage)in.readObject();
-            switch (incomingMessage.getCommand()) {
-                case "update": {
+    /// TODO
+    protected abstract void handlingInput();
 
-                } break;
-                default: {
-                    Server.enqueueTask(new Server.Task(
-                            incomingMessage,
-                            clientMessageQueue::offer
-                    ));
-                } break;
-            }
-        }
+    /// TODO
+    public boolean addMessage(NetworkMessage message) {
+        return outgoingMessages.offer(message);
     }
 
-    /** Empty procedure to override in inherited classes **/
-    protected void chooseProcedure() {
-
-    }
+    /// TODO
+    protected abstract void handlingOutput();
 }

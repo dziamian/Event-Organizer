@@ -1,17 +1,25 @@
 package server;
 
-import java.net.Socket;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * System administrator account class
  */
 public class Administrator extends Client{
 
-    public Administrator(Socket socket) {
-        super(socket);
+    public Administrator(ObjectOutputStream out, ObjectInputStream in) {
+        super(out, in);
     }
 
-    public Administrator(Client client) {
-        super(client);
+    @Override
+    protected void handlingInput() {
+
     }
+
+    @Override
+    protected void handlingOutput() {
+
+    }
+
 }

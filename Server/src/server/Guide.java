@@ -1,64 +1,44 @@
 package server;
 
-import network_structures.BaseMessage;
 import network_structures.NetworkMessage;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class Guide extends Client {
 
-    private static final String[] commands = { "" };
-
-    public Guide(Socket socket) {
-        super(socket);
+    public Guide(ObjectOutputStream out, ObjectInputStream in) {
+        super(out, in);
     }
 
-    public Guide(Client client) {
-        super(client);
-    }
-
-    public static String[] getCommands() {
-        return commands;
-    }
-
-    private static boolean isCommandRecognized(String command) {
-        for (String value : commands) {
-            if (command.equals(value)) {
-                return true;
+    @Override
+    protected void handlingInput() {
+        while (true) {
+            try {
+                NetworkMessage message = (NetworkMessage) in.readObject();
+                switch (message.getCommand()) {
+                    case "update": {
+                        addMessage(new NetworkMessage("update", new String[] { "true" }, Server.getEventInfoUpdate(), message.getCommunicationIdentifier()));
+                    } break;
+                    default: {
+                        addMessage(new NetworkMessage("error", new String[] {"invalid_command"}, null, message.getCommunicationIdentifier()));
+                    } break;
+                }
+            } catch (IOException | ClassNotFoundException ex) {
+                System.err.println(ex.getMessage());
             }
-        }
-        return false;
-    }
-
-    private static void addToQueue(BaseMessage msg) {
-
-    }
-
-    private static void removeFromQueue(BaseMessage msg) {
-
-    }
-
-    protected void chooseProcedure(BaseMessage message) {
-        switch (message.getCommand()) {
-            case "addToQueue":
-                addToQueue(message);
         }
     }
 
     @Override
-    final protected void handlingRequests(ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue) throws IOException, ClassNotFoundException {
-        while(true) {
-            BaseMessage message = (BaseMessage) in.readObject();
-            if (isCommandRecognized(message.getCommand())) {
-                Server.enqueueTask(new Server.Task(message, clientMessageQueue::offer));
-            } else {
-                this.out.writeObject(new BaseMessage(
-                        "error",
-                        new String[] { "invalidCommand" },
-                        null)
-                );
+    protected void handlingOutput() {
+        while (true) {
+            NetworkMessage message = outgoingMessages.poll();
+            try {
+                out.writeObject(message);
+            } catch (IOException ex) {
+                System.err.println(ex.getMessage());
             }
         }
     }

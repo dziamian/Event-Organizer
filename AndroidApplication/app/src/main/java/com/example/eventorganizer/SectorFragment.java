@@ -59,8 +59,7 @@ public class SectorFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(false);
         Objects.requireNonNull(getActivity()).setTitle(mTitle);
         ((HomeActivity)getActivity()).navigationView.setCheckedItem(R.id.nav_sectors);

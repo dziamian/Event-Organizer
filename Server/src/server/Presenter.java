@@ -1,17 +1,24 @@
 package server;
 
-import java.net.Socket;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * System presenter account class
  */
 public class Presenter extends Client {
 
-    public Presenter(Socket socket) {
-        super(socket);
+    public Presenter(ObjectOutputStream out, ObjectInputStream in) {
+        super(out, in);
     }
 
-    public Presenter(Client client) {
-        super(client);
+    @Override
+    protected void handlingInput() {
+
+    }
+
+    @Override
+    protected void handlingOutput() {
+
     }
 }
