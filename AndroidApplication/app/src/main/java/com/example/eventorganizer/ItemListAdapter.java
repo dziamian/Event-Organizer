@@ -40,7 +40,7 @@ public class ItemListAdapter<T extends ItemLayout> extends BaseAdapter {
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         T layout = layoutList.get(position);
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(layout.getResourceId(), null);
+            convertView = LayoutInflater.from(context).inflate(ItemLayout.getResourceId(), null);
             layout.setLayout(convertView, context);
 
             convertView.setTag(layout.getItemHolder());

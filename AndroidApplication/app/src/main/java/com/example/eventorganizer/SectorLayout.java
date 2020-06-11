@@ -1,12 +1,10 @@
 package com.example.eventorganizer;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import network_structures.EventInfoUpdate;
 import network_structures.SectorInfoFixed;
-import network_structures.SectorInfoUpdate;
 
 public class SectorLayout extends ItemLayout {
 

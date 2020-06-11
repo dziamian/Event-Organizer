@@ -1,7 +1,9 @@
 package server;
 
+import network_structures.EventInfoUpdate;
 import network_structures.NetworkMessage;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -14,19 +16,19 @@ public class Guide extends Client {
     }
 
     @Override
-    protected void handlingInput() throws SocketTimeoutException {
+    protected void handlingInput() throws SocketTimeoutException, EOFException {
         while (true) {
             try {
                 NetworkMessage message = (NetworkMessage) in.readObject();
                 switch (message.getCommand()) {
                     case "update": {
-                        addMessage(new NetworkMessage("update", new String[] { "true" }, Server.getEventInfoUpdate(), message.getCommunicationIdentifier()));
+                        addMessage(new NetworkMessage("update", new String[]{"true"}, Server.getEventInfoUpdate(), message.getCommunicationIdentifier()));
                     } break;
                     default: {
                         addMessage(new NetworkMessage("error", new String[] {"invalid_command"}, null, message.getCommunicationIdentifier()));
                     } break;
                 }
-            } catch (SocketTimeoutException ex) {
+            } catch (SocketTimeoutException | EOFException ex) {
                 throw ex;
             } catch (IOException ex) {
                 System.err.println("[Guide-handlingInput()]: IOException - " + ex.getMessage());

@@ -31,7 +31,7 @@ public class TaskManager implements Runnable {
     /** Messages for immediate  */
     private final ConcurrentLinkedQueue<BaseMessage> incomingMessages;
     /** Lingering tasks, mostly processes waiting for additional data */
-    private final ConcurrentLinkedQueue<BaseMessage> lingeringTasks;
+    private final ConcurrentLinkedQueue<LingeringTask> lingeringTasks;
     /** Messages enqueued for sending to server */
     private final ConcurrentLinkedQueue<NetworkMessage> messagesToSend;
 
@@ -41,6 +41,12 @@ public class TaskManager implements Runnable {
     private static final int port = 9999;
     /** Socket connecting with server */
     private Socket socket = null;
+
+    /// TODO
+    private static final long UPDATE_DELAY_MS = 1000;
+
+    /// TODO
+    private static final int TIMEOUT_MS = 10 * 1000;
 
     /** Connection state flag */
     private boolean isConnected;
@@ -89,10 +95,10 @@ public class TaskManager implements Runnable {
      * @param message Message to process
      */
     private void handleMessage(BaseMessage message) {
-        BaseMessage[] matchingAwaitingTasks = searchForMatchingLingeringTasks(message);
+        LingeringTask[] matchingAwaitingTasks = searchForMatchingLingeringTasks(message);
         if (matchingAwaitingTasks.length > 0) {
-            for (BaseMessage matchingAwaitingTask : matchingAwaitingTasks) {
-                if (((CallLingeringTaskInterface) matchingAwaitingTask.getData()).callLingeringTaskOn(message)) {
+            for (LingeringTask matchingAwaitingTask : matchingAwaitingTasks) {
+                if (matchingAwaitingTask.getCallable().callOn(message)) {
                     lingeringTasks.remove(matchingAwaitingTask);
                 }
             }
@@ -105,7 +111,7 @@ public class TaskManager implements Runnable {
                     eventInfoFixed = (EventInfoFixed) message.getData();
                 } break;
                 case "update": {
-                    requestUpdate(message);
+                    startRequestingUpdates(message);
                 } break;
             }
         }
@@ -143,8 +149,12 @@ public class TaskManager implements Runnable {
 
             while (isConnected) {
                 BaseMessage task = pollIncomingMessage();
-                if (task != null)
+                if (task != null) {
                     handleMessage(task);
+                }
+                for (LingeringTask lt : lingeringTasks) {
+                    lt.getRunnable().run();
+                }
             }
         }
     }
@@ -156,7 +166,7 @@ public class TaskManager implements Runnable {
     private boolean establishConnection() {
         try {
             this.socket = new Socket();
-            this.socket.connect(new InetSocketAddress(host, port), 10000);
+            this.socket.connect(new InetSocketAddress(host, port), TIMEOUT_MS);
             new Thread(new OutputToServer(new ObjectOutputStream(socket.getOutputStream()), messagesToSend)).start();
             new Thread(new InputFromServer(new ObjectInputStream(socket.getInputStream()), this::addIncomingMessage)).start();
         } catch (IOException e) {
@@ -174,37 +184,49 @@ public class TaskManager implements Runnable {
      */
     private void loginToServer(BaseMessage message) {
         long streamId = TaskManager.nextCommunicationStream();
-        lingeringTasks.add(new BaseMessage(
+        lingeringTasks.add(new LingeringTask(
                 "login",
+                streamId,
                 null,
-                (CallLingeringTaskInterface) (msg) -> {
+                (msg) -> {
                     if (msg.getArgs()[0].equals("true")) {
                         ((Runnable[]) message.getData())[0].run();
                     } else {
                         ((Runnable[]) message.getData())[1].run();
                     }
                     return true;
-                }, streamId)
+                })
         );
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
     /// TODO
-    private void requestUpdate(BaseMessage message) {
+    private void startRequestingUpdates(BaseMessage message) {
         long streamId = TaskManager.nextCommunicationStream();
-        lingeringTasks.add(new BaseMessage(
+        lingeringTasks.add(new LingeringTask(
                 "update",
-                null,
-                (CallLingeringTaskInterface) (msg) -> {
+                streamId,
+                new Runnable() {
+                    private long lastRequestUpdateTime = System.currentTimeMillis();
+                    @Override
+                    public void run() {
+                        long currentTime = System.currentTimeMillis();
+                        if (currentTime - lastRequestUpdateTime > UPDATE_DELAY_MS) {
+                            sendMessage(new NetworkMessage(
+                                    "update",
+                                    null,
+                                    null,
+                                    streamId
+                            ));
+                            lastRequestUpdateTime = currentTime;
+                        }
+                    }
+                }, (msg) -> {
                     eventInfoUpdate = (EventInfoUpdate) msg.getData();
                     ((Runnable) message.getData()).run();
-                    if (HomeActivity.getUpdatingUI()) {
-                        requestUpdate(message);
-                    }
-                    return true;
-                }, streamId)
+                    return !HomeActivity.getUpdatingUI();
+                })
         );
-        sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
     /**
@@ -212,31 +234,62 @@ public class TaskManager implements Runnable {
      * @param message Message to match awaiting tasks with
      * @return Array containing all matching tasks; if none are found, array length will be 0
      */
-    private BaseMessage[] searchForMatchingLingeringTasks(BaseMessage message) {
+    private LingeringTask[] searchForMatchingLingeringTasks(BaseMessage message) {
         long comId = message.getCommunicationIdentifier();
-        ArrayList<BaseMessage> awaitingTaskInterfaces = new ArrayList<>();
-        for (BaseMessage awaitingTask : lingeringTasks) {
+        ArrayList<LingeringTask> awaitingTaskInterfaces = new ArrayList<>();
+        for (LingeringTask awaitingTask : lingeringTasks) {
             if (awaitingTask.getCommunicationIdentifier() == comId) {
                 awaitingTaskInterfaces.add(awaitingTask);
             }
         }
-        BaseMessage[] returnValue = new BaseMessage[awaitingTaskInterfaces.size()];
+        LingeringTask[] returnValue = new LingeringTask[awaitingTaskInterfaces.size()];
         for (int i = 0; i < returnValue.length; ++i) {
             returnValue[i] = awaitingTaskInterfaces.get(i);
         }
         return returnValue;
     }
 
-    /**
-     * Interface for awaiting tasks to handle received messages
-     */
-    private interface CallLingeringTaskInterface {
+    private static class LingeringTask extends BaseMessage {
+        private final Runnable runnable;
+        private final Callable callable;
+
+        public LingeringTask(String command, String[] args, Object data, long communicationId, Runnable runnable, Callable callable) {
+            super(command, args, data, communicationId);
+            if (runnable != null) {
+                this.runnable = runnable;
+            } else {
+                this.runnable = () -> {};
+            }
+            if (callable != null) {
+                this.callable = callable;
+            } else {
+                this.callable = (msg) -> true;
+            }
+        }
+
+        public LingeringTask(String command, long communicationId, Runnable runnable, Callable callable) {
+            this(command,null,null,communicationId,runnable,callable);
+        }
+
+        public Runnable getRunnable() {
+            return runnable;
+        }
+
+        public Callable getCallable() {
+            return callable;
+        }
+
         /**
-         * Callback for handling received message
-         * @param message Message to handle
-         * @return True if task in question is done and should be removed from lingering tasks, false otherwise
+         * Interface for awaiting tasks to handle received messages
          */
-        boolean callLingeringTaskOn(BaseMessage message);
+        public interface Callable {
+            /**
+             * Callback for handling received message
+             * @param message Message to handle
+             * @return True if task in question is done and should be removed from lingering tasks, false otherwise
+             */
+            boolean callOn(BaseMessage message);
+        }
     }
 
     /**
@@ -282,7 +335,6 @@ public class TaskManager implements Runnable {
             while (true) {
                 NetworkMessage message = receive();
                 if (message != null) {
-                    Log.d("LOG", message.getCommand());
                     taskManagerInterface.passMessage(message);
                 }
             }

@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject;
 import network_structures.NetworkMessage;
 import org.bson.Document;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -27,6 +28,8 @@ public abstract class Client {
     /** Stream for receiving information from this specific client */
     protected ObjectInputStream in;
 
+    protected final long UPDATE_DELAY_MS = 1000;
+
     /// TODO
     public Client(ObjectOutputStream out, ObjectInputStream in) {
         this.outgoingMessages = new ConcurrentLinkedQueue<>();
@@ -39,7 +42,7 @@ public abstract class Client {
     }
 
     /// TODO
-    public static Client createSpecifiedClient(ObjectOutputStream out, ObjectInputStream in) throws SocketTimeoutException {
+    public static Client createSpecifiedClient(ObjectOutputStream out, ObjectInputStream in) throws SocketTimeoutException, EOFException {
         Client client = null;
         try {
             NetworkMessage message = (NetworkMessage) in.readObject();
@@ -74,7 +77,7 @@ public abstract class Client {
             } else if ("ping".equals(message.getCommand())) {
                 out.writeObject(new NetworkMessage("ping", null, null, message.getCommunicationIdentifier()));
             }
-        } catch (SocketTimeoutException ex) {
+        } catch (SocketTimeoutException | EOFException ex) {
             throw ex;
         } catch (IOException ex) {
             System.err.println("[Client-createSpecifiedClient()]: IOException - " + ex.getMessage());
@@ -93,7 +96,7 @@ public abstract class Client {
     }
 
     /// TODO
-    protected abstract void handlingInput() throws SocketTimeoutException;
+    protected abstract void handlingInput() throws SocketTimeoutException, EOFException;
 
     /// TODO
     public boolean addMessage(NetworkMessage message) {

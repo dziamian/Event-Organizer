@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 
 import queue.Sector;
 import queue.Room;
-import queue.TourGroup;
 
 public class Server {
     /** Main server thread task queue */
@@ -155,118 +154,6 @@ public class Server {
              * 10. details - request detailed information about specific room
              * 11. grouping - answer grouping call with decision or send update with changed decision
              */
-            switch (task.getCommand()) {
-                case "ping": {
-                    task.getResponseInterface().respond(new NetworkMessage(
-                        "ping",
-                        null,
-                        null,
-                        task.getCommunicationIdentifier()
-                    ));
-                } break;
-                case "eventInfo": {
-                    task.getResponseInterface().respond(new NetworkMessage(
-                        "eventInfo",
-                        null,
-                        Server.getEventInfoFixed(),
-                        task.getCommunicationIdentifier()
-                    ));
-                } break;
-                case "viewTickets": {
-                    task.getResponseInterface().respond(new NetworkMessage(
-                        "viewTickets",
-                        null,
-                        null,
-                        task.getCommunicationIdentifier()
-                    ));
-                } break;
-                case "viewReservations": {
-                    task.getResponseInterface().respond(new NetworkMessage(
-                        "viewReservations",
-                        null,
-                        null, // todo
-                        task.getCommunicationIdentifier()
-                    ));
-                } break;
-                case "addTicket": {
-                    Room room = Server.sectors.get(task.getArgs()[0])
-                            .getRoomsMapping().get(task.getArgs()[1]);
-                    if (room != null) {
-                        task.getResponseInterface().respond(new NetworkMessage(
-                                "addTicket",
-                                new String[] { "success" },
-                                null,
-                                task.getCommunicationIdentifier()
-                        ));
-                    }
-                    else {
-                        task.getResponseInterface().respond(new NetworkMessage(
-                                "error",
-                                new String[]{"invalidRoomIdentifier"},
-                                null,
-                                task.getCommunicationIdentifier()
-                        ));
-                    }
-                } break;
-                case "removeTicket": {
-                    Room room = sectors.get(new ObjectId(task.getArgs()[0]))
-                            .getRoomsMapping().get(new ObjectId(task.getArgs()[1]));
-                    if (room != null) {
-                        room.removeGroupFromQueue(((TourGroup.QueueTicket)task.getData()).getOwner());
-                        task.getResponseInterface().respond(new NetworkMessage(
-                           "removeTicket",
-                            new String[] { "success" },
-                            null,
-                            task.getCommunicationIdentifier()
-                        ));
-                    }
-                    else {
-                        task.getResponseInterface().respond(new NetworkMessage(
-                           "error",
-                           new String[] { "ticketNotFound" },
-                           null,
-                           task.getCommunicationIdentifier()
-                        ));
-                    }
-                } break;
-                case "abandonReservation": {
-                    Room room = sectors.get(new ObjectId(task.getArgs()[0]))
-                            .getRoomsMapping().get(new ObjectId(task.getArgs()[1]));
-                    room.removeVisitingGroup(((TourGroup.QueueTicket)task.getData()).getOwner());
-                    ((TourGroup.QueueTicket)task.getData()).getOwner().increasePenalty();
-                } break;
-                case "update": {
-                    task.getResponseInterface().respond(new NetworkMessage(
-                            "update",
-                            null,
-                            sectors.get(new ObjectId(task.getArgs()[0])).getInfoFixed(),
-                            task.getCommunicationIdentifier()
-                    ));
-                } break;
-                case "details": {
-                    task.getResponseInterface().respond(new NetworkMessage(
-                        "details",
-                            null,
-                            sectors
-                                    .get(new ObjectId(task.getArgs()[0]))
-                                    .getRoomsMapping()
-                                    .get(new ObjectId(task.getArgs()[1]))
-                                    .getState(),
-                            task.getCommunicationIdentifier()
-                    ));
-                } break;
-                case "grouping": {
-                    
-                } break;
-                default: {
-                    task.getResponseInterface().respond(new NetworkMessage(
-                            "error",
-                            new String[] { "invalidCommand" },
-                            task.getCommand(),
-                            task.getCommunicationIdentifier()
-                    ));
-                }
-            }
         }
 
         /**
@@ -289,6 +176,12 @@ public class Server {
                     System.out.println("\tRoom " + room.getInfoFixed().getName());
                     System.out.println("\t\tRoom State: " + room.getState());
                 }
+            }
+
+
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST
+            while (true) {
+                eventInfoUpdate.getSectors().values().forEach((sectorInfoUpdate -> {sectorInfoUpdate.setActiveRooms(sectorInfoUpdate.getActiveRooms()+1);}));
             }
 
             // Main server task queue
@@ -381,7 +274,7 @@ public class Server {
             } catch (SocketTimeoutException ex) {
                 System.err.println("Client (" + this.toString() + ") is not responding!");
                 if (client != null && outputThread != null) {
-                    client.addMessage(new NetworkMessage("time_out", null, null, 0));
+                    client.addMessage(new NetworkMessage("timeout", null, null, 0));
                     client.stopOutputThread();
                     try {
                         outputThread.join();
@@ -393,6 +286,16 @@ public class Server {
                         out.writeObject(new NetworkMessage("time_out", null, null, 0));
                     } catch (IOException e) {
                         System.err.println("[ClientHandler-SocketTimeoutException]: IOException - " + ex.getMessage());
+                    }
+                }
+            } catch (EOFException ex) {
+                System.err.println("Connection with client (" + this.toString() + ") has been lost!");
+                if (client != null && outputThread != null) {
+                    client.stopOutputThread();
+                    try {
+                        outputThread.join();
+                    } catch (InterruptedException e) {
+                        System.err.println("[ClientHandler-EOFException]: InterruptedException - " + ex.getMessage());
                     }
                 }
             } catch (IOException ex) {

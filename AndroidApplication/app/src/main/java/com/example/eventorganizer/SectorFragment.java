@@ -1,6 +1,7 @@
 package com.example.eventorganizer;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

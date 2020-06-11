@@ -5,13 +5,13 @@ import android.view.View;
 
 public abstract class ItemLayout {
 
-    private final int resourceId;
+    private static int resourceId;
 
-    protected ItemLayout(int resourceId) {
-        this.resourceId = resourceId;
+    protected ItemLayout(int resId) {
+        resourceId = resId;
     }
 
-    public int getResourceId() { return resourceId; }
+    public static int getResourceId() { return resourceId; }
 
     protected abstract Object getItemHolder();
 
