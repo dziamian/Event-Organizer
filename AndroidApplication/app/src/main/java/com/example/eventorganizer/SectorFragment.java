@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import network_structures.BaseMessage;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -26,6 +27,10 @@ public class SectorFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mTitle;
 
+    /// TODO:
+    private ItemListAdapter itemListAdapter = null;
+
+    /// TODO:
     public SectorFragment() {
         // Required empty public constructor
     }
@@ -55,7 +60,22 @@ public class SectorFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
+        new Thread(() -> {
+            if (HomeActivity.getUpdatingUI()) {
+                MainActivity.connectionToServer.addIncomingMessage(new BaseMessage(
+                        "update",
+                        null,
+                        (Runnable) () -> {
+                            getActivity().runOnUiThread(() -> {
+                                for (int i = 0; i < TaskManager.eventInfoUpdate.getSectors().size(); ++i) {
+                                    ((SectorLayout) itemListAdapter.layoutList.get(i)).updateLayout(TaskManager.eventInfoUpdate);
+                                }
+                            });
+                        },
+                        TaskManager.nextCommunicationStream())
+                );
+            }
+        }).start();
     }
 
     @Override
@@ -70,8 +90,11 @@ public class SectorFragment extends Fragment {
         ArrayList<SectorLayout> sectorList = new ArrayList<>();
         TaskManager.eventInfoFixed.getSectors().values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
 
-        ListView listView = rootView.findViewById(R.id.sector_list_view);
-        listView.setAdapter(new ItemListAdapter<>(getActivity(), sectorList));
+        getActivity().runOnUiThread(() -> {
+            ListView listView = rootView.findViewById(R.id.sector_list_view);
+            itemListAdapter = new ItemListAdapter<>(getActivity(), sectorList);
+            listView.setAdapter(itemListAdapter);
+        });
 
         return rootView;
     }

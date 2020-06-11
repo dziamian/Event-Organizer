@@ -7,7 +7,9 @@ import org.bson.Document;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Class representing specific account within the system, of unspecified role
@@ -20,6 +22,8 @@ public abstract class Client {
     protected ConcurrentLinkedQueue<NetworkMessage> outgoingMessages;
     /** Stream for sending information to this specific client */
     protected ObjectOutputStream out;
+    /// TODO
+    protected final AtomicBoolean outputThreadRunning = new AtomicBoolean(true);
     /** Stream for receiving information from this specific client */
     protected ObjectInputStream in;
 
@@ -30,8 +34,12 @@ public abstract class Client {
         this.in = in;
     }
 
+    public void stopOutputThread() {
+        outputThreadRunning.set(false);
+    }
+
     /// TODO
-    public static Client createSpecifiedClient(ObjectOutputStream out, ObjectInputStream in) {
+    public static Client createSpecifiedClient(ObjectOutputStream out, ObjectInputStream in) throws SocketTimeoutException {
         Client client = null;
         try {
             NetworkMessage message = (NetworkMessage) in.readObject();
@@ -66,9 +74,12 @@ public abstract class Client {
             } else if ("ping".equals(message.getCommand())) {
                 out.writeObject(new NetworkMessage("ping", null, null, message.getCommunicationIdentifier()));
             }
-        } catch (IOException | ClassNotFoundException ex) {
-            System.err.println(ex.getMessage());
-            return client;
+        } catch (SocketTimeoutException ex) {
+            throw ex;
+        } catch (IOException ex) {
+            System.err.println("[Client-createSpecifiedClient()]: IOException - " + ex.getMessage());
+        } catch (ClassNotFoundException ex) {
+            System.err.println("[Client-createSpecifiedClient()]: ClassNotFoundException - " + ex.getMessage());
         }
         return client;
     }
@@ -82,7 +93,7 @@ public abstract class Client {
     }
 
     /// TODO
-    protected abstract void handlingInput();
+    protected abstract void handlingInput() throws SocketTimeoutException;
 
     /// TODO
     public boolean addMessage(NetworkMessage message) {

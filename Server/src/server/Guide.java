@@ -5,6 +5,7 @@ import network_structures.NetworkMessage;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.SocketTimeoutException;
 
 public class Guide extends Client {
 
@@ -13,7 +14,7 @@ public class Guide extends Client {
     }
 
     @Override
-    protected void handlingInput() {
+    protected void handlingInput() throws SocketTimeoutException {
         while (true) {
             try {
                 NetworkMessage message = (NetworkMessage) in.readObject();
@@ -25,20 +26,29 @@ public class Guide extends Client {
                         addMessage(new NetworkMessage("error", new String[] {"invalid_command"}, null, message.getCommunicationIdentifier()));
                     } break;
                 }
-            } catch (IOException | ClassNotFoundException ex) {
-                System.err.println(ex.getMessage());
+            } catch (SocketTimeoutException ex) {
+                throw ex;
+            } catch (IOException ex) {
+                System.err.println("[Guide-handlingInput()]: IOException - " + ex.getMessage());
+            } catch (ClassNotFoundException ex) {
+                System.err.println("[Guide-handlingInput()]: ClassNotFoundException - " + ex.getMessage());
             }
         }
     }
 
     @Override
     protected void handlingOutput() {
-        while (true) {
+        while (outputThreadRunning.get() || !outgoingMessages.isEmpty()) {
             NetworkMessage message = outgoingMessages.poll();
             try {
-                out.writeObject(message);
+                if (message != null) {
+                    if ("update".equals(message.getCommand())) {
+                        out.reset();
+                    }
+                    out.writeObject(message);
+                }
             } catch (IOException ex) {
-                System.err.println(ex.getMessage());
+                System.err.println("[Guide-handlingOutput()]: IOException - " + ex.getMessage());
             }
         }
     }

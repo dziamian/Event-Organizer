@@ -13,6 +13,8 @@ import androidx.fragment.app.FragmentManager;
 import com.google.android.material.navigation.NavigationView;
 import org.bson.types.ObjectId;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private DrawerLayout mNavDrawer;
@@ -20,6 +22,16 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private int selectedItemId;
 
     public MenuItem rooms;
+
+    private static final AtomicBoolean updatingUI = new AtomicBoolean(true);
+
+    public static synchronized boolean getUpdatingUI() {
+        return updatingUI.get();
+    }
+
+    public static synchronized void setUpdatingUI(boolean status) {
+        updatingUI.set(status);
+    }
 
     public void setSelectedItemId(int id) {
         selectedItemId = id;

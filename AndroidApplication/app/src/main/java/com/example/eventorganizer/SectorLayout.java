@@ -1,9 +1,12 @@
 package com.example.eventorganizer;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import network_structures.EventInfoUpdate;
 import network_structures.SectorInfoFixed;
+import network_structures.SectorInfoUpdate;
 
 public class SectorLayout extends ItemLayout {
 
@@ -34,6 +37,10 @@ public class SectorLayout extends ItemLayout {
         view.findViewById(R.id.sector_field).setOnClickListener(v -> {
             ((HomeActivity) context).setRoomActivity(sectorInfoFixed.getId());
         });
+    }
+
+    public void updateLayout(EventInfoUpdate eventInfoUpdate) {
+        sectorLayoutHolder.textViewAvailableRooms.setText("Aktywne atrakcje: " + eventInfoUpdate.getSectors().get(sectorInfoFixed.getId()).getActiveRooms());
     }
 
     @Override

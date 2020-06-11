@@ -1,7 +1,9 @@
 package com.example.eventorganizer;
 
+import android.util.Log;
 import network_structures.BaseMessage;
 import network_structures.EventInfoFixed;
+import network_structures.EventInfoUpdate;
 import network_structures.NetworkMessage;
 
 import java.io.IOException;
@@ -44,6 +46,8 @@ public class TaskManager implements Runnable {
     private boolean isConnected;
     /** Event information, mostly unchanging */
     public static EventInfoFixed eventInfoFixed;
+    /// TODO
+    public static EventInfoUpdate eventInfoUpdate;
 
     /**
      * Default constructor, does not initialize this object completely
@@ -99,6 +103,9 @@ public class TaskManager implements Runnable {
                 } break;
                 case "eventDetails": {
                     eventInfoFixed = (EventInfoFixed) message.getData();
+                } break;
+                case "update": {
+                    requestUpdate(message);
                 } break;
             }
         }
@@ -182,6 +189,24 @@ public class TaskManager implements Runnable {
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
+    /// TODO
+    private void requestUpdate(BaseMessage message) {
+        long streamId = TaskManager.nextCommunicationStream();
+        lingeringTasks.add(new BaseMessage(
+                "update",
+                null,
+                (CallLingeringTaskInterface) (msg) -> {
+                    eventInfoUpdate = (EventInfoUpdate) msg.getData();
+                    ((Runnable) message.getData()).run();
+                    if (HomeActivity.getUpdatingUI()) {
+                        requestUpdate(message);
+                    }
+                    return true;
+                }, streamId)
+        );
+        sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
+    }
+
     /**
      * Searches awaiting tasks for those waiting for given message
      * @param message Message to match awaiting tasks with
@@ -257,6 +282,7 @@ public class TaskManager implements Runnable {
             while (true) {
                 NetworkMessage message = receive();
                 if (message != null) {
+                    Log.d("LOG", message.getCommand());
                     taskManagerInterface.passMessage(message);
                 }
             }

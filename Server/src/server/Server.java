@@ -38,9 +38,9 @@ public class Server {
 
     private final static Map<ObjectId, Sector> sectors = new TreeMap<>();
     //
-    private static EventInfoFixed eventInfoFixed = new EventInfoFixed();
+    private static final EventInfoFixed eventInfoFixed = new EventInfoFixed();
     //
-    private static EventInfoUpdate eventInfoUpdate = new EventInfoUpdate();
+    private static final EventInfoUpdate eventInfoUpdate = new EventInfoUpdate();
 
     /// Delay defining frequency for passive server to check for activation condition
     private static final long DATE_CHECKING_DELAY = 1000;
@@ -115,6 +115,7 @@ public class Server {
             Sector sector = new Sector(sectorId, sectorName, sectorAddress, sectorDescription);
             sectors.put(sectorId, sector);
             eventInfoFixed.getSectors().put(sectorId, sector.getInfoFixed());
+            eventInfoUpdate.getSectors().put(sectorId, sector.getInfoUpdate());
             for (Document room : roomsOfSector) {
                 ObjectId roomId = room.getObjectId("_id");
                 String roomName = room.getString("name");
@@ -362,6 +363,7 @@ public class Server {
             ObjectOutputStream out = null;
             ObjectInputStream in = null;
             Client client = null;
+            Thread outputThread = null;
             try {
                 System.out.println("Client (" + this.toString() + ") connected!");
 
@@ -374,24 +376,36 @@ public class Server {
                 }
                 client.sendStartingData();
                 clients.add(client);
-                new Thread(client::handlingInput).start();
-                client.handlingOutput();
-            } catch (NoSuchElementException ex) {
+                (outputThread = new Thread(client::handlingOutput)).start();
+                client.handlingInput();
+            } catch (SocketTimeoutException ex) {
                 System.err.println("Client (" + this.toString() + ") is not responding!");
-                if (out != null) {
+                if (client != null && outputThread != null) {
+                    client.addMessage(new NetworkMessage("time_out", null, null, 0));
+                    client.stopOutputThread();
                     try {
-                        out.writeObject("TIMED_OUT");
+                        outputThread.join();
+                    } catch (InterruptedException e) {
+                        System.err.println("[ClientHandler-SocketTimeoutException]: InterruptedException - " + ex.getMessage());
+                    }
+                } else if (out != null) {
+                    try {
+                        out.writeObject(new NetworkMessage("time_out", null, null, 0));
                     } catch (IOException e) {
-                        System.out.println("Server exception: " + ex.getMessage());
+                        System.err.println("[ClientHandler-SocketTimeoutException]: IOException - " + ex.getMessage());
                     }
                 }
             } catch (IOException ex) {
-                System.err.println("Server exception: " + ex.getMessage());
+                System.err.println("[ClientHandler]: IOException - " + ex.getMessage());
             } finally {
-                if (out != null) {
+                if (client != null) {
                     clients.remove(client);
                 }
-                try { socket.close(); } catch(Exception ex) { System.out.println(ex.getMessage()); }
+                try {
+                    socket.close();
+                } catch(IOException ex) {
+                    System.err.println("[ClientHandler-socket.close()]: IOException - " + ex.getMessage());
+                }
                 System.out.println("Connection with (" + this.toString() + ") has been closed!");
             }
         }

@@ -27,6 +27,8 @@ public class Sector {
         return infoFixed;
     }
 
+    public SectorInfoUpdate getInfoUpdate() { return infoUpdate; }
+
     public void addRoom(ObjectId key, Room room) {
         rooms.put(key,room);
         infoFixed.getRooms().put(key, room.getInfoFixed());
