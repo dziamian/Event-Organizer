@@ -67,7 +67,7 @@ public class SectorRoomsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_sector_rooms, container, false);
 
         ArrayList<RoomLayout> roomList = new ArrayList<>();
-        sectorInfoFixed.getRooms().values().forEach(roomInfo -> roomList.add(new RoomLayout(roomInfo)));
+        //sectorInfoFixed.getRooms().values().forEach(roomInfo -> roomList.add(new RoomLayout(roomInfo)));
 
         ListView listView = rootView.findViewById(R.id.room_list_view);
         listView.setAdapter(new ItemListAdapter<>(getActivity(), roomList));

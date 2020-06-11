@@ -5,10 +5,45 @@ import android.view.View;
 import android.widget.TextView;
 import network_structures.EventInfoUpdate;
 import network_structures.SectorInfoFixed;
+import network_structures.SectorInfoUpdate;
 
 public class SectorLayout extends ItemLayout {
 
-    private final SectorInfoFixed sectorInfoFixed;
+    private SectorInfoFixed sectorInfoFixed;
+
+    public SectorLayout(SectorInfoFixed sectorInfoFixed) {
+        super(R.layout.sector_item);
+        this.sectorInfoFixed = sectorInfoFixed;
+    }
+
+    @Override
+    public void createItemHolder(View view) {
+        setItemHolder(new SectorLayoutHolder(view));
+    }
+
+    @Override
+    protected void setItemHolderAttributes() {
+        ((SectorLayoutHolder) getItemHolder()).textViewName.setText(sectorInfoFixed.getName());
+        ((SectorLayoutHolder) getItemHolder()).textViewAddress.setText(sectorInfoFixed.getAddress());
+        ((SectorLayoutHolder) getItemHolder()).textViewAvailableRooms.setText(String.valueOf(sectorInfoFixed.getRooms().size()));
+    }
+
+    public void updateItemHolderAttributes(EventInfoUpdate update) {
+        ((SectorLayoutHolder) getItemHolder()).textViewAvailableRooms.setText(String.valueOf(update.getSectors().get(sectorInfoFixed.getId()).getActiveRooms()));
+    }
+
+    private class SectorLayoutHolder extends ItemHolder {
+        public TextView textViewName;
+        public TextView textViewAddress;
+        public TextView textViewAvailableRooms;
+
+        public SectorLayoutHolder(View view) {
+            textViewName = view.findViewById(R.id.sector_name);
+            textViewAddress = view.findViewById(R.id.sector_address);
+            textViewAvailableRooms = view.findViewById(R.id.sector_available_rooms);
+        }
+    }
+    /*private final SectorInfoFixed sectorInfoFixed;
     private SectorLayoutHolder sectorLayoutHolder;
 
     public SectorLayout(SectorInfoFixed sectorInfoFixed) {
@@ -50,5 +85,5 @@ public class SectorLayout extends ItemLayout {
 
     private static class SectorLayoutHolder extends ItemHolder {
         TextView textViewName, textViewAddress, textViewAvailableRooms;
-    }
+    }*/
 }

@@ -7,7 +7,21 @@ import network_structures.RoomInfoFixed;
 
 public class RoomLayout extends ItemLayout {
 
-    private final RoomInfoFixed roomInfoFixed;
+    public RoomLayout(int resId) {
+        super(resId);
+    }
+
+    @Override
+    public void createItemHolder(View view) {
+
+    }
+
+    @Override
+    protected void setItemHolderAttributes() {
+
+    }
+
+    /*private final RoomInfoFixed roomInfoFixed;
     private RoomLayoutHolder roomLayoutHolder;
 
     public RoomLayout(RoomInfoFixed roomInfoFixed) {
@@ -47,5 +61,5 @@ public class RoomLayout extends ItemLayout {
 
     private static class RoomLayoutHolder extends ItemHolder {
         TextView textViewName, textViewLocation, textViewStateDetails, textViewState;
-    }
+    }*/
 }

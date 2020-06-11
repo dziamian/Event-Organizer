@@ -69,9 +69,14 @@ public class SectorFragment extends Fragment {
                         (Runnable) () -> {
                             getActivity().runOnUiThread(() -> {
                                 for (int i = 0; i < TaskManager.eventInfoUpdate.getSectors().size(); ++i) {
-                                    ((SectorLayout) itemListAdapter.layoutList.get(i)).updateLayout(TaskManager.eventInfoUpdate);
+                                    ((SectorLayout) itemListAdapter.layoutList.get(i)).updateItemHolderAttributes(TaskManager.eventInfoUpdate);
                                 }
                             });
+                            /*getActivity().runOnUiThread(() -> {
+                                for (int i = 0; i < TaskManager.eventInfoUpdate.getSectors().size(); ++i) {
+                                    ((SectorLayout) itemListAdapter.layoutList.get(i)).updateLayout(TaskManager.eventInfoUpdate);
+                                }
+                            });*/
                         },
                         TaskManager.nextCommunicationStream())
                 );
