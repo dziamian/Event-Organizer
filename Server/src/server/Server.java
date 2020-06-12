@@ -154,6 +154,24 @@ public class Server {
              * 10. details - request detailed information about specific room
              * 11. grouping - answer grouping call with decision or send update with changed decision
              */
+            switch (task.getCommand()) {
+                case "add_to_queue": {
+
+                } break;
+                case "remove_from_queue": {
+
+                } break;
+                default : {
+                    task.getResponseInterface().respond(
+                            new NetworkMessage(
+                                    "error",
+                                    new String[] { "invalid_command" },
+                                    null,
+                                    task.getCommunicationIdentifier()
+                            )
+                    );
+                }
+            }
         }
 
         /**
@@ -227,7 +245,7 @@ public class Server {
         /// TODO
         public static final int TIMEOUT_MS = 15 * 60 * 1000;
         /** Server responses queue */
-        //ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue;
+        // ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue;
         /** Socket connected to client */
         private final Socket socket;
 
@@ -236,7 +254,7 @@ public class Server {
          */
         public ClientHandler(Socket socket) {
             this.socket = socket;
-            //this.clientMessageQueue = new ConcurrentLinkedQueue<>();
+            // this.clientMessageQueue = new ConcurrentLinkedQueue<>();
         }
 
         /**
