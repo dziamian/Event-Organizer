@@ -149,10 +149,9 @@ public class Server {
              * 5. view_reservations - view my active reservation(s)
              * 6. add_to_queue - add my ticket to specified room queue
              * 7. remove_from_queue - remove my ticket from specific queue
-             * 8. abandonReservation - abandon one of my reservations (will result in penalty)
+             * 8. abandon_reservation - abandon one of my reservations (will result in penalty)
              * 9. update - request update on states of rooms and queues
-             * 10. details - request detailed information about specific room
-             * 11. grouping - answer grouping call with decision or send update with changed decision
+             * 10. grouping - answer grouping call with decision or send update with changed decision
              */
             switch (task.getCommand()) {
                 case "add_to_queue": {
@@ -161,7 +160,7 @@ public class Server {
                     ).getRoom(
                             new ObjectId(task.getArgs()[1])
                     );
-                    if (room.
+                    room.getInfoUpdate().setQueueSize(room.getInfoUpdate().getQueueSize().get() + 1);
                 } break;
                 case "remove_from_queue": {
                     sectors.get(
