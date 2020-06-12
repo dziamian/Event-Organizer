@@ -144,11 +144,11 @@ public class Server {
              * Recognized client requests:
              * 1. ping - check if server recognizes this client
              * 2. login - log in to server providing credentials in args
-             * 3. eventInfo - request essential information about event, such as sectors / attractions list
-             * 4. viewTickets - view my tickets and their states
-             * 5. viewReservations - view my active reservation(s)
-             * 6. addTicket - add my ticket to specified room queue
-             * 7. removeTicket - remove specific one of my tickets
+             * 3. event_info - request essential information about event, such as sectors / attractions list
+             * 4. view_tickets - view my tickets and their states
+             * 5. view_reservations - view my active reservation(s)
+             * 6. add_to_queue - add my ticket to specified room queue
+             * 7. remove_from_queue - remove my ticket from specific queue
              * 8. abandonReservation - abandon one of my reservations (will result in penalty)
              * 9. update - request update on states of rooms and queues
              * 10. details - request detailed information about specific room
@@ -156,20 +156,12 @@ public class Server {
              */
             switch (task.getCommand()) {
                 case "add_to_queue": {
-                    sectors.get(
+                    Room room = sectors.get(
                             new ObjectId(task.getArgs()[0])
                     ).getRoom(
                             new ObjectId(task.getArgs()[1])
-                    ).addGroupToQueue(
-                            ((Guide)task.getData()).getGroup()
                     );
-                    RoomInfoUpdate ru = eventInfoUpdate.getSectors()
-                            .get(
-                                    new ObjectId(task.getArgs()[0])
-                            ).getRooms().get(
-                                    new ObjectId(task.getArgs()[1])
-                            );
-                    ru.setQueueSize(ru.getQueueSize().get() + 1);
+                    if (room.
                 } break;
                 case "remove_from_queue": {
                     sectors.get(
