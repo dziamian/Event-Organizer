@@ -18,7 +18,7 @@ public class Sector {
 
     public Sector(ObjectId id, String name, String address, String description) {
         this.infoUpdate = new SectorInfoUpdate(id);
-        this.infoFixed = new SectorInfoFixed(id, name, address, description, this.infoUpdate.getActiveRooms());
+        this.infoFixed = new SectorInfoFixed(id, name, address, description, this.infoUpdate.getActiveRoomsCount());
         this.rooms = new TreeMap<>();
         this.currentSize = 0;
     }
@@ -34,14 +34,14 @@ public class Sector {
         infoFixed.getRooms().put(key, room.getInfoFixed());
         ++currentSize;
         infoUpdate.getRooms().put(key, room.getInfoUpdate());
-        infoUpdate.setActiveRooms(infoUpdate.getActiveRooms().get()+1);
+        infoUpdate.setActiveRoomsCount(infoUpdate.getActiveRoomsCount().get()+1);
     }
 
-    public Collection<Room> getRooms() {
+    public Collection<Room> getRoomsValues() {
         return rooms.values();
     }
 
-    public Map<ObjectId, Room> getRoomsMapping() { return rooms; }
+    public Map<ObjectId, Room> getRooms() { return rooms; }
 
     public Room getRoom(ObjectId key) {
         return rooms.get(key);

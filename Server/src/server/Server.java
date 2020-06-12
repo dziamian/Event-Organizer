@@ -1,10 +1,7 @@
 package server;
 
 import com.mongodb.client.*;
-import network_structures.BaseMessage;
-import network_structures.EventInfoFixed;
-import network_structures.EventInfoUpdate;
-import network_structures.NetworkMessage;
+import network_structures.*;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -159,10 +156,36 @@ public class Server {
              */
             switch (task.getCommand()) {
                 case "add_to_queue": {
-
+                    sectors.get(
+                            new ObjectId(task.getArgs()[0])
+                    ).getRoom(
+                            new ObjectId(task.getArgs()[1])
+                    ).addGroupToQueue(
+                            ((Guide)task.getData()).getGroup()
+                    );
+                    RoomInfoUpdate ru = eventInfoUpdate.getSectors()
+                            .get(
+                                    new ObjectId(task.getArgs()[0])
+                            ).getRooms().get(
+                                    new ObjectId(task.getArgs()[1])
+                            );
+                    ru.setQueueSize(ru.getQueueSize().get() + 1);
                 } break;
                 case "remove_from_queue": {
-
+                    sectors.get(
+                            new ObjectId(task.getArgs()[0])
+                    ).getRoom(
+                            new ObjectId(task.getArgs()[1])
+                    ).removeGroupFromQueue(
+                            ((Guide)task.getData()).getGroup()
+                    );
+                    RoomInfoUpdate ru = eventInfoUpdate.getSectors()
+                            .get(
+                                    new ObjectId(task.getArgs()[0])
+                            ).getRooms().get(
+                                    new ObjectId(task.getArgs()[1])
+                            );
+                    ru.setQueueSize(ru.getQueueSize().get() - 1);
                 } break;
                 default : {
                     task.getResponseInterface().respond(
@@ -193,7 +216,7 @@ public class Server {
             // Checking if every sector and room has been loaded properly //
             for (Sector sector : sectors.values()) {
                 System.out.println(sector.getInfoFixed().getName() + ":");
-                for (Room room : sector.getRooms()) {
+                for (Room room : sector.getRoomsValues()) {
                     System.out.println("\tRoom " + room.getInfoFixed().getName());
                     System.out.println("\t\tRoom State: " + room.getState());
                 }
@@ -204,7 +227,7 @@ public class Server {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleAtFixedRate(() -> sectors.values().forEach(
                     (sector -> {
-                        sector.getInfoUpdate().setActiveRooms(sector.getInfoUpdate().getActiveRooms().get()+1);
+                        sector.getInfoUpdate().setActiveRoomsCount(sector.getInfoUpdate().getActiveRoomsCount().get()+1);
                         sector.getInfoUpdate().getRooms().values().forEach((roomInfoUpdate -> roomInfoUpdate.setQueueSize(roomInfoUpdate.getQueueSize().get()+1)));
                     })),
                     0, 1000, TimeUnit.MILLISECONDS);
@@ -242,6 +265,11 @@ public class Server {
          */
         public Task(BaseMessage message, ClientHandler.RespondToClientInterface messageResponseInterface) {
             super(message.getCommand(), message.getArgs(), message.getData(), message.getCommunicationIdentifier());
+            this.messageResponseInterface = messageResponseInterface;
+        }
+
+        public Task(String command, String[] args, Object data, long communicationIdentifier, ClientHandler.RespondToClientInterface messageResponseInterface) {
+            super(command, args, data, communicationIdentifier);
             this.messageResponseInterface = messageResponseInterface;
         }
 
@@ -308,7 +336,7 @@ public class Server {
             } catch (SocketTimeoutException ex) {
                 System.err.println("Client (" + this.toString() + ") is not responding!");
                 if (client != null && outputThread != null) {
-                    client.addMessage(new NetworkMessage("timeout", null, null, 0));
+                    client.addOutgoingMessage(new NetworkMessage("timeout", null, null, 0));
                     client.stopOutputThread();
                     try {
                         outputThread.join();

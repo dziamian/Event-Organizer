@@ -98,7 +98,7 @@ public abstract class Client {
     protected abstract void handlingInput() throws SocketTimeoutException, EOFException;
 
     /// TODO
-    public boolean addMessage(NetworkMessage message) {
+    public boolean addOutgoingMessage(NetworkMessage message) {
         return outgoingMessages.offer(message);
     }
 

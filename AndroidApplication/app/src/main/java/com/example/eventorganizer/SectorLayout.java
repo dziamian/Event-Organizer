@@ -27,7 +27,7 @@ public class SectorLayout extends ItemLayout {
         ((SectorLayoutHolder) getItemHolder()).textViewAddress.setText(sectorInfoFixed.getAddress());
         String text;
         if (TaskManager.eventInfoUpdate != null) {
-            text = "Aktywne atrakcje: " + TaskManager.eventInfoUpdate.getSectors().get(sectorInfoFixed.getId()).getActiveRooms();
+            text = "Aktywne atrakcje: " + TaskManager.eventInfoUpdate.getSectors().get(sectorInfoFixed.getId()).getActiveRoomsCount();
         }
         else {
             text = "Aktywne atrakcje: " + sectorInfoFixed.getActiveRooms();
@@ -36,7 +36,7 @@ public class SectorLayout extends ItemLayout {
     }
 
     public void updateItemHolderAttributes(EventInfoUpdate update) {
-        String text = "Aktywne atrakcje: " + update.getSectors().get(sectorInfoFixed.getId()).getActiveRooms();
+        String text = "Aktywne atrakcje: " + update.getSectors().get(sectorInfoFixed.getId()).getActiveRoomsCount();
         ((SectorLayoutHolder) getItemHolder()).textViewAvailableRooms.setText(text);
     }
 
