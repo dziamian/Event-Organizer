@@ -1,18 +1,14 @@
 package network_structures;
 
-import java.io.Serializable;
+import sun.nio.ch.Net;
+
 import java.util.Arrays;
 
-public class BaseMessage implements Serializable {
-
+public class BaseMessage {
     private final String command;
-    private final String[] args; //Optional
+    private final String[] args; // Optional
     private final Object data;
     private final long communicationIdentifier;
-
-    public BaseMessage() {
-        this(null, null, null, 0);
-    }
 
     public BaseMessage(String command, String[] args, Object data, long communicationIdentifier) {
         this.communicationIdentifier = communicationIdentifier;
@@ -53,5 +49,21 @@ public class BaseMessage implements Serializable {
             retVal += "\n\t" + data.toString() + "\n}";
         }
         return retVal;
+    }
+
+    /**
+     * Converts given NetworkMessage to BaseMessage; Since {@link NetworkMessage#getData()}
+     * makes only a shallow copy of <b>data</b> field, it's advised to abandon the NetworkMessage
+     * reference thereafter.
+     * @param networkMessage NetworkMessage to convert
+     * @return BaseMessage conversion NetworkMessage
+     */
+    public static BaseMessage convertToBaseMessage(NetworkMessage networkMessage) {
+        return new BaseMessage(
+                networkMessage.getCommand(),
+                networkMessage.getArgs(),
+                networkMessage.getData(),
+                networkMessage.getCommunicationIdentifier()
+        );
     }
 }
