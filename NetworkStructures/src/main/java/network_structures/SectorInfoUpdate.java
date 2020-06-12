@@ -3,6 +3,8 @@ package network_structures;
 import org.bson.types.ObjectId;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,12 +14,12 @@ public class SectorInfoUpdate implements Serializable {
     private final ObjectId id;
 
     private final Map<ObjectId, RoomInfoUpdate> rooms;
-    private AtomicInteger activeRooms;
+    private AtomicInteger activeRoomsCount;
 
     public SectorInfoUpdate(ObjectId id) {
         this.id = id;
-        this.rooms = new TreeMap<>();
-        this.activeRooms = new AtomicInteger(0);
+        this.rooms = Collections.synchronizedMap(new TreeMap<>());
+        this.activeRoomsCount = new AtomicInteger(0);
     }
 
     public ObjectId getId() {
@@ -28,11 +30,11 @@ public class SectorInfoUpdate implements Serializable {
         return this.rooms;
     }
 
-    public AtomicInteger getActiveRooms() {
-        return this.activeRooms;
+    public AtomicInteger getActiveRoomsCount() {
+        return this.activeRoomsCount;
     }
 
-    public void setActiveRooms(int activeRooms) {
-        this.activeRooms.set(activeRooms);
+    public void setActiveRoomsCount(int activeRoomsCount) {
+        this.activeRoomsCount.set(activeRoomsCount);
     }
 }

@@ -1,10 +1,7 @@
 package server;
 
 import com.mongodb.client.*;
-import network_structures.BaseMessage;
-import network_structures.EventInfoFixed;
-import network_structures.EventInfoUpdate;
-import network_structures.NetworkMessage;
+import network_structures.*;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -147,16 +144,52 @@ public class Server {
              * Recognized client requests:
              * 1. ping - check if server recognizes this client
              * 2. login - log in to server providing credentials in args
-             * 3. eventInfo - request essential information about event, such as sectors / attractions list
-             * 4. viewTickets - view my tickets and their states
-             * 5. viewReservations - view my active reservation(s)
-             * 6. addTicket - add my ticket to specified room queue
-             * 7. removeTicket - remove specific one of my tickets
+             * 3. event_info - request essential information about event, such as sectors / attractions list
+             * 4. view_tickets - view my tickets and their states
+             * 5. view_reservations - view my active reservation(s)
+             * 6. add_to_queue - add my ticket to specified room queue
+             * 7. remove_from_queue - remove my ticket from specific queue
              * 8. abandonReservation - abandon one of my reservations (will result in penalty)
              * 9. update - request update on states of rooms and queues
              * 10. details - request detailed information about specific room
              * 11. grouping - answer grouping call with decision or send update with changed decision
              */
+            switch (task.getCommand()) {
+                case "add_to_queue": {
+                    Room room = sectors.get(
+                            new ObjectId(task.getArgs()[0])
+                    ).getRoom(
+                            new ObjectId(task.getArgs()[1])
+                    );
+                    if (room.
+                } break;
+                case "remove_from_queue": {
+                    sectors.get(
+                            new ObjectId(task.getArgs()[0])
+                    ).getRoom(
+                            new ObjectId(task.getArgs()[1])
+                    ).removeGroupFromQueue(
+                            ((Guide)task.getData()).getGroup()
+                    );
+                    RoomInfoUpdate ru = eventInfoUpdate.getSectors()
+                            .get(
+                                    new ObjectId(task.getArgs()[0])
+                            ).getRooms().get(
+                                    new ObjectId(task.getArgs()[1])
+                            );
+                    ru.setQueueSize(ru.getQueueSize().get() - 1);
+                } break;
+                default : {
+                    task.getResponseInterface().respond(
+                            new NetworkMessage(
+                                    "error",
+                                    new String[] { "invalid_command" },
+                                    null,
+                                    task.getCommunicationIdentifier()
+                            )
+                    );
+                }
+            }
         }
 
         /**
@@ -175,7 +208,7 @@ public class Server {
             // Checking if every sector and room has been loaded properly //
             for (Sector sector : sectors.values()) {
                 System.out.println(sector.getInfoFixed().getName() + ":");
-                for (Room room : sector.getRooms()) {
+                for (Room room : sector.getRoomsValues()) {
                     System.out.println("\tRoom " + room.getInfoFixed().getName());
                     System.out.println("\t\tRoom State: " + room.getState());
                 }
@@ -186,7 +219,7 @@ public class Server {
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
             executor.scheduleAtFixedRate(() -> sectors.values().forEach(
                     (sector -> {
-                        sector.getInfoUpdate().setActiveRooms(sector.getInfoUpdate().getActiveRooms().get()+1);
+                        sector.getInfoUpdate().setActiveRoomsCount(sector.getInfoUpdate().getActiveRoomsCount().get()+1);
                         sector.getInfoUpdate().getRooms().values().forEach((roomInfoUpdate -> roomInfoUpdate.setQueueSize(roomInfoUpdate.getQueueSize().get()+1)));
                     })),
                     0, 1000, TimeUnit.MILLISECONDS);
@@ -227,6 +260,11 @@ public class Server {
             this.messageResponseInterface = messageResponseInterface;
         }
 
+        public Task(String command, String[] args, Object data, long communicationIdentifier, ClientHandler.RespondToClientInterface messageResponseInterface) {
+            super(command, args, data, communicationIdentifier);
+            this.messageResponseInterface = messageResponseInterface;
+        }
+
         /**
          * Getter for client response interface
          * @return Client response interface
@@ -243,7 +281,7 @@ public class Server {
         /// TODO
         public static final int TIMEOUT_MS = 15 * 60 * 1000;
         /** Server responses queue */
-        //ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue;
+        // ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue;
         /** Socket connected to client */
         private final Socket socket;
 
@@ -252,7 +290,7 @@ public class Server {
          */
         public ClientHandler(Socket socket) {
             this.socket = socket;
-            //this.clientMessageQueue = new ConcurrentLinkedQueue<>();
+            // this.clientMessageQueue = new ConcurrentLinkedQueue<>();
         }
 
         /**
@@ -290,7 +328,7 @@ public class Server {
             } catch (SocketTimeoutException ex) {
                 System.err.println("Client (" + this.toString() + ") is not responding!");
                 if (client != null && outputThread != null) {
-                    client.addMessage(new NetworkMessage("timeout", null, null, 0));
+                    client.addOutgoingMessage(new NetworkMessage("timeout", null, null, 0));
                     client.stopOutputThread();
                     try {
                         outputThread.join();

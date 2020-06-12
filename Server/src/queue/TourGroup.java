@@ -1,5 +1,7 @@
 package queue;
 
+import server.Guide;
+
 import java.util.ArrayList;
 
 public class TourGroup {
@@ -8,6 +10,8 @@ public class TourGroup {
     private final static int maxTickets = 3;
     private ArrayList<Room.Reservation> reservations;
     private final static int maxReservations = 1;
+
+    private int penaltyLevel = 0;
 
     private Room currentRoom;
 
@@ -22,10 +26,45 @@ public class TourGroup {
     }
 
     /**
-     * Increments current level of penalty induced for abandoning reservation
+     * Increments current level of penalty induced for abandoning reservation for this group
      */
-    public void increasePenalty() {
+    public void increasePenaltyLevel() {
+        ++penaltyLevel;
+    }
 
+    /**
+     * @return Current penalty level of this group
+     */
+    public int getCurrentPenaltyLevel() {
+        return penaltyLevel;
+    }
+
+    /**
+     * Adds guide to this group's guide list
+     * @param guide Guide to add
+     * @return true if guide has been added, false otherwise
+     */
+    public boolean addGuide(Guide guide) {
+        if (guides.size() < maxGuides && guide != null) {
+            try {
+                guides.add(guide);
+                return true;
+            }
+            catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public boolean removeGuide(Guide guide) {
+        try {
+            return guides.remove(guide);
+        }
+        catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+        return false;
     }
 
     protected boolean canAddReservation() {
