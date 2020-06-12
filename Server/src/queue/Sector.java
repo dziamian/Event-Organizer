@@ -17,8 +17,8 @@ public class Sector {
     private int currentSize;
 
     public Sector(ObjectId id, String name, String address, String description) {
-        this.infoFixed = new SectorInfoFixed(id, name, address, description);
         this.infoUpdate = new SectorInfoUpdate(id);
+        this.infoFixed = new SectorInfoFixed(id, name, address, description, this.infoUpdate.getActiveRooms());
         this.rooms = new TreeMap<>();
         this.currentSize = 0;
     }
@@ -34,7 +34,7 @@ public class Sector {
         infoFixed.getRooms().put(key, room.getInfoFixed());
         ++currentSize;
         infoUpdate.getRooms().put(key, room.getInfoUpdate());
-        infoUpdate.setActiveRooms(infoUpdate.getActiveRooms()+1);
+        infoUpdate.setActiveRooms(infoUpdate.getActiveRooms().get()+1);
     }
 
     public Collection<Room> getRooms() {

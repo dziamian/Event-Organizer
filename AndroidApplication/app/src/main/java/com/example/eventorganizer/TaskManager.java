@@ -1,17 +1,16 @@
 package com.example.eventorganizer;
 
 import android.util.Log;
-import network_structures.BaseMessage;
-import network_structures.EventInfoFixed;
-import network_structures.EventInfoUpdate;
-import network_structures.NetworkMessage;
+import network_structures.*;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -109,6 +108,13 @@ public class TaskManager implements Runnable {
                 } break;
                 case "eventDetails": {
                     eventInfoFixed = (EventInfoFixed) message.getData();
+                    Collection<SectorInfoFixed> sectorsInfoFixed = eventInfoFixed.getSectors().values();
+                    for (SectorInfoFixed sectorInfoFixed : sectorsInfoFixed) {
+                        Collection<RoomInfoFixed> roomsInfoFixed = sectorInfoFixed.getRooms().values();
+                        for (RoomInfoFixed roomInfoFixed : roomsInfoFixed) {
+                            setDisplayedStates(roomInfoFixed);
+                        }
+                    }
                 } break;
                 case "update": {
                     startRequestingUpdates(message);
@@ -200,7 +206,47 @@ public class TaskManager implements Runnable {
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
-    /// TODO
+    /// TODO:
+    private void setDisplayedStates(RoomInfoUpdate roomInfoUpdate) {
+        switch (roomInfoUpdate.getState()) {
+            case "OPEN": {
+                roomInfoUpdate.setState("Dostępny!");
+            } break;
+            case "RESERVED": {
+                roomInfoUpdate.setState("Zarezerwowany!");
+            } break;
+            case "TAKEN": {
+                roomInfoUpdate.setState("Zajęty!");
+            } break;
+            case "INACTIVE": {
+                roomInfoUpdate.setState("Niedostępny!");
+            } break;
+        }
+    }
+
+    /// TODO:
+    private void setDisplayedStates(RoomInfoFixed roomInfoFixed) {
+        switch (roomInfoFixed.getState()) {
+            case "OPEN": {
+                roomInfoFixed.setState("Dostępny!");
+            } break;
+            case "RESERVED": {
+                roomInfoFixed.setState("Zarezerwowany!");
+            } break;
+            case "TAKEN": {
+                roomInfoFixed.setState("Zajęty!");
+            } break;
+            case "INACTIVE": {
+                roomInfoFixed.setState("Niedostępny!");
+            } break;
+        }
+    }
+
+    /**
+     * Creates lingering tasks responsible for pulling updates from server
+     * and passing them to the UI thread, given proper request message
+     * @param message Message containing method used for handling updates received from server
+     */
     private void startRequestingUpdates(BaseMessage message) {
         long streamId = TaskManager.nextCommunicationStream();
         lingeringTasks.add(new LingeringTask(
@@ -223,7 +269,16 @@ public class TaskManager implements Runnable {
                     }
                 }, (msg) -> {
                     eventInfoUpdate = (EventInfoUpdate) msg.getData();
-                    ((Runnable) message.getData()).run();
+                    Collection<SectorInfoUpdate> sectorsInfoUpdate = eventInfoUpdate.getSectors().values();
+                    for (SectorInfoUpdate sectorInfoUpdate : sectorsInfoUpdate) {
+                        Collection<RoomInfoUpdate> roomsInfoUpdate = sectorInfoUpdate.getRooms().values();
+                        for (RoomInfoUpdate roomInfoUpdate : roomsInfoUpdate) {
+                            setDisplayedStates(roomInfoUpdate);
+                        }
+                    }
+                    if (HomeActivity.getUpdatingUI()) {
+                        ((Runnable) message.getData()).run();
+                    }
                     return !HomeActivity.getUpdatingUI();
                 })
         );
@@ -249,42 +304,65 @@ public class TaskManager implements Runnable {
         return returnValue;
     }
 
+    /**
+     * Class representing ongoing processes within application core
+     * Field <b>runnable</b> should contain method to run periodically regardless of current client state
+     * Field <b>callable</b> should contain handler method for received messages
+     * If no <b>runnable</b> is provided, this object will not be invoked periodically
+     * If no <b>callable</b> is provided, this object will be removed should it receive any message
+     */
     private static class LingeringTask extends BaseMessage {
         private final Runnable runnable;
         private final Callable callable;
 
+        /**
+         * Basic constructor initializing all fields
+         * @param command Command to perform
+         * @param args Arguments for command
+         * @param data Any type of data needed for task execution
+         * @param communicationId Identifier of communication stream this message belongs to
+         * @param runnable Runnable to perform periodically regardless of received messages
+         * @param callable Callable to perform when this lingering task receives message from elsewhere
+         */
         public LingeringTask(String command, String[] args, Object data, long communicationId, Runnable runnable, Callable callable) {
             super(command, args, data, communicationId);
-            if (runnable != null) {
-                this.runnable = runnable;
-            } else {
-                this.runnable = () -> {};
-            }
-            if (callable != null) {
-                this.callable = callable;
-            } else {
-                this.callable = (msg) -> true;
-            }
+            this.runnable = (runnable != null ? runnable : () -> {});
+            this.callable = (callable != null ? callable : (msg) -> true);
         }
 
+        /**
+         * Simplified basic constructor when arguments and/or data is not required
+         * @param command Command to perform
+         * @param communicationId Identifier of communication stream this message belongs to
+         * @param runnable Runnable to perform periodically regardless of received messages
+         * @param callable Callable to perform when this lingering task receives message from elsewhere
+         */
         public LingeringTask(String command, long communicationId, Runnable runnable, Callable callable) {
             this(command,null,null,communicationId,runnable,callable);
         }
 
+        /**
+         * Getter for this lingering tasks's runnable
+         * @return Runnable
+         */
         public Runnable getRunnable() {
             return runnable;
         }
 
+        /**
+         * Getter for this lingering task's callabe
+         * @return Callable
+         */
         public Callable getCallable() {
             return callable;
         }
 
         /**
-         * Interface for awaiting tasks to handle received messages
+         * Interface for lingering tasks to handle received messages
          */
         public interface Callable {
             /**
-             * Callback for handling received message
+             * Callback for handling received messages
              * @param message Message to handle
              * @return True if task in question is done and should be removed from lingering tasks, false otherwise
              */
@@ -319,6 +397,8 @@ public class TaskManager implements Runnable {
         private NetworkMessage receive() {
             try {
                 return (NetworkMessage) this.in.readObject();
+            } catch (EOFException e) {
+                /// reconnect handling
             } catch (ClassNotFoundException e) {
                 e.printStackTrace(); //do zmiany pozniej
             } catch (IOException e) {
@@ -335,7 +415,7 @@ public class TaskManager implements Runnable {
             while (true) {
                 NetworkMessage message = receive();
                 if (message != null) {
-                    taskManagerInterface.passMessage(message);
+                    taskManagerInterface.passMessage(BaseMessage.convertToBaseMessage(message));
                 }
             }
         }

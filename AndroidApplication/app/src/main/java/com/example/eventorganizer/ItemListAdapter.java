@@ -41,7 +41,7 @@ public class ItemListAdapter<T extends ItemLayout> extends BaseAdapter {
         T layout = layoutList.get(position);
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(T.getResourceId(), parent, false);
-            layout.createItemHolder(convertView);
+            layout.createItemHolder(convertView, context);
             convertView.setTag(layout.getItemHolder());
         } else {
             layout.setItemHolderFromView(convertView);
@@ -50,17 +50,5 @@ public class ItemListAdapter<T extends ItemLayout> extends BaseAdapter {
         layout.setItemHolderAttributes();
 
         return convertView;
-
-        /*T layout = layoutList.get(position);
-        if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(ItemLayout.getResourceId(), null);
-            layout.setLayout(convertView, context);
-
-            convertView.setTag(layout.getItemHolder());
-        } else {
-            layout.setItemHolder(convertView.getTag());
-        }
-
-        return convertView;*/
     }
 }

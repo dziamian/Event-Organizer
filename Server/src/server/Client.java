@@ -2,6 +2,7 @@ package server;
 
 import com.mongodb.BasicDBObject;
 import network_structures.NetworkMessage;
+import network_structures.SectorInfoFixed;
 import org.bson.Document;
 
 import java.io.EOFException;
@@ -27,8 +28,6 @@ public abstract class Client {
     protected final AtomicBoolean outputThreadRunning = new AtomicBoolean(true);
     /** Stream for receiving information from this specific client */
     protected ObjectInputStream in;
-
-    protected final long UPDATE_DELAY_MS = 1000;
 
     /// TODO
     public Client(ObjectOutputStream out, ObjectInputStream in) {

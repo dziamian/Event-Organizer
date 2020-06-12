@@ -3,17 +3,18 @@ package network_structures;
 import org.bson.types.ObjectId;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoomInfoUpdate implements Serializable {
 
     private final ObjectId id;
     private String state;
-    private int queueSize;
+    private final AtomicInteger queueSize;
 
     public RoomInfoUpdate(ObjectId id) {
         this.id = id;
         this.state = "";
-        this.queueSize = 0;
+        this.queueSize = new AtomicInteger(0);
     }
 
     public ObjectId getId() {
@@ -28,11 +29,11 @@ public class RoomInfoUpdate implements Serializable {
         this.state = state;
     }
 
-    public int getQueueSize() {
+    public AtomicInteger getQueueSize() {
         return queueSize;
     }
 
     public void setQueueSize(int queueSize) {
-        this.queueSize = queueSize;
+        this.queueSize.set(queueSize);
     }
 }

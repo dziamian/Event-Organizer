@@ -6,23 +6,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link QueueFragment#newInstance} factory method to
+ * Use the {@link RoomFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class QueueFragment extends Fragment {
+public class RoomFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_TITLE = "title";
+    private static final String ARG_PARAM1 = "title";
 
     // TODO: Rename and change types of parameters
-    private String mTitle;
+    private String mParam1;
+    private String mParam2;
 
-    public QueueFragment() {
+    public RoomFragment() {
         // Required empty public constructor
     }
 
@@ -30,14 +29,14 @@ public class QueueFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param
-     * @return A new instance of fragment QueueFragment.
+     * @param param1 Parameter 1.
+     * @return A new instance of fragment RoomFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static QueueFragment newInstance(String title) {
-        QueueFragment fragment = new QueueFragment();
+    public static RoomFragment newInstance(String param1, String param2) {
+        RoomFragment fragment = new RoomFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_TITLE, title);
+        args.putString(ARG_PARAM1, param1);
         fragment.setArguments(args);
         return fragment;
     }
@@ -46,23 +45,14 @@ public class QueueFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mTitle = getArguments().getString(ARG_TITLE);
+            mParam1 = getArguments().getString(ARG_PARAM1);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(false);
-        getActivity().setTitle(mTitle);
-        ((HomeActivity)getActivity()).navigationView.setCheckedItem(R.id.nav_queues);
-        ((HomeActivity)getActivity()).setSelectedItemId(R.id.nav_queues);
-
-        View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
-
-        ArrayList<RoomLayout> roomList = new ArrayList<>();
-
-
-        return rootView;
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_room, container, false);
     }
 }

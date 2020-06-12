@@ -2,6 +2,7 @@ package com.example.eventorganizer;
 
 import android.content.Context;
 import android.view.View;
+import androidx.annotation.Nullable;
 
 public abstract class ItemLayout {
 
@@ -16,7 +17,7 @@ public abstract class ItemLayout {
         return resourceId;
     }
 
-    public abstract void createItemHolder(View view);
+    public abstract void createItemHolder(View view, @Nullable Context context);
 
     protected ItemHolder getItemHolder() {
         return itemHolder;
@@ -35,22 +36,4 @@ public abstract class ItemLayout {
     public abstract class ItemHolder {
 
     }
-
-    /*private static int resourceId;
-
-    protected ItemLayout(int resId) {
-        resourceId = resId;
-    }
-
-    public static int getResourceId() { return resourceId; }
-
-    protected abstract Object getItemHolder();
-
-    public abstract void setLayout(View view, Context context);
-
-    public abstract void setItemHolder(Object itemHolder);
-
-    protected abstract static class ItemHolder extends Object {
-
-    }*/
 }

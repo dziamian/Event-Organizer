@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import network_structures.BaseMessage;
 import org.bson.types.ObjectId;
 
 import network_structures.SectorInfoFixed;
@@ -25,6 +26,8 @@ public class SectorRoomsFragment extends Fragment {
 
     // TODO: Rename and change types of parameters
     private String mSectorId;
+
+    private ItemListAdapter<RoomLayout> itemListAdapter = null;
 
     public SectorRoomsFragment() {
         // Required empty public constructor
@@ -67,10 +70,30 @@ public class SectorRoomsFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_sector_rooms, container, false);
 
         ArrayList<RoomLayout> roomList = new ArrayList<>();
-        //sectorInfoFixed.getRooms().values().forEach(roomInfo -> roomList.add(new RoomLayout(roomInfo)));
+        sectorInfoFixed.getRooms().values().forEach(roomInfo -> roomList.add(new RoomLayout(roomInfo)));
 
-        ListView listView = rootView.findViewById(R.id.room_list_view);
-        listView.setAdapter(new ItemListAdapter<>(getActivity(), roomList));
+        getActivity().runOnUiThread(() -> {
+            ListView listView = rootView.findViewById(R.id.room_list_view);
+            itemListAdapter = new ItemListAdapter<>(getActivity(), roomList);
+            listView.setAdapter(itemListAdapter);
+        });
+
+        HomeActivity.setUpdatingUI(true);
+        MainActivity.connectionToServer.addIncomingMessage(new BaseMessage(
+                "update",
+                null,
+                (Runnable) () -> {
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            int numberOfRooms = TaskManager.eventInfoUpdate.getSectors().get(sectorId).getRooms().size();
+                            for (int i = 0; i < numberOfRooms; ++i) {
+                                itemListAdapter.layoutList.get(i).updateItemHolderAttributes(TaskManager.eventInfoUpdate, sectorId);
+                            }
+                        });
+                    }
+                },
+                TaskManager.nextCommunicationStream()
+        ));
 
         return rootView;
     }
