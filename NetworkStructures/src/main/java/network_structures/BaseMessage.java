@@ -1,13 +1,14 @@
 package network_structures;
 
-import java.io.Serializable;
+import sun.nio.ch.Net;
+
 import java.util.Arrays;
 
 public class BaseMessage {
-    private String command;
-    private String[] args; // Optional
-    private Object data;
-    private long communicationIdentifier;
+    private final String command;
+    private final String[] args; // Optional
+    private final Object data;
+    private final long communicationIdentifier;
 
     public BaseMessage(String command, String[] args, Object data, long communicationIdentifier) {
         this.communicationIdentifier = communicationIdentifier;
@@ -50,26 +51,19 @@ public class BaseMessage {
         return retVal;
     }
 
-    protected BaseMessage() {
-        this.command = null;
-        this.args = null;
-        this.data = null;
-        this.communicationIdentifier = 0;
-    }
-
-    protected void setCommand(String command) {
-        this.command = command;
-    }
-
-    protected void setArgs(String[] args) {
-        this.args = args;
-    }
-
-    protected void setData(Object data) {
-        this.data = data;
-    }
-
-    protected void setCommunicationIdentifier(long communicationIdentifier) {
-        this.communicationIdentifier = communicationIdentifier;
+    /**
+     * Converts given NetworkMessage to BaseMessage; Since {@link NetworkMessage#getData()}
+     * makes only a shallow copy of <b>data</b> field, it's advised to abandon the NetworkMessage
+     * reference thereafter.
+     * @param networkMessage NetworkMessage to convert
+     * @return BaseMessage conversion NetworkMessage
+     */
+    public static BaseMessage convertToBaseMessage(NetworkMessage networkMessage) {
+        return new BaseMessage(
+                networkMessage.getCommand(),
+                networkMessage.getArgs(),
+                networkMessage.getData(),
+                networkMessage.getCommunicationIdentifier()
+        );
     }
 }
