@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.function.Function;
 
 public class Room {
 
@@ -136,15 +137,18 @@ public class Room {
             this.queue.enqueue(queueTicket);
             this.infoUpdate.setQueueSize(infoUpdate.getQueueSize().get()+1);
             return true;
-        } else return false;
+        }
+        return false;
     }
 
     /**
      * Removes given group from this room's queue
      * @param group Group to remove
      */
-    public void removeGroupFromQueue(TourGroup group) {
-
+    public boolean removeGroupFromQueue(TourGroup group) {
+        if (group != null && group.hasTicketFor(this)) {
+        }
+        return false;
     }
 
     //INNER CLASSES-------------------------------------------------------------------------------------------------
@@ -256,6 +260,16 @@ public class Room {
                     return groups;
             }
             return groups;
+        }
+
+        public boolean removeFirstMatching(Function<TourGroup.QueueTicket, Boolean> matcher) {
+            for (BasicQueue.Iterator it = getIterator(); it.isValid(); it = it.getNext()) {
+                if (matcher.apply((TourGroup.QueueTicket)it.getData()).booleanValue()) {
+                    this.removeAt(it);
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void tryGrouping() {

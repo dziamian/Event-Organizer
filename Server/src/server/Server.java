@@ -169,20 +169,17 @@ public class Server {
                     );
                 } break;
                 case "remove_from_queue": {
-                    sectors.get(
+                    Room room = sectors.get(
                             new ObjectId(task.getArgs()[0])
                     ).getRoom(
                             new ObjectId(task.getArgs()[1])
-                    ).removeGroupFromQueue(
-                            ((Guide)task.getData()).getGroup()
                     );
-                    RoomInfoUpdate ru = eventInfoUpdate.getSectors()
-                            .get(
-                                    new ObjectId(task.getArgs()[0])
-                            ).getRooms().get(
-                                    new ObjectId(task.getArgs()[1])
-                            );
-                    ru.setQueueSize(ru.getQueueSize().get() - 1);
+                    task.getResponseInterface().respond(new NetworkMessage(
+                            "remove_from_queue",
+                            new String[] { "" + room.removeGroupFromQueue((TourGroup)task.getData()) },
+                            null,
+                            task.getCommunicationIdentifier()
+                    ));
                 } break;
                 default : {
                     task.getResponseInterface().respond(

@@ -75,7 +75,7 @@ public class TourGroup {
         return tickets.size() < maxTickets;
     }
 
-    private boolean hasTicketFor(Room room) {
+    public boolean hasTicketFor(Room room) {
         for (TourGroup.QueueTicket ticket : tickets) {
             if (ticket.destination == room)
                 return true;
