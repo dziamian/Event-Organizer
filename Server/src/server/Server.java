@@ -132,7 +132,7 @@ public class Server {
     }
 
     /**
-     * Main server task running on separate thread, responsible for systeme management
+     * Main server task running on separate thread, responsible for system management
      */
     private static class MainServerTask implements Runnable {
 

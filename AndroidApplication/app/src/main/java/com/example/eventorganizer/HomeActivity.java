@@ -115,11 +115,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 if (selectedItemId != R.id.nav_queues) {
                     setUpdatingUI(false);
                     getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, QueueFragment.newInstance("Moje kolejki")).commit();
-                    /*getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    setTitle("Moje kolejki");
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, new QueueFragment()).commit();
-                    rooms.setVisible(false);*/
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, QueueFragment.newInstance()).commit();
                 }
             } break;
             case R.id.nav_reservations: {

@@ -2,6 +2,7 @@ package com.example.eventorganizer;
 
 import android.util.Log;
 import network_structures.*;
+import org.bson.types.ObjectId;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -49,10 +50,6 @@ public class TaskManager implements Runnable {
 
     /** Connection state flag */
     private boolean isConnected;
-    /** Event information, mostly unchanging */
-    public static EventInfoFixed eventInfoFixed;
-    /// TODO
-    public static EventInfoUpdate eventInfoUpdate;
 
     /**
      * Default constructor, does not initialize this object completely
@@ -110,8 +107,8 @@ public class TaskManager implements Runnable {
                     loginToServer(message);
                 } break;
                 case "event_details": {
-                    eventInfoFixed = (EventInfoFixed) message.getData();
-                    Collection<SectorInfoFixed> sectorsInfoFixed = eventInfoFixed.getSectors().values();
+                    GuideAccount.createInstance((EventInfoFixed) message.getData());
+                    Collection<SectorInfoFixed> sectorsInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().values();
                     for (SectorInfoFixed sectorInfoFixed : sectorsInfoFixed) {
                         Collection<RoomInfoFixed> roomsInfoFixed = sectorInfoFixed.getRooms().values();
                         for (RoomInfoFixed roomInfoFixed : roomsInfoFixed) {
@@ -270,8 +267,8 @@ public class TaskManager implements Runnable {
                         }
                     }
                 }, (msg) -> {
-                    eventInfoUpdate = (EventInfoUpdate) msg.getData();
-                    Collection<SectorInfoUpdate> sectorsInfoUpdate = eventInfoUpdate.getSectors().values();
+                    GuideAccount.getInstance().setEventInfoUpdate((EventInfoUpdate) msg.getData());
+                    Collection<SectorInfoUpdate> sectorsInfoUpdate = GuideAccount.getInstance().getEventInfoUpdate().getSectors().values();
                     for (SectorInfoUpdate sectorInfoUpdate : sectorsInfoUpdate) {
                         Collection<RoomInfoUpdate> roomsInfoUpdate = sectorInfoUpdate.getRooms().values();
                         for (RoomInfoUpdate roomInfoUpdate : roomsInfoUpdate) {
@@ -293,11 +290,15 @@ public class TaskManager implements Runnable {
                 streamId,
                 null,
                 (msg) -> {
-                    // add to my queues
-                    if ("true".equals(msg.getArgs()[0])) {
-                        ((Runnable[]) message.getData())[0].run();
-                    } else {
+                    if ("0".equals(msg.getArgs()[0])) {
                         ((Runnable[]) message.getData())[1].run();
+                    } else {
+                        GuideAccount.getInstance().addNewQueue(new ObjectId(
+                                message.getArgs()[0]),
+                                new ObjectId(message.getArgs()[1]),
+                                Integer.parseInt(msg.getArgs()[0])
+                        );
+                        ((Runnable[]) message.getData())[0].run();
                     }
                     return true;
                 })

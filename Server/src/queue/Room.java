@@ -131,14 +131,14 @@ public class Room {
         }
     }
 
-    public boolean addGroupToQueue(TourGroup group) {
+    public int addGroupToQueue(TourGroup group) {
         TourGroup.QueueTicket queueTicket = group.createTicket(this);
         if (queueTicket != null) {
             this.queue.enqueue(queueTicket);
             this.infoUpdate.setQueueSize(infoUpdate.getQueueSize().get()+1);
-            return true;
+            return this.queue.size();
         }
-        return false;
+        return 0;
     }
 
     /**
