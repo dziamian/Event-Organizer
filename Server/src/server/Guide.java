@@ -1,6 +1,5 @@
 package server;
 
-import network_structures.EventInfoUpdate;
 import network_structures.NetworkMessage;
 
 import java.io.EOFException;

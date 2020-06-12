@@ -6,6 +6,7 @@ import network_structures.EventInfoFixed;
 import network_structures.EventInfoUpdate;
 import network_structures.NetworkMessage;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -223,7 +224,9 @@ public class TaskManager implements Runnable {
                     }
                 }, (msg) -> {
                     eventInfoUpdate = (EventInfoUpdate) msg.getData();
-                    ((Runnable) message.getData()).run();
+                    if (HomeActivity.getUpdatingUI()) {
+                        ((Runnable) message.getData()).run();
+                    }
                     return !HomeActivity.getUpdatingUI();
                 })
         );
@@ -319,6 +322,8 @@ public class TaskManager implements Runnable {
         private NetworkMessage receive() {
             try {
                 return (NetworkMessage) this.in.readObject();
+            } catch (EOFException e) {
+                /// reconnect handling
             } catch (ClassNotFoundException e) {
                 e.printStackTrace(); //do zmiany pozniej
             } catch (IOException e) {

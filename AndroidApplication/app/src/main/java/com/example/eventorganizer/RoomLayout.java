@@ -3,6 +3,7 @@ package com.example.eventorganizer;
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
+import androidx.annotation.Nullable;
 import network_structures.RoomInfoFixed;
 
 public class RoomLayout extends ItemLayout {
@@ -12,7 +13,7 @@ public class RoomLayout extends ItemLayout {
     }
 
     @Override
-    public void createItemHolder(View view) {
+    public void createItemHolder(View view, @Nullable Context context) {
 
     }
 

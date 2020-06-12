@@ -26,11 +26,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
     private static final AtomicBoolean updatingUI = new AtomicBoolean(true);
 
     public static synchronized boolean getUpdatingUI() {
-        return updatingUI.get();
+        return HomeActivity.updatingUI.get();
     }
 
     public static synchronized void setUpdatingUI(boolean status) {
-        updatingUI.set(status);
+        HomeActivity.updatingUI.set(status);
     }
 
     public void setSelectedItemId(int id) {
@@ -105,6 +105,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         switch (menuItem.getItemId()) {
             case R.id.nav_sectors: {
                 if (selectedItemId != R.id.nav_sectors) {
+                    setUpdatingUI(false);
                     getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, SectorFragment.newInstance("Sektory")).commit();
                 }
@@ -112,18 +113,21 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             /// DO POPRAWY JAK WYŻEJ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             case R.id.nav_queues: {
                 if (selectedItemId != R.id.nav_queues) {
+                    setUpdatingUI(false);
                     getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, QueueFragment.newInstance("Moje kolejki")).commit();
+                    /*getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     setTitle("Moje kolejki");
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, new QueueFragment()).commit();
-                    rooms.setVisible(false);
+                    rooms.setVisible(false);*/
                 }
             } break;
             case R.id.nav_reservations: {
                 if (selectedItemId != R.id.nav_reservations) {
-                    getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    /*getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     setTitle("Moje rezerwacje");
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, new ReservationFragment()).commit();
-                    rooms.setVisible(false);
+                    rooms.setVisible(false);*/
                 }
             } break;
         }

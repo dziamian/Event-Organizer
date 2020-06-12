@@ -28,8 +28,6 @@ public abstract class Client {
     /** Stream for receiving information from this specific client */
     protected ObjectInputStream in;
 
-    protected final long UPDATE_DELAY_MS = 1000;
-
     /// TODO
     public Client(ObjectOutputStream out, ObjectInputStream in) {
         this.outgoingMessages = new ConcurrentLinkedQueue<>();

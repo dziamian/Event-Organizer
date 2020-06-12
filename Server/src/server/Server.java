@@ -15,6 +15,9 @@ import java.util.*;
 // Structure for task queues
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,9 +39,9 @@ public class Server {
     // private static MongoClient mongoClient;
 
     private final static Map<ObjectId, Sector> sectors = new TreeMap<>();
-    //
+    /// TODO
     private static final EventInfoFixed eventInfoFixed = new EventInfoFixed();
-    //
+    /// TODO
     private static final EventInfoUpdate eventInfoUpdate = new EventInfoUpdate();
 
     /// Delay defining frequency for passive server to check for activation condition
@@ -71,7 +74,7 @@ public class Server {
             }
 
         } catch (IOException ex) {
-            System.out.println("Server exception: " + ex.getMessage());
+            System.err.println("Server exception: " + ex.getMessage());
         }
     }
 
@@ -180,9 +183,17 @@ public class Server {
 
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST
-            while (true) {
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.scheduleAtFixedRate(() -> eventInfoUpdate.getSectors().values().forEach((sectorInfoUpdate -> {sectorInfoUpdate.setActiveRooms(sectorInfoUpdate.getActiveRooms()+1);})), 0, 1000, TimeUnit.MILLISECONDS);
+
+            /*while (true) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 eventInfoUpdate.getSectors().values().forEach((sectorInfoUpdate -> {sectorInfoUpdate.setActiveRooms(sectorInfoUpdate.getActiveRooms()+1);}));
-            }
+            }*/
 
             // Main server task queue
             /*while (true) {
