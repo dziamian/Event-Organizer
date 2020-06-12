@@ -161,8 +161,12 @@ public class Server {
                     ).getRoom(
                             new ObjectId(task.getArgs()[1])
                     );
-                    room.addGroupToQueue((TourGroup)task.getData());
-                    room.getInfoUpdate().setQueueSize(room.getInfoUpdate().getQueueSize().get() + 1);
+                    task.getResponseInterface().respond(new NetworkMessage(
+                            "add_to_queue",
+                            new String[] { String.valueOf(room.addGroupToQueue((TourGroup)task.getData())) },
+                            null,
+                            task.getCommunicationIdentifier())
+                    );
                 } break;
                 case "remove_from_queue": {
                     sectors.get(

@@ -1,11 +1,14 @@
 package com.example.eventorganizer;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import network_structures.BaseMessage;
 import network_structures.RoomInfoFixed;
 import network_structures.SectorInfoFixed;
 import org.bson.types.ObjectId;
@@ -77,7 +80,16 @@ public class RoomFragment extends Fragment {
         ((TextView)rootView.findViewById(R.id.room_description)).setText(roomInfoFixed.getDescription());
 
         rootView.findViewById(R.id.room_add_to_queue).setOnClickListener(v -> {
-
+            MainActivity.connectionToServer.addIncomingMessage(new BaseMessage(
+                    "add_to_queue",
+                    new String[] { this.sectorId, this.roomId },
+                    new Runnable[] { () -> { //prawidlowe dodanie do kolejki
+                        getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Successfully added to room's queue!", Toast.LENGTH_SHORT).show());
+                    }, ()-> { //blad w trakcie dodawania do kolejki
+                        getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Something went wrong during adding to queue!", Toast.LENGTH_SHORT).show());
+                    }},
+                    TaskManager.nextCommunicationStream()
+            ));
         });
 
         return rootView;

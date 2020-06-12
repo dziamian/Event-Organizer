@@ -130,12 +130,13 @@ public class Room {
         }
     }
 
-    public void addGroupToQueue(TourGroup group) {
+    public boolean addGroupToQueue(TourGroup group) {
         TourGroup.QueueTicket queueTicket = group.createTicket(this);
         if (queueTicket != null) {
             this.queue.enqueue(queueTicket);
             this.infoUpdate.setQueueSize(infoUpdate.getQueueSize().get()+1);
-        }
+            return true;
+        } else return false;
     }
 
     /**
@@ -262,7 +263,7 @@ public class Room {
                 return;
             if (owner.state == State.OPEN) {
                 //////////////////////////////////////////////////////////// ustaw rozpoczecie grupowania (w nowym watku np)
-                new Thread(this::launchGrouping).start();
+                //new Thread(this::launchGrouping).start();
             } else {
                 requestedGrouping = true;
             }

@@ -103,10 +103,13 @@ public class TaskManager implements Runnable {
             }
         } else {
             switch (message.getCommand()) {
+                case "update": {
+                    startRequestingUpdates(message);
+                } break;
                 case "login": {
                     loginToServer(message);
                 } break;
-                case "eventDetails": {
+                case "event_details": {
                     eventInfoFixed = (EventInfoFixed) message.getData();
                     Collection<SectorInfoFixed> sectorsInfoFixed = eventInfoFixed.getSectors().values();
                     for (SectorInfoFixed sectorInfoFixed : sectorsInfoFixed) {
@@ -116,8 +119,8 @@ public class TaskManager implements Runnable {
                         }
                     }
                 } break;
-                case "update": {
-                    startRequestingUpdates(message);
+                case "add_to_queue": {
+                    addGroupToQueue(message);
                 } break;
             }
         }
@@ -281,6 +284,25 @@ public class TaskManager implements Runnable {
                     return !HomeActivity.getUpdatingUI();
                 })
         );
+    }
+
+    private void addGroupToQueue(BaseMessage message) {
+        long streamId = TaskManager.nextCommunicationStream();
+        lingeringTasks.add(new LingeringTask(
+                "add_to_queue",
+                streamId,
+                null,
+                (msg) -> {
+                    // add to my queues
+                    if ("true".equals(msg.getArgs()[0])) {
+                        ((Runnable[]) message.getData())[0].run();
+                    } else {
+                        ((Runnable[]) message.getData())[1].run();
+                    }
+                    return true;
+                })
+        );
+        sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
     /**

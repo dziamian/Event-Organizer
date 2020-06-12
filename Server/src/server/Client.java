@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject;
 import network_structures.NetworkMessage;
 import network_structures.SectorInfoFixed;
 import org.bson.Document;
+import queue.TourGroup;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -53,7 +54,7 @@ public abstract class Client {
                 if (userFindResult != null) {
                     switch (userFindResult.getString("role")) {
                         case "G": {
-                            client = new Guide(out, in);
+                            client = new Guide(out, in, new TourGroup());
                         }
                         break;
                         case "P": {
@@ -91,7 +92,7 @@ public abstract class Client {
      * @throws IOException When socket is unable to send message
      */
     protected final void sendStartingData() throws IOException {
-        this.out.writeObject(new NetworkMessage("eventDetails", null, Server.getEventInfoFixed(), 0));
+        this.out.writeObject(new NetworkMessage("event_details", null, Server.getEventInfoFixed(), 0));
     }
 
     /// TODO
