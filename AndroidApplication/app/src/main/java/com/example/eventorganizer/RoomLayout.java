@@ -4,22 +4,60 @@ import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
+import network_structures.EventInfoUpdate;
 import network_structures.RoomInfoFixed;
+import org.bson.types.ObjectId;
 
 public class RoomLayout extends ItemLayout {
 
-    public RoomLayout(int resId) {
-        super(resId);
+    private final RoomInfoFixed roomInfoFixed;
+
+    public RoomLayout(RoomInfoFixed roomInfoFixed) {
+        super(R.layout.room_item);
+        this.roomInfoFixed = roomInfoFixed;
     }
 
     @Override
     public void createItemHolder(View view, @Nullable Context context) {
-
+        setItemHolder(new RoomLayoutHolder(view));
     }
 
     @Override
     protected void setItemHolderAttributes() {
+        ((RoomLayoutHolder) getItemHolder()).textViewName.setText(roomInfoFixed.getName());
+        ((RoomLayoutHolder) getItemHolder()).textViewLocation.setText(roomInfoFixed.getLocation());
+        String stateDetails;
+        if (TaskManager.eventInfoUpdate != null) {
+            ((RoomLayoutHolder) getItemHolder()).textViewRoomState.setText(TaskManager.eventInfoUpdate.getSectors().get(roomInfoFixed.getSectorId()).getRooms().get(roomInfoFixed.getId()).getState());
+            stateDetails = "Grup w kolejce: " + TaskManager.eventInfoUpdate.getSectors().get(roomInfoFixed.getSectorId()).getRooms().get(roomInfoFixed.getId()).getQueueSize();
+            ((RoomLayoutHolder) getItemHolder()).textViewRoomStateDetails.setText(stateDetails);
+        } else {
+            ((RoomLayoutHolder) getItemHolder()).textViewRoomState.setText(roomInfoFixed.getState());
+            stateDetails = "Grup w kolejce: " + roomInfoFixed.getQueueSize();
+            ((RoomLayoutHolder) getItemHolder()).textViewRoomStateDetails.setText(stateDetails);
+        }
+    }
 
+    public void updateItemHolderAttributes(EventInfoUpdate update, ObjectId sectorId) {
+        ((RoomLayoutHolder) getItemHolder()).textViewRoomState.setText(update.getSectors().get(sectorId).getRooms().get(roomInfoFixed.getId()).getState());
+        String stateDetails = "Grup w kolejce: " + update.getSectors().get(sectorId).getRooms().get(roomInfoFixed.getId()).getQueueSize();
+        ((RoomLayoutHolder) getItemHolder()).textViewRoomStateDetails.setText(stateDetails);
+    }
+
+    private class RoomLayoutHolder extends ItemHolder {
+        public TextView textViewName;
+        public TextView textViewLocation;
+        public TextView textViewRoomState;
+        public TextView textViewRoomStateDetails;
+
+        public RoomLayoutHolder(View view) {
+            textViewName = view.findViewById(R.id.room_name);
+            textViewLocation = view.findViewById(R.id.room_location);
+            textViewRoomState = view.findViewById(R.id.room_state);
+            textViewRoomStateDetails = view.findViewById(R.id.room_state_details);
+
+            //view.findViewById(...)
+        }
     }
 
     /*private final RoomInfoFixed roomInfoFixed;

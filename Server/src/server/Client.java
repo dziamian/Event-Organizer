@@ -2,6 +2,7 @@ package server;
 
 import com.mongodb.BasicDBObject;
 import network_structures.NetworkMessage;
+import network_structures.SectorInfoFixed;
 import org.bson.Document;
 
 import java.io.EOFException;

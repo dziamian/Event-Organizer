@@ -32,11 +32,11 @@ public class Room {
     protected RoomQueue queue;
 
     public Room(ObjectId id, String name, String location, String description, int maxSlots, Sector parentSector) {
-        this.infoFixed = new RoomInfoFixed(id, name, location, description);
         this.infoUpdate = new RoomInfoUpdate(id);
+        changeState(State.OPEN);
+        this.infoFixed = new RoomInfoFixed(id, parentSector.getInfoFixed().getId(), name, location, description, this.infoUpdate.getState(), this.infoUpdate.getQueueSize());
         this.maxSlots = maxSlots;
         this.queue = new RoomQueue(this);
-        changeState(State.OPEN);
         this.currentVisitors = new ArrayList<>();
         this.currentReservations = new ArrayList<>();
         this.parentSector = parentSector;
@@ -134,7 +134,7 @@ public class Room {
         TourGroup.QueueTicket queueTicket = group.createTicket(this);
         if (queueTicket != null) {
             this.queue.enqueue(queueTicket);
-            this.infoUpdate.setQueueSize(infoUpdate.getQueueSize()+1);
+            this.infoUpdate.setQueueSize(infoUpdate.getQueueSize().get()+1);
         }
     }
 

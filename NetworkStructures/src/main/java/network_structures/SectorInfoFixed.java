@@ -3,6 +3,7 @@ package network_structures;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bson.types.ObjectId;
 
@@ -13,13 +14,15 @@ public class SectorInfoFixed implements Serializable {
     private String address;
     private String description;
     private Map<ObjectId, RoomInfoFixed> rooms;
+    private AtomicInteger activeRooms;
 
-    public SectorInfoFixed(ObjectId id, String name, String address, String description) {
+    public SectorInfoFixed(ObjectId id, String name, String address, String description, AtomicInteger activeRooms) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.description = description;
         this.rooms = new TreeMap<>();
+        this.activeRooms = activeRooms;
     }
 
     public ObjectId getId() {
@@ -41,4 +44,6 @@ public class SectorInfoFixed implements Serializable {
     public Map<ObjectId, RoomInfoFixed> getRooms() {
         return rooms;
     }
+
+    public AtomicInteger getActiveRooms() { return activeRooms; }
 }

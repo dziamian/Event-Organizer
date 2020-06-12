@@ -88,14 +88,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         if (mNavDrawer.isDrawerOpen(GravityCompat.START)) {
             mNavDrawer.closeDrawer(GravityCompat.START);
         } else {
-            /*if (rooms.isVisible()) {
-                setTitle("Sektory");
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, new SectorFragment()).commit();
-                navigationView.setCheckedItem(R.id.nav_sectors);
-                rooms.setVisible(false);
-            } else {
-                super.onBackPressed();
-            }*/
             super.onBackPressed();
         }
     }

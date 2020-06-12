@@ -1,10 +1,7 @@
 package com.example.eventorganizer;
 
 import android.util.Log;
-import network_structures.BaseMessage;
-import network_structures.EventInfoFixed;
-import network_structures.EventInfoUpdate;
-import network_structures.NetworkMessage;
+import network_structures.*;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -13,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -110,6 +108,13 @@ public class TaskManager implements Runnable {
                 } break;
                 case "eventDetails": {
                     eventInfoFixed = (EventInfoFixed) message.getData();
+                    Collection<SectorInfoFixed> sectorsInfoFixed = eventInfoFixed.getSectors().values();
+                    for (SectorInfoFixed sectorInfoFixed : sectorsInfoFixed) {
+                        Collection<RoomInfoFixed> roomsInfoFixed = sectorInfoFixed.getRooms().values();
+                        for (RoomInfoFixed roomInfoFixed : roomsInfoFixed) {
+                            setDisplayedStates(roomInfoFixed);
+                        }
+                    }
                 } break;
                 case "update": {
                     startRequestingUpdates(message);
@@ -201,6 +206,42 @@ public class TaskManager implements Runnable {
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
+    /// TODO:
+    private void setDisplayedStates(RoomInfoUpdate roomInfoUpdate) {
+        switch (roomInfoUpdate.getState()) {
+            case "OPEN": {
+                roomInfoUpdate.setState("Dostępny!");
+            } break;
+            case "RESERVED": {
+                roomInfoUpdate.setState("Zarezerwowany!");
+            } break;
+            case "TAKEN": {
+                roomInfoUpdate.setState("Zajęty!");
+            } break;
+            case "INACTIVE": {
+                roomInfoUpdate.setState("Niedostępny!");
+            } break;
+        }
+    }
+
+    /// TODO:
+    private void setDisplayedStates(RoomInfoFixed roomInfoFixed) {
+        switch (roomInfoFixed.getState()) {
+            case "OPEN": {
+                roomInfoFixed.setState("Dostępny!");
+            } break;
+            case "RESERVED": {
+                roomInfoFixed.setState("Zarezerwowany!");
+            } break;
+            case "TAKEN": {
+                roomInfoFixed.setState("Zajęty!");
+            } break;
+            case "INACTIVE": {
+                roomInfoFixed.setState("Niedostępny!");
+            } break;
+        }
+    }
+
     /**
      * Creates lingering tasks responsible for pulling updates from server
      * and passing them to the UI thread, given proper request message
@@ -228,6 +269,13 @@ public class TaskManager implements Runnable {
                     }
                 }, (msg) -> {
                     eventInfoUpdate = (EventInfoUpdate) msg.getData();
+                    Collection<SectorInfoUpdate> sectorsInfoUpdate = eventInfoUpdate.getSectors().values();
+                    for (SectorInfoUpdate sectorInfoUpdate : sectorsInfoUpdate) {
+                        Collection<RoomInfoUpdate> roomsInfoUpdate = sectorInfoUpdate.getRooms().values();
+                        for (RoomInfoUpdate roomInfoUpdate : roomsInfoUpdate) {
+                            setDisplayedStates(roomInfoUpdate);
+                        }
+                    }
                     if (HomeActivity.getUpdatingUI()) {
                         ((Runnable) message.getData()).run();
                     }

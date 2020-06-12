@@ -184,7 +184,12 @@ public class Server {
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST
             ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.scheduleAtFixedRate(() -> eventInfoUpdate.getSectors().values().forEach((sectorInfoUpdate -> {sectorInfoUpdate.setActiveRooms(sectorInfoUpdate.getActiveRooms()+1);})), 0, 1000, TimeUnit.MILLISECONDS);
+            executor.scheduleAtFixedRate(() -> sectors.values().forEach(
+                    (sector -> {
+                        sector.getInfoUpdate().setActiveRooms(sector.getInfoUpdate().getActiveRooms().get()+1);
+                        sector.getInfoUpdate().getRooms().values().forEach((roomInfoUpdate -> roomInfoUpdate.setQueueSize(roomInfoUpdate.getQueueSize().get()+1)));
+                    })),
+                    0, 1000, TimeUnit.MILLISECONDS);
 
             /*while (true) {
                 try {
