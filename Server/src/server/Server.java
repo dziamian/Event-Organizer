@@ -181,6 +181,13 @@ public class Server {
                             task.getCommunicationIdentifier()
                     ));
                 } break;
+                case "view_tickets": {
+                    Room[] rooms = ((TourGroup)task.getData()).getTicketRooms();
+                    TreeMap<RoomInfoFixed, RoomInfoUpdate> roomInfo = new TreeMap<>();
+                    for (Room room : rooms) {
+
+                    }
+                } break;
                 default : {
                     task.getResponseInterface().respond(
                             new NetworkMessage(

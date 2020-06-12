@@ -40,6 +40,17 @@ public class TourGroup {
     }
 
     /**
+     * @return Array of Rooms for which this group has ticket
+     */
+    public Room[] getTicketRooms() {
+        Room[] rooms = new Room[tickets.size()];
+        for (int i = 0; i < rooms.length; ++i) {
+            rooms[i] = tickets.get(i).getDestination();
+        }
+        return rooms;
+    }
+
+    /**
      * Adds guide to this group's guide list
      * @param guide Guide to add
      * @return true if guide has been added, false otherwise
@@ -145,6 +156,10 @@ public class TourGroup {
          */
         public String getRoomIdentifier() {
             return destination.getInfoFixed().getName();
+        }
+
+        public Room getDestination() {
+            return this.destination;
         }
 
         protected void increaseTimesAsked() {
