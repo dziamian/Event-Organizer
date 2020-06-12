@@ -213,6 +213,8 @@ public class Server {
                 }
             }
 
+
+            // Main server task queue
             while (true) {
                 Task task = receivedTasks.poll();
                 if (task != null)
@@ -227,23 +229,6 @@ public class Server {
 //                        sector.getInfoUpdate().getRooms().values().forEach((roomInfoUpdate -> roomInfoUpdate.setQueueSize(roomInfoUpdate.getQueueSize().get()+1)));
 //                    })),
 //                    0, 1000, TimeUnit.MILLISECONDS);
-
-            /*while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                eventInfoUpdate.getSectors().values().forEach((sectorInfoUpdate -> {sectorInfoUpdate.setActiveRooms(sectorInfoUpdate.getActiveRooms()+1);}));
-            }*/
-
-            // Main server task queue
-            /*while (true) {
-                Task task = receivedTasks.poll();
-                if (task != null) {
-                    handleTask(task);
-                }
-            }*/
         }
     }
 
