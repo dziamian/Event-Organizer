@@ -53,6 +53,18 @@ public class Room {
         return state;
     }
 
+    public int positionOf(TourGroup group) {
+        if (group != null) {
+            int i = 0;
+            for (BasicQueue.Iterator it = queue.getIterator(); it.isValid(); it = it.getNext()) {
+                if (((TourGroup.QueueTicket)it.getData()).getOwner() == group)
+                    return i;
+                ++i;
+            }
+        }
+        return -1;
+    }
+
     private void changeState(State state) {
         this.state = state;
         this.infoUpdate.setState(this.state.toString());
