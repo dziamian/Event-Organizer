@@ -147,6 +147,11 @@ public class Room {
      */
     public boolean removeGroupFromQueue(TourGroup group) {
         if (group != null && group.hasTicketFor(this)) {
+            return queue.removeFirstMatching((ticket) ->  {
+                if (ticket.getOwner() == group)
+                    return Boolean.TRUE;
+                return Boolean.FALSE;
+            });
         }
         return false;
     }
@@ -264,7 +269,7 @@ public class Room {
 
         public boolean removeFirstMatching(Function<TourGroup.QueueTicket, Boolean> matcher) {
             for (BasicQueue.Iterator it = getIterator(); it.isValid(); it = it.getNext()) {
-                if (matcher.apply((TourGroup.QueueTicket)it.getData()).booleanValue()) {
+                if (matcher.apply((TourGroup.QueueTicket)it.getData()) == Boolean.TRUE) {
                     this.removeAt(it);
                     return true;
                 }
