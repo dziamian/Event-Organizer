@@ -37,10 +37,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         selectedItemId = id;
     }
 
-    public void setRoomActivity(ObjectId sectorId) {
+    public void setSectorRoomsFragment(ObjectId sectorId) {
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_layout, SectorRoomsFragment.newInstance(sectorId.toString()))
+                .addToBackStack(null)
+                .commit();
+    }
+
+    public void setRoomActivity(ObjectId sectorId, ObjectId roomId) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_layout, RoomFragment.newInstance(sectorId.toString(), roomId.toString()))
                 .addToBackStack(null)
                 .commit();
     }
@@ -77,7 +85,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_layout, SectorFragment.newInstance("Sektory"))
+                    .replace(R.id.fragment_layout, SectorFragment.newInstance())
                     .commit();
             selectedItemId = R.id.nav_sectors;
         }
@@ -99,7 +107,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 if (selectedItemId != R.id.nav_sectors) {
                     setUpdatingUI(false);
                     getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, SectorFragment.newInstance("Sektory")).commit();
+                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, SectorFragment.newInstance()).commit();
                 }
             } break;
             /// DO POPRAWY JAK WYŻEJ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

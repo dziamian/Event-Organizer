@@ -51,7 +51,7 @@ public class SectorLayout extends ItemLayout {
             textViewAvailableRooms = view.findViewById(R.id.sector_available_rooms);
 
             view.findViewById(R.id.sector_field).setOnClickListener(v -> {
-                ((HomeActivity) context).setRoomActivity(sectorInfoFixed.getId());
+                ((HomeActivity) context).setSectorRoomsFragment(sectorInfoFixed.getId());
             });
         }
     }

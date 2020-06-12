@@ -19,7 +19,7 @@ public class RoomLayout extends ItemLayout {
 
     @Override
     public void createItemHolder(View view, @Nullable Context context) {
-        setItemHolder(new RoomLayoutHolder(view));
+        setItemHolder(new RoomLayoutHolder(view, context));
     }
 
     @Override
@@ -50,13 +50,15 @@ public class RoomLayout extends ItemLayout {
         public TextView textViewRoomState;
         public TextView textViewRoomStateDetails;
 
-        public RoomLayoutHolder(View view) {
+        public RoomLayoutHolder(View view, Context context) {
             textViewName = view.findViewById(R.id.room_name);
             textViewLocation = view.findViewById(R.id.room_location);
             textViewRoomState = view.findViewById(R.id.room_state);
             textViewRoomStateDetails = view.findViewById(R.id.room_state_details);
 
-            //view.findViewById(...)
+            view.findViewById(R.id.room_field).setOnClickListener(v -> {
+                ((HomeActivity) context).setRoomActivity(roomInfoFixed.getSectorId(), roomInfoFixed.getId());
+            });
         }
     }
 
