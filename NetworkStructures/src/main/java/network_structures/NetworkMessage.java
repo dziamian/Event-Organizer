@@ -1,7 +1,5 @@
 package network_structures;
 
-import sun.nio.ch.Net;
-
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.Arrays;
