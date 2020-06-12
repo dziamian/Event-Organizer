@@ -91,6 +91,19 @@ public class TaskManager implements Runnable {
      * @param message Message to process
      */
     private void handleMessage(BaseMessage message) {
+        /*
+         * Recognized client requests:
+         * 1. ping - check if server recognizes this client
+         * 2. login - log in to server providing credentials in args
+         * 3. event_info - request essential information about event, such as sectors / attractions list
+         * 4. view_tickets - view my tickets and their states
+         * 5. view_reservations - view my active reservation(s)
+         * 6. add_to_queue - add my ticket to specified room queue
+         * 7. remove_from_queue - remove my ticket from specific queue
+         * 8. abandon_reservation - abandon one of my reservations (will result in penalty)
+         * 9. update - request update on states of rooms and queues
+         * 10. grouping - answer grouping call with decision or send update with changed decision
+         */
         LingeringTask[] matchingAwaitingTasks = searchForMatchingLingeringTasks(message);
         if (matchingAwaitingTasks.length > 0) {
             for (LingeringTask matchingAwaitingTask : matchingAwaitingTasks) {
@@ -128,19 +141,6 @@ public class TaskManager implements Runnable {
      */
     @Override
     public void run() {
-        /*
-         * Recognized client requests:
-         * 1. ping - check if server recognizes this client
-         * 2. login - log in to server providing credentials in args
-         * 3. event_info - request essential information about event, such as sectors / attractions list
-         * 4. view_tickets - view my tickets and their states
-         * 5. view_reservations - view my active reservation(s)
-         * 6. add_to_queue - add my ticket to specified room queue
-         * 7. remove_from_queue - remove my ticket from specific queue
-         * 8. abandon_reservation - abandon one of my reservations (will result in penalty)
-         * 9. update - request update on states of rooms and queues
-         * 10. grouping - answer grouping call with decision or send update with changed decision
-         */
         while (true) {
             while (!isConnected) {
                 BaseMessage task = pollIncomingMessage();
