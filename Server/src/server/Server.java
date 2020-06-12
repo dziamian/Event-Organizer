@@ -213,15 +213,20 @@ public class Server {
                 }
             }
 
+            while (true) {
+                Task task = receivedTasks.poll();
+                if (task != null)
+                    handleTask(task);
+            }
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST
-            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-            executor.scheduleAtFixedRate(() -> sectors.values().forEach(
-                    (sector -> {
-                        sector.getInfoUpdate().setActiveRoomsCount(sector.getInfoUpdate().getActiveRoomsCount().get()+1);
-                        sector.getInfoUpdate().getRooms().values().forEach((roomInfoUpdate -> roomInfoUpdate.setQueueSize(roomInfoUpdate.getQueueSize().get()+1)));
-                    })),
-                    0, 1000, TimeUnit.MILLISECONDS);
+//            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+//            executor.scheduleAtFixedRate(() -> sectors.values().forEach(
+//                    (sector -> {
+//                        sector.getInfoUpdate().setActiveRoomsCount(sector.getInfoUpdate().getActiveRoomsCount().get()+1);
+//                        sector.getInfoUpdate().getRooms().values().forEach((roomInfoUpdate -> roomInfoUpdate.setQueueSize(roomInfoUpdate.getQueueSize().get()+1)));
+//                    })),
+//                    0, 1000, TimeUnit.MILLISECONDS);
 
             /*while (true) {
                 try {
