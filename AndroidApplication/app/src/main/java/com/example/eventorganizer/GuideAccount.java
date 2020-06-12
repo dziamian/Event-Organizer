@@ -2,6 +2,7 @@ package com.example.eventorganizer;
 
 import network_structures.EventInfoFixed;
 import network_structures.EventInfoUpdate;
+import network_structures.QueueInfo;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
@@ -48,34 +49,5 @@ public class GuideAccount {
 
     public void addNewQueue(ObjectId sectorId, ObjectId roomId, int positionInQueue) {
         queues.add(new QueueInfo(sectorId, roomId, positionInQueue));
-    }
-
-    public static class QueueInfo {
-
-        private final ObjectId sectorId;
-        private final ObjectId roomId;
-        private int positionInQueue;
-
-        public QueueInfo(ObjectId sectorId, ObjectId roomId, int positionInQueue) {
-            this.sectorId = sectorId;
-            this.roomId = roomId;
-            this.positionInQueue = positionInQueue;
-        }
-
-        public ObjectId getSectorId() {
-            return sectorId;
-        }
-
-        public ObjectId getRoomId() {
-            return roomId;
-        }
-
-        public int getPositionInQueue() {
-            return positionInQueue;
-        }
-
-        public void setPositionInQueue(int positionInQueue) {
-            this.positionInQueue = positionInQueue;
-        }
     }
 }
