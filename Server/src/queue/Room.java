@@ -61,75 +61,75 @@ public class Room {
         // if room's state is inactive then --parentSector.roomsActive;
     }
 
-    private Reservation createReservation(TourGroup group) {
-        if (group != null) {
-            Reservation reservation = new Reservation(this,group);
-            currentReservations.add(reservation);
-            return reservation;
-        }
-        return null;
-    }
+//    private Reservation createReservation(TourGroup group) {
+//        if (group != null) {
+//            Reservation reservation = new Reservation(this,group);
+//            currentReservations.add(reservation);
+//            return reservation;
+//        }
+//        return null;
+//    }
+//
+//    private void updateReservations() {
+//        for (Room.Reservation reservation : currentReservations) {
+//            if (!reservation.isActive() && reservation.expirationDate.getTime() < new Date().getTime()) {
+//                currentReservations.remove(reservation);
+//                reservation.getGroup().removeReservation(reservation);
+//            }
+//        }
+//    }
+//
+//    private boolean areReservationsValid() {
+//        for (Room.Reservation reservation : currentReservations) {
+//            if (!reservation.isActive())
+//                return true;
+//        }
+//        return false;
+//    }
 
-    private void updateReservations() {
-        for (Room.Reservation reservation : currentReservations) {
-            if (!reservation.isActive() && reservation.expirationDate.getTime() < new Date().getTime()) {
-                currentReservations.remove(reservation);
-                reservation.getGroup().removeReservation(reservation);
-            }
-        }
-    }
-
-    private boolean areReservationsValid() {
-        for (Room.Reservation reservation : currentReservations) {
-            if (!reservation.isActive())
-                return true;
-        }
-        return false;
-    }
-
-    private void launchReservationTimer() {
-        while (true) {
-            if (!areReservationsValid()) {
-                break;
-            }
-            updateReservations();
-
-            try { Thread.sleep(RESERVATIONS_UPDATE_CHECK_DELAY); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
-        }
-
-        if (currentReservations.size() > 0) {
-            changeState(State.TAKEN);
-            for (Room.Reservation reservation : currentReservations) {
-                currentVisitors.add(reservation.group);
-                reservation.group.setCurrentRoom(this);
-            }
-        } else {
-            changeState(State.OPEN);
-            if (queue.requestedGrouping)
-                queue.tryGrouping();
-        }
-    }
+//    private void launchReservationTimer() {
+//        while (true) {
+//            if (!areReservationsValid()) {
+//                break;
+//            }
+//            updateReservations();
+//
+//            try { Thread.sleep(RESERVATIONS_UPDATE_CHECK_DELAY); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
+//        }
+//
+//        if (currentReservations.size() > 0) {
+//            changeState(State.TAKEN);
+//            for (Room.Reservation reservation : currentReservations) {
+//                currentVisitors.add(reservation.group);
+//                reservation.group.setCurrentRoom(this);
+//            }
+//        } else {
+//            changeState(State.OPEN);
+//            if (queue.requestedGrouping)
+//                queue.tryGrouping();
+//        }
+//    }
 
     private boolean isEmpty() {
         return currentVisitors.size() == 0;
     }
 
-    public void removeVisitingGroup(TourGroup group) {
-        if (group != null) {
-            for (TourGroup visitor : currentVisitors) {
-                if (visitor == group) {
-                    currentVisitors.remove(visitor);
-                    visitor.setCurrentRoomNull();
-                }
-            }
-        }
-
-        if (isEmpty()) {
-            changeState(State.OPEN);
-            if (queue.requestedGrouping)
-                queue.tryGrouping();
-        }
-    }
+//    public void removeVisitingGroup(TourGroup group) {
+//        if (group != null) {
+//            for (TourGroup visitor : currentVisitors) {
+//                if (visitor == group) {
+//                    currentVisitors.remove(visitor);
+//                    visitor.setCurrentRoomNull();
+//                }
+//            }
+//        }
+//
+//        if (isEmpty()) {
+//            changeState(State.OPEN);
+//            if (queue.requestedGrouping)
+//                queue.tryGrouping();
+//        }
+//    }
 
     public boolean addGroupToQueue(TourGroup group) {
         TourGroup.QueueTicket queueTicket = group.createTicket(this);
@@ -214,12 +214,12 @@ public class Room {
                 getTail().sendNotificationAboutGrouping();
                 return;
             }
-            tryGrouping();
+//            tryGrouping();
         }
 
-        private void sendGroupingStateInformation() {
-            /// wyslij stany ich grupowania do wszystkich ktorzy biora udzial w grupowaniu
-        }
+//        private void sendGroupingStateInformation() {
+//            /// wyslij stany ich grupowania do wszystkich ktorzy biora udzial w grupowaniu
+//        }
 
         protected boolean isFullyGrouped() {
             int maxSlots = owner.maxSlots;
@@ -277,51 +277,51 @@ public class Room {
             return false;
         }
 
-        private void tryGrouping() {
-            if (isDuringGrouping)
-                return;
-            if (owner.state == State.OPEN) {
-                //////////////////////////////////////////////////////////// ustaw rozpoczecie grupowania (w nowym watku np)
-                //new Thread(this::launchGrouping).start();
-            } else {
-                requestedGrouping = true;
-            }
-        }
-
-        private void launchGrouping() {
-            isDuringGrouping = true;
-
-            for (BasicQueue<TourGroup.QueueTicket>.Iterator iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
-                TourGroup.QueueTicket ticket = iter.getData();
-                if (ticket.getOwner().canAddReservation()) {
-                    ticket.sendNotificationAboutGrouping();
-                } else {
-                    ticket.setNoParticipation();
-                }
-            }
-            Date startedGroupingDate = new Date();
-            long finish = startedGroupingDate.getTime() + 10 * 1000;
-
-            /// czekaj na zakonczenie grupowania (zakonczenie czasu albo max liczba grup)
-            while (finish > new Date().getTime() && !isFullyGrouped) {
-                /// opoznienie co sekunde
-                sendGroupingStateInformation();
-            }
-
-            requestedGrouping = false;
-            isDuringGrouping = false;
-            isFullyGrouped = false;
-
-            /// stworz ewentualne rezerwacje dla tych co sie zgodzili
-            ArrayList<TourGroup> groups = pullGroups();
-            if (groups.size() > 0) {
-                changeState(State.RESERVED);
-                for (TourGroup group : groups) {
-                    // co jesli bral udzial w innym grupowaniu i tez sie zgodzil 'w tym samym czasie'? (nie moze dostac dwoch rezerwacji!)
-                    group.addReservation(createReservation(group));
-                }
-                owner.launchReservationTimer();
-            }
-        }
+//        private void tryGrouping() {
+//            if (isDuringGrouping)
+//                return;
+//            if (owner.state == State.OPEN) {
+//                //////////////////////////////////////////////////////////// ustaw rozpoczecie grupowania (w nowym watku np)
+//                //new Thread(this::launchGrouping).start();
+//            } else {
+//                requestedGrouping = true;
+//            }
+//        }
+//
+//        private void launchGrouping() {
+//            isDuringGrouping = true;
+//
+//            for (BasicQueue<TourGroup.QueueTicket>.Iterator iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
+//                TourGroup.QueueTicket ticket = iter.getData();
+//                if (ticket.getOwner().canAddReservation()) {
+//                    ticket.sendNotificationAboutGrouping();
+//                } else {
+//                    ticket.setNoParticipation();
+//                }
+//            }
+//            Date startedGroupingDate = new Date();
+//            long finish = startedGroupingDate.getTime() + 10 * 1000;
+//
+//            /// czekaj na zakonczenie grupowania (zakonczenie czasu albo max liczba grup)
+//            while (finish > new Date().getTime() && !isFullyGrouped) {
+//                /// opoznienie co sekunde
+//                sendGroupingStateInformation();
+//            }
+//
+//            requestedGrouping = false;
+//            isDuringGrouping = false;
+//            isFullyGrouped = false;
+//
+//            /// stworz ewentualne rezerwacje dla tych co sie zgodzili
+//            ArrayList<TourGroup> groups = pullGroups();
+//            if (groups.size() > 0) {
+//                changeState(State.RESERVED);
+//                for (TourGroup group : groups) {
+//                    // co jesli bral udzial w innym grupowaniu i tez sie zgodzil 'w tym samym czasie'? (nie moze dostac dwoch rezerwacji!)
+//                    group.addReservation(createReservation(group));
+//                }
+//                owner.launchReservationTimer();
+//            }
+//        }
     }
 }
