@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 
 import queue.Sector;
 import queue.Room;
+import queue.TourGroup;
 
 public class Server {
     /** Main server thread task queue */
@@ -160,6 +161,7 @@ public class Server {
                     ).getRoom(
                             new ObjectId(task.getArgs()[1])
                     );
+                    room.addGroupToQueue((TourGroup)task.getData());
                     room.getInfoUpdate().setQueueSize(room.getInfoUpdate().getQueueSize().get() + 1);
                 } break;
                 case "remove_from_queue": {
