@@ -19,15 +19,6 @@ import java.util.Objects;
  * create an instance of this fragment.
  */
 public class SectorFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_TITLE = "title";
-
-    // TODO: Rename and change types of parameters
-    private String mTitle;
-
-    /// TODO:
-    private ItemListAdapter<SectorLayout> itemListAdapter = null;
 
     /// TODO:
     public SectorFragment() {
@@ -42,31 +33,14 @@ public class SectorFragment extends Fragment {
      * @return A new instance of fragment SectorFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static SectorFragment newInstance(String title) {
-        SectorFragment fragment = new SectorFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_TITLE, title);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mTitle = getArguments().getString(ARG_TITLE);
-        }
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
+    public static SectorFragment newInstance() {
+        return new SectorFragment();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(false);
-        getActivity().setTitle(mTitle);
+        getActivity().setTitle("Sektory");
         ((HomeActivity)getActivity()).navigationView.setCheckedItem(R.id.nav_sectors);
         ((HomeActivity)getActivity()).setSelectedItemId(R.id.nav_sectors);
 
@@ -75,9 +49,10 @@ public class SectorFragment extends Fragment {
         ArrayList<SectorLayout> sectorList = new ArrayList<>();
         TaskManager.eventInfoFixed.getSectors().values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
 
+        ItemListAdapter<SectorLayout> itemListAdapter = new ItemListAdapter<>(getActivity(), sectorList);
+
         getActivity().runOnUiThread(() -> {
             ListView listView = rootView.findViewById(R.id.sector_list_view);
-            itemListAdapter = new ItemListAdapter<>(getActivity(), sectorList);
             listView.setAdapter(itemListAdapter);
         });
 

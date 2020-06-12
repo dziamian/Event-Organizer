@@ -1,11 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:tools="http://schemas.android.com/tools"
-             android:id="@+id/room_layout"
+             android:id="@+id/room_fragment"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
              tools:context=".RoomFragment">
 
+    <RelativeLayout
+            android:id="@+id/room_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
+        <TextView
+                android:id="@+id/room_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Atrakcja 1"
+                android:textSize="25sp"
+                android:textColor="#000000"
+                android:gravity="center"
+                android:layout_marginTop="50dp"
+                android:layout_alignParentTop="true"
+        />
+
+        <TextView
+                android:id="@+id/room_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/room_name"
+                android:text="Lokacja - 1.10a"
+                android:textColor="#424242"
+                android:textSize="20sp"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+        />
+
+        <TextView
+                android:id="@+id/room_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/room_location"
+                android:text="Zwykły opis Atrakcji 1."
+                android:textColor="#000000"
+                android:textSize="20sp"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="100dp"
+        />
+
+        <Button
+                android:id="@+id/room_add_to_queue"
+                android:layout_width="200dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:textAllCaps="false"
+                android:text="Dołącz do kolejki"
+                android:textSize="15sp"
+                android:layout_marginBottom="100dp"
+                android:layout_marginLeft="60dp"
+                android:layout_marginRight="60dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+        />
+
+    </RelativeLayout>
 
 </FrameLayout>

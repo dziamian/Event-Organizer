@@ -21,13 +21,10 @@ import java.util.Objects;
  */
 public class SectorRoomsFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_SECTOR_ID = "sectorID";
 
     // TODO: Rename and change types of parameters
-    private String mSectorId;
-
-    private ItemListAdapter<RoomLayout> itemListAdapter = null;
+    private String sectorId;
 
     public SectorRoomsFragment() {
         // Required empty public constructor
@@ -43,7 +40,7 @@ public class SectorRoomsFragment extends Fragment {
     public static SectorRoomsFragment newInstance(String sectorId) {
         SectorRoomsFragment fragment = new SectorRoomsFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, sectorId);
+        args.putString(ARG_SECTOR_ID, sectorId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -52,17 +49,17 @@ public class SectorRoomsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mSectorId = getArguments().getString(ARG_PARAM1);
+            sectorId = getArguments().getString(ARG_SECTOR_ID);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ObjectId sectorId = new ObjectId(mSectorId);
+        ObjectId sectorId = new ObjectId(this.sectorId);
         SectorInfoFixed sectorInfoFixed = TaskManager.eventInfoFixed.getSectors().get(sectorId);
 
         ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(true);
-        ((HomeActivity) getActivity()).rooms.setTitle("Sektory - " + sectorInfoFixed.getName());
+        ((HomeActivity) getActivity()).rooms.setTitle(sectorInfoFixed.getName());
         getActivity().setTitle(sectorInfoFixed.getName());
         ((HomeActivity) getActivity()).navigationView.setCheckedItem(R.id.nav_rooms);
         ((HomeActivity) getActivity()).setSelectedItemId(R.id.nav_rooms);
@@ -72,9 +69,10 @@ public class SectorRoomsFragment extends Fragment {
         ArrayList<RoomLayout> roomList = new ArrayList<>();
         sectorInfoFixed.getRooms().values().forEach(roomInfo -> roomList.add(new RoomLayout(roomInfo)));
 
+        ItemListAdapter<RoomLayout> itemListAdapter = new ItemListAdapter<>(getActivity(), roomList);
+
         getActivity().runOnUiThread(() -> {
             ListView listView = rootView.findViewById(R.id.room_list_view);
-            itemListAdapter = new ItemListAdapter<>(getActivity(), roomList);
             listView.setAdapter(itemListAdapter);
         });
 
