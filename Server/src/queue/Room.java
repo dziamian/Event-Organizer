@@ -159,8 +159,13 @@ public class Room {
      * @param group Group to remove
      */
     public boolean removeGroupFromQueue(TourGroup group) {
-        if (group != null && group.hasTicketFor(this)) {
-            return queue.removeFirstOccurrence(group);
+        if (group != null) {
+            TourGroup.QueueTicket ticket = group.getTicketForRoom(this);
+            if (ticket != null) {
+                group.removeTicket(ticket);
+                this.infoUpdate.setQueueSize(this.infoUpdate.getQueueSize().get() - 1);
+                return queue.removeFirstOccurrence(ticket);
+            }
         }
         return false;
     }

@@ -1,7 +1,6 @@
 package com.example.eventorganizer;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.fragment.app.Fragment;
@@ -80,7 +79,7 @@ public class RoomFragment extends Fragment {
         ((TextView)rootView.findViewById(R.id.room_description)).setText(roomInfoFixed.getDescription());
 
         rootView.findViewById(R.id.room_add_to_queue).setOnClickListener(v -> {
-            MainActivity.connectionToServer.addIncomingMessage(new BaseMessage(
+            MainActivity.taskManager.addIncomingMessage(new BaseMessage(
                     "add_to_queue",
                     new String[] { this.sectorId, this.roomId },
                     new Runnable[] { () -> { //prawidlowe dodanie do kolejki

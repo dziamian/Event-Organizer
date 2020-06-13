@@ -9,7 +9,9 @@ import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.navigation.NavigationView;
 import org.bson.types.ObjectId;
 
@@ -50,6 +52,13 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 .beginTransaction()
                 .replace(R.id.fragment_layout, RoomFragment.newInstance(sectorId.toString(), roomId.toString()))
                 .addToBackStack(null)
+                .commit();
+    }
+
+    public void refreshQueues() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragment_layout, QueueFragment.newInstance())
                 .commit();
     }
 

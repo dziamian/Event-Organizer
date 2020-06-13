@@ -77,7 +77,7 @@ public class SectorRoomsFragment extends Fragment {
         });
 
         HomeActivity.setUpdatingUI(true);
-        MainActivity.connectionToServer.addIncomingMessage(new BaseMessage(
+        MainActivity.taskManager.addIncomingMessage(new BaseMessage(
                 "update",
                 null,
                 (Runnable) () -> {

@@ -132,9 +132,12 @@ public class TaskManager implements Runnable {
                 case "add_to_queue": {
                     addGroupToQueue(message);
                 } break;
+                case "remove_from_queue": {
+                    removeFromQueue(message);
+                } break;
                 case "view_tickets": {
                     viewTickets(message);
-                }
+                } break;
             }
         }
     }
@@ -297,6 +300,24 @@ public class TaskManager implements Runnable {
                         ((Runnable[]) message.getData())[1].run();
                     } else {
                         ((Runnable[]) message.getData())[0].run();
+                    }
+                    return true;
+                })
+        );
+        sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
+    }
+
+    private void removeFromQueue(BaseMessage message) {
+        long streamId = TaskManager.nextCommunicationStream();
+        lingeringTasks.add(new LingeringTask(
+                "remove_from_queue",
+                streamId,
+                null,
+                (msg) -> {
+                    if ("true".equals(msg.getArgs()[0])) {
+                        ((Runnable[]) message.getData())[0].run();
+                    } else {
+                        ((Runnable[]) message.getData())[1].run();
                     }
                     return true;
                 })

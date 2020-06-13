@@ -6,16 +6,16 @@ import java.util.ArrayList;
 
 public class TourGroup {
 
-    private ArrayList<QueueTicket> tickets;
+    private final ArrayList<QueueTicket> tickets;
     private final static int maxTickets = 3;
-    private ArrayList<Room.Reservation> reservations;
+    private final ArrayList<Room.Reservation> reservations;
     private final static int maxReservations = 1;
 
     private int penaltyLevel = 0;
 
     private Room currentRoom;
 
-    private ArrayList<server.Guide> guides;
+    private final ArrayList<server.Guide> guides;
     private final static int maxGuides = 2;
 
     public TourGroup() {
@@ -48,6 +48,19 @@ public class TourGroup {
             rooms[i] = tickets.get(i).getDestination();
         }
         return rooms;
+    }
+
+    public QueueTicket getTicketForRoom(Room room) {
+        for (var ticket : tickets) {
+            if (ticket.getDestination() == room) {
+                return ticket;
+            }
+        }
+        return null;
+    }
+
+    public boolean removeTicket(QueueTicket ticket) {
+        return tickets.remove(ticket);
     }
 
     /**
