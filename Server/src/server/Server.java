@@ -184,7 +184,6 @@ public class Server {
                 case "view_tickets": {
                     Room[] rooms = ((TourGroup)task.getData()).getTicketRooms();
                     QueueInfo[] queueInfo = new QueueInfo[rooms.length];
-                    System.out.println(rooms.length);
                     for (int i = 0; i < rooms.length; ++i) {
                         queueInfo[i] = new QueueInfo(
                             rooms[i].getInfoFixed().getSectorId(),
