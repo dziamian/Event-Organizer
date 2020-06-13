@@ -58,10 +58,10 @@ public class SectorRoomsFragment extends Fragment {
         ObjectId sectorId = new ObjectId(this.sectorId);
         SectorInfoFixed sectorInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().get(sectorId);
 
-        ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(true);
-        ((HomeActivity) getActivity()).rooms.setTitle(sectorInfoFixed.getName());
+        ((HomeActivity) Objects.requireNonNull(getActivity())).getRooms().setVisible(true);
+        ((HomeActivity) getActivity()).getRooms().setTitle(sectorInfoFixed.getName());
         getActivity().setTitle(sectorInfoFixed.getName());
-        ((HomeActivity) getActivity()).navigationView.setCheckedItem(R.id.nav_rooms);
+        ((HomeActivity) getActivity()).getNavigationView().setCheckedItem(R.id.nav_rooms);
         ((HomeActivity) getActivity()).setSelectedItemId(R.id.nav_rooms);
 
         View rootView = inflater.inflate(R.layout.fragment_sector_rooms, container, false);

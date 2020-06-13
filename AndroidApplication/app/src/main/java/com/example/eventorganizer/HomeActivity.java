@@ -1,29 +1,26 @@
 package com.example.eventorganizer;
 
+import android.graphics.Typeface;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import com.google.android.material.navigation.NavigationView;
 import org.bson.types.ObjectId;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
-    private DrawerLayout mNavDrawer;
-    public NavigationView navigationView;
-    private int selectedItemId;
-
-    public MenuItem rooms;
 
     private static final AtomicBoolean updatingUI = new AtomicBoolean(true);
 
@@ -35,9 +32,26 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         HomeActivity.updatingUI.set(status);
     }
 
+    private DrawerLayout mNavDrawer;
+    private NavigationView navigationView;
+    private int selectedItemId;
+    private TextView queueBadge;
+
+    private MenuItem rooms;
+
+    public NavigationView getNavigationView() { return navigationView; }
+
     public void setSelectedItemId(int id) {
         selectedItemId = id;
     }
+
+    public void setQueueBadgeText(String text) {
+        queueBadge.setText(text);
+    }
+
+    public void setQueueBadgeColor(int color) { queueBadge.setTextColor(getResources().getColor(color)); }
+
+    public MenuItem getRooms() { return rooms; }
 
     public void setSectorRoomsFragment(ObjectId sectorId) {
         getSupportFragmentManager()
@@ -52,13 +66,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 .beginTransaction()
                 .replace(R.id.fragment_layout, RoomFragment.newInstance(sectorId.toString(), roomId.toString()))
                 .addToBackStack(null)
-                .commit();
-    }
-
-    public void refreshQueues() {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_layout, QueueFragment.newInstance())
                 .commit();
     }
 
@@ -88,7 +95,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setLayoutParams(params);
 
         rooms = navigationView.getMenu().findItem(R.id.nav_rooms);
-        //rooms.setVisible(false);
+
+        queueBadge = (TextView) MenuItemCompat.getActionView(navigationView.getMenu().findItem(R.id.nav_queues));
+        queueBadge.setGravity(Gravity.CENTER_VERTICAL);
+        queueBadge.setTypeface(null, Typeface.BOLD);
+        queueBadge.setTextColor(getResources().getColor(R.color.colorBadgeUnselected));
 
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -119,7 +130,6 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, SectorFragment.newInstance()).commit();
                 }
             } break;
-            /// DO POPRAWY JAK WYŻEJ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             case R.id.nav_queues: {
                 if (selectedItemId != R.id.nav_queues) {
                     setUpdatingUI(false);
@@ -127,8 +137,10 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, QueueFragment.newInstance()).commit();
                 }
             } break;
+            /// DO POPRAWY JAK WYŻEJ //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             case R.id.nav_reservations: {
                 if (selectedItemId != R.id.nav_reservations) {
+                    setQueueBadgeColor(R.color.colorBadgeUnselected);
                     /*getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     setTitle("Moje rezerwacje");
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, new ReservationFragment()).commit();

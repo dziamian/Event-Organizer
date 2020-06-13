@@ -37,10 +37,11 @@ public class SectorFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(false);
+        ((HomeActivity) Objects.requireNonNull(getActivity())).getRooms().setVisible(false);
         getActivity().setTitle("Sektory");
-        ((HomeActivity)getActivity()).navigationView.setCheckedItem(R.id.nav_sectors);
+        ((HomeActivity)getActivity()).getNavigationView().setCheckedItem(R.id.nav_sectors);
         ((HomeActivity)getActivity()).setSelectedItemId(R.id.nav_sectors);
+        ((HomeActivity)getActivity()).setQueueBadgeColor(R.color.colorBadgeUnselected);
 
         View rootView = inflater.inflate(R.layout.fragment_sector, container, false);
 

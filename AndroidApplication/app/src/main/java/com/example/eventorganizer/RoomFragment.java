@@ -66,10 +66,10 @@ public class RoomFragment extends Fragment {
         SectorInfoFixed sectorInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().get(sectorId);
         RoomInfoFixed roomInfoFixed = sectorInfoFixed.getRooms().get(roomId);
 
-        ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(true);
-        ((HomeActivity) getActivity()).rooms.setTitle(sectorInfoFixed.getName() + " - " + roomInfoFixed.getName());
+        ((HomeActivity) Objects.requireNonNull(getActivity())).getRooms().setVisible(true);
+        ((HomeActivity) getActivity()).getRooms().setTitle(sectorInfoFixed.getName() + " - " + roomInfoFixed.getName());
         getActivity().setTitle(sectorInfoFixed.getName() + " - " + roomInfoFixed.getName());
-        ((HomeActivity) getActivity()).navigationView.setCheckedItem(R.id.nav_rooms);
+        ((HomeActivity) getActivity()).getNavigationView().setCheckedItem(R.id.nav_rooms);
         ((HomeActivity) getActivity()).setSelectedItemId(R.id.nav_rooms);
 
         View rootView = inflater.inflate(R.layout.fragment_room, container, false);
@@ -83,7 +83,15 @@ public class RoomFragment extends Fragment {
                     "add_to_queue",
                     new String[] { this.sectorId, this.roomId },
                     new Runnable[] { () -> { //prawidlowe dodanie do kolejki
-                        getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Successfully added to room's queue!", Toast.LENGTH_SHORT).show());
+                        getActivity().runOnUiThread(() -> {
+                            int numberOfQueues = GuideAccount.getInstance().getQueuesSize();
+                            if (numberOfQueues != 0) {
+                                ((HomeActivity) getActivity()).setQueueBadgeText(String.valueOf(GuideAccount.getInstance().getQueuesSize()));
+                            } else {
+                                ((HomeActivity) getActivity()).setQueueBadgeText("");
+                            }
+                            Toast.makeText(getContext(), "Successfully added to room's queue!", Toast.LENGTH_SHORT).show();
+                        });
                     }, ()-> { //blad w trakcie dodawania do kolejki
                         getActivity().runOnUiThread(() -> Toast.makeText(getContext(), "Something went wrong during adding to queue!", Toast.LENGTH_SHORT).show());
                     }},

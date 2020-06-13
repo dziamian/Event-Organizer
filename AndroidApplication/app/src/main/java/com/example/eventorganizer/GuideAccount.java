@@ -3,9 +3,6 @@ package com.example.eventorganizer;
 import network_structures.EventInfoFixed;
 import network_structures.EventInfoUpdate;
 import network_structures.QueueInfo;
-import org.bson.types.ObjectId;
-
-import java.util.ArrayList;
 
 public class GuideAccount {
 
@@ -26,6 +23,7 @@ public class GuideAccount {
     private final EventInfoFixed eventInfoFixed;
     private EventInfoUpdate eventInfoUpdate;
     private QueueInfo[] queues;
+    private int queuesSize;
 
     private GuideAccount(EventInfoFixed eventInfoFixed) {
         this.eventInfoFixed = eventInfoFixed;
@@ -48,4 +46,10 @@ public class GuideAccount {
     public void setQueues(QueueInfo[] queues) {
         this.queues = queues;
     }
+
+    public int getQueuesSize() {
+        return queuesSize;
+    }
+
+    public void setQueuesSize(int queuesSize) { this.queuesSize = queuesSize; }
 }

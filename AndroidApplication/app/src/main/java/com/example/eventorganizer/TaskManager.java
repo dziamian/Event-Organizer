@@ -1,8 +1,6 @@
 package com.example.eventorganizer;
 
-import android.util.Log;
 import network_structures.*;
-import org.bson.types.ObjectId;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -298,6 +296,7 @@ public class TaskManager implements Runnable {
                 streamId,
                 null,
                 (msg) -> {
+                    GuideAccount.getInstance().setQueuesSize(Integer.parseInt(msg.getArgs()[1]));
                     if ("0".equals(msg.getArgs()[0])) {
                         ((Runnable[]) message.getData())[1].run();
                     } else {
