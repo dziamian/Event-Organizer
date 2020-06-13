@@ -70,7 +70,16 @@ public class Guide extends Client {
                         ));
                     } break;
                     default: {
-                        addOutgoingMessage(new NetworkMessage("error", new String[] {"invalid_command"}, null, message.getCommunicationIdentifier()));
+                        if (Server.isCommandRecognizedByServer(message.getCommand()))
+                            Server.enqueueTask(new Server.Task(
+                                    message.getCommand(),
+                                    message.getArgs(),
+                                    message.getData(),
+                                    message.getCommunicationIdentifier(),
+                                    this::addOutgoingMessage
+                            ));
+                        else
+                            addOutgoingMessage(new NetworkMessage("error", new String[] { "invalid_command" }, null, message.getCommunicationIdentifier()));
                     } break;
                 }
             } catch (SocketTimeoutException | EOFException ex) {
@@ -98,5 +107,11 @@ public class Guide extends Client {
                 System.err.println("[Guide-handlingOutput()]: IOException - " + ex.getMessage());
             }
         }
+    }
+
+    @Override
+    public void removeFromSystem() {
+        super.removeFromSystem();
+        group.removeAllTickets();
     }
 }

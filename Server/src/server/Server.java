@@ -36,6 +36,47 @@ public class Server {
 
     // private static MongoClient mongoClient;
 
+
+    /*
+     * Recognized client requests:
+     * 1. ping - check if server recognizes this client
+     * 2. login - log in to server providing credentials in args
+     * 3. event_info - request essential information about event, such as sectors / attractions list
+     * 4. view_tickets - view my tickets and their states
+     * 5. view_reservations - view my active reservation(s)
+     * 6. add_to_queue - add my ticket to specified room queue
+     * 7. remove_from_queue - remove my ticket from specific queue
+     * 8. abandon_reservation - abandon one of my reservations (will result in penalty)
+     * 9. update - request update on states of rooms and queues
+     * 10. grouping - answer grouping call with decision or send update with changed decision
+     */
+    private static final String[] recognizedCommands = new String[] {
+        "ping",
+        "login",
+        "event_info",
+        "view_tickets",
+        "view_reservations",
+        "add_to_queue",
+        "remove_from_queue",
+        "abandon_reservation",
+        "update",
+        "grouping"
+    };
+
+    /**
+     * Checks if command is recognized by server. Recognized commands should be served in
+     * {@link Server.MainServerTask#handleTask(Task)} and thus should never be responded with invalid command error.
+     * @param command Command to check for server recognition
+     * @return True if server recognizes this command, false otherwise
+     */
+    public static boolean isCommandRecognizedByServer(String command) {
+        for (String s : recognizedCommands) {
+            if (s.equals(command))
+                return true;
+        }
+        return false;
+    }
+
     private final static Map<ObjectId, Sector> sectors = new TreeMap<>();
     /// TODO
     private static final EventInfoFixed eventInfoFixed = new EventInfoFixed();
@@ -137,23 +178,11 @@ public class Server {
     private static class MainServerTask implements Runnable {
 
         /**
-         * Completes given task if possible, handles errors otherwise
+         * Completes given task if possible, handles errors otherwise.
+         * List of recognized commands can be found in {@link Server#recognizedCommands}.
          * @param task Task to complete
          */
         private void handleTask(Task task) {
-            /*
-             * Recognized client requests:
-             * 1. ping - check if server recognizes this client
-             * 2. login - log in to server providing credentials in args
-             * 3. event_info - request essential information about event, such as sectors / attractions list
-             * 4. view_tickets - view my tickets and their states
-             * 5. view_reservations - view my active reservation(s)
-             * 6. add_to_queue - add my ticket to specified room queue
-             * 7. remove_from_queue - remove my ticket from specific queue
-             * 8. abandon_reservation - abandon one of my reservations (will result in penalty)
-             * 9. update - request update on states of rooms and queues
-             * 10. grouping - answer grouping call with decision or send update with changed decision
-             */
             switch (task.getCommand()) {
                 case "add_to_queue": {
                     Room room = sectors.get(
@@ -233,22 +262,12 @@ public class Server {
                 }
             }
 
-
             // Main server task queue
             while (true) {
                 Task task = receivedTasks.poll();
                 if (task != null)
                     handleTask(task);
             }
-
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////////// TEST
-//            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-//            executor.scheduleAtFixedRate(() -> sectors.values().forEach(
-//                    (sector -> {
-//                        sector.getInfoUpdate().setActiveRoomsCount(sector.getInfoUpdate().getActiveRoomsCount().get()+1);
-//                        sector.getInfoUpdate().getRooms().values().forEach((roomInfoUpdate -> roomInfoUpdate.setQueueSize(roomInfoUpdate.getQueueSize().get()+1)));
-//                    })),
-//                    0, 1000, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -269,6 +288,14 @@ public class Server {
             this.messageResponseInterface = messageResponseInterface;
         }
 
+        /**
+         *
+         * @param command Command for execution
+         * @param args Command execution arguments (modifiers)
+         * @param data Data needed to execute command
+         * @param communicationIdentifier Communication
+         * @param messageResponseInterface Interface for sending response(s) to
+         */
         public Task(String command, String[] args, Object data, long communicationIdentifier, ClientHandler.RespondToClientInterface messageResponseInterface) {
             super(command, args, data, communicationIdentifier);
             this.messageResponseInterface = messageResponseInterface;
@@ -289,8 +316,7 @@ public class Server {
     private static class ClientHandler implements Runnable {
         /// TODO
         public static final int TIMEOUT_MS = 15 * 60 * 1000;
-        /** Server responses queue */
-        // ConcurrentLinkedQueue<NetworkMessage> clientMessageQueue;
+
         /** Socket connected to client */
         private final Socket socket;
 
@@ -372,6 +398,7 @@ public class Server {
                 } catch(IOException ex) {
                     System.err.println("[ClientHandler-socket.close()]: IOException - " + ex.getMessage());
                 }
+                client.removeFromSystem();
                 System.out.println("Connection with (" + this.toString() + ") has been closed!");
             }
         }

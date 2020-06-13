@@ -95,6 +95,8 @@ public abstract class Client {
         this.out.writeObject(new NetworkMessage("event_details", null, Server.getEventInfoFixed(), 0));
     }
 
+    public void removeFromSystem() {}
+
     /// TODO
     protected abstract void handlingInput() throws SocketTimeoutException, EOFException;
 

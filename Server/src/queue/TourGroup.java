@@ -60,7 +60,29 @@ public class TourGroup {
     }
 
     public boolean removeTicket(QueueTicket ticket) {
-        return tickets.remove(ticket);
+        if (ticket != null) {
+            boolean ticketIsValid = false;
+            for (QueueTicket t : tickets)
+                if (ticket.equals(t)) {
+                    ticketIsValid = true;
+                    break;
+                }
+            if (ticketIsValid) {
+                ticket.getDestination().removeGroupFromQueue(ticket.getOwner());
+                return tickets.remove(ticket);
+            }
+        }
+        return false;
+    }
+
+    public int removeAllTickets() {
+        int removedTickets = 0;
+        for (QueueTicket t : tickets) {
+            if (t.getDestination().removeGroupFromQueue(t.getOwner()));
+            ++removedTickets;
+        }
+        tickets.clear();
+        return removedTickets;
     }
 
     /**
