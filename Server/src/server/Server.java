@@ -198,8 +198,8 @@ public class Server {
                     int numberOfActiveTickets = ((TourGroup)task.getData()).getTicketRooms().length;
                     task.getResponseInterface().respond(new NetworkMessage(
                             "add_to_queue",
-                            new String[] { String.valueOf(room.addGroupToQueue((TourGroup)task.getData())),  },
-                            numberOfActiveTickets,
+                            new String[] { String.valueOf(room.addGroupToQueue((TourGroup)task.getData())), "" + numberOfActiveTickets },
+                            null,
                             task.getCommunicationIdentifier())
                     );
                 } break;
