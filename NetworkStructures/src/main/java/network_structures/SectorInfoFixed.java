@@ -1,6 +1,8 @@
 package network_structures;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,7 +23,7 @@ public class SectorInfoFixed implements Serializable {
         this.name = name;
         this.address = address;
         this.description = description;
-        this.rooms = new TreeMap<>();
+        this.rooms = Collections.synchronizedMap(new TreeMap<>());
         this.activeRooms = activeRooms;
     }
 

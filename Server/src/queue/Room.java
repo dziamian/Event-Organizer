@@ -1,8 +1,10 @@
 package queue;
 
+import network_structures.NetworkMessage;
 import network_structures.RoomInfoFixed;
 import network_structures.RoomInfoUpdate;
 import org.bson.types.ObjectId;
+import server.Server;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,9 +19,19 @@ public class Room {
     private RoomInfoUpdate infoUpdate;
 
     public enum State {
-        OPEN,
-        RESERVED,
-        TAKEN
+        OPEN("OPEN"),
+        RESERVED("RESERVED"),
+        TAKEN("TAKEN");
+
+        private final String name;
+
+        State(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
     private State state;
@@ -54,6 +66,10 @@ public class Room {
         return state;
     }
 
+    public int getMaxSlots() {
+        return maxSlots;
+    }
+
     public int positionOf(TourGroup group) {
         if (group != null) {
             int position = 0;
@@ -74,15 +90,31 @@ public class Room {
         // if room's state is inactive then --parentSector.roomsActive;
     }
 
-//    private Reservation createReservation(TourGroup group) {
-//        if (group != null) {
-//            Reservation reservation = new Reservation(this,group);
-//            currentReservations.add(reservation);
-//            return reservation;
-//        }
-//        return null;
-//    }
-//
+    private Reservation createReservation(TourGroup group) {
+        if (group != null) {
+            Reservation reservation = new Reservation(this, group);
+            currentReservations.add(reservation);
+            return reservation;
+        }
+        return null;
+    }
+
+    public void giveReservationsToAll() {
+        if (queue.size() >= maxSlots) {
+            for (int i = 0; i < maxSlots; ++i) {
+                TourGroup group = queue.poll().getOwner();
+                Reservation reservation = createReservation(group);
+                group.addReservation(reservation);
+                group.sendToAllGuides(new NetworkMessage(
+                        "reservation",
+                        new String[] {},
+                        null,
+                        Server.nextCommunicationIdentifier()
+                ));
+            }
+        }
+    }
+
 //    private void updateReservations() {
 //        for (Room.Reservation reservation : currentReservations) {
 //            if (!reservation.isActive() && reservation.expirationDate.getTime() < new Date().getTime()) {
@@ -99,7 +131,7 @@ public class Room {
 //        }
 //        return false;
 //    }
-
+//
 //    private void launchReservationTimer() {
 //        while (true) {
 //            if (!areReservationsValid()) {

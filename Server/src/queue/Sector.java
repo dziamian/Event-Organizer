@@ -7,19 +7,21 @@ import org.bson.types.ObjectId;
 import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class Sector {
 
     private final SectorInfoFixed infoFixed;
     private final SectorInfoUpdate infoUpdate;
 
-    private Map<ObjectId,Room> rooms;
+    private ConcurrentMap<ObjectId, Room> rooms;
     private int currentSize;
 
     public Sector(ObjectId id, String name, String address, String description) {
         this.infoUpdate = new SectorInfoUpdate(id);
         this.infoFixed = new SectorInfoFixed(id, name, address, description, this.infoUpdate.getActiveRoomsCount());
-        this.rooms = new TreeMap<>();
+        this.rooms = new ConcurrentHashMap<>();
         this.currentSize = 0;
     }
 

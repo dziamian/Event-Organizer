@@ -10,11 +10,11 @@ import java.net.*;
 import java.util.*;
 
 // Structure for task queues
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +23,12 @@ import queue.Room;
 import queue.TourGroup;
 
 public class Server {
+    private static final IncrementedCounter communicationStreamIdentifiers = new IncrementedCounter(1);
+
+    public static long nextCommunicationIdentifier() {
+        return communicationStreamIdentifiers.getNext();
+    }
+
     /** Main server thread task queue */
     private static final ConcurrentLinkedQueue<Task> receivedTasks = new ConcurrentLinkedQueue<>();
 
@@ -35,7 +41,6 @@ public class Server {
     private static MongoDatabase database;
 
     // private static MongoClient mongoClient;
-
 
     /*
      * Recognized client requests:
@@ -77,7 +82,7 @@ public class Server {
         return false;
     }
 
-    private final static Map<ObjectId, Sector> sectors = new TreeMap<>();
+    private static final ConcurrentMap<ObjectId, Sector> sectors = new ConcurrentHashMap<>();
     /// TODO
     private static final EventInfoFixed eventInfoFixed = new EventInfoFixed();
     /// TODO
@@ -190,10 +195,11 @@ public class Server {
                     ).getRoom(
                             new ObjectId(task.getArgs()[1])
                     );
+                    int numberOfActiveTickets = ((TourGroup)task.getData()).getTicketRooms().length;
                     task.getResponseInterface().respond(new NetworkMessage(
                             "add_to_queue",
-                            new String[] { String.valueOf(room.addGroupToQueue((TourGroup)task.getData())) },
-                            null,
+                            new String[] { String.valueOf(room.addGroupToQueue((TourGroup)task.getData())),  },
+                            numberOfActiveTickets,
                             task.getCommunicationIdentifier())
                     );
                 } break;
@@ -408,6 +414,53 @@ public class Server {
          */
         public interface RespondToClientInterface {
             void respond(NetworkMessage message);
+        }
+    }
+
+    /**
+     * Simple incremented counter skipping zero
+     */
+    private static class IncrementedCounter {
+        private long value;
+
+        IncrementedCounter(int startingValue) {
+            this.value = startingValue;
+        }
+
+        public synchronized long getNext() {
+            if (value == 0)
+                ++value;
+            return value++;
+        }
+    }
+
+    private class ReservationHandler implements Runnable {
+        private final ConcurrentLinkedQueue<NetworkMessage> incomingMessages;
+        private final Map<ObjectId, Sector> sectors;
+        private final AtomicBoolean continueRunning;
+
+        public ReservationHandler(Map<ObjectId, Sector> sectors) {
+            continueRunning = new AtomicBoolean(true);
+            this.incomingMessages = new ConcurrentLinkedQueue<>();
+            this.sectors = sectors;
+        }
+
+        public void stop() {
+            continueRunning.set(false);
+        }
+
+        @Override
+        public void run() {
+            if (sectors == null)
+                return;
+            while (continueRunning.get()) {
+                for (Sector s : sectors.values()) {
+                    for (Room r : s.getRoomsValues()) {
+                        if (r.getInfoUpdate().getQueueSize().get() >= r.getMaxSlots()) {
+                        }
+                    }
+                }
+            }
         }
     }
 }

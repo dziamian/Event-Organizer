@@ -1,22 +1,25 @@
 package queue;
 
+import network_structures.NetworkMessage;
 import server.Guide;
 
 import java.util.ArrayList;
 
 public class TourGroup {
 
-    private final ArrayList<QueueTicket> tickets;
     private final static int maxTickets = 3;
-    private final ArrayList<Room.Reservation> reservations;
     private final static int maxReservations = 1;
-
+    private static final int maxPenaltyLevel = 2;
+    private final ArrayList<QueueTicket> tickets;
+    private final ArrayList<Room.Reservation> reservations;
     private int penaltyLevel = 0;
 
     private Room currentRoom;
 
     private final ArrayList<server.Guide> guides;
     private final static int maxGuides = 2;
+
+    //private final ArrayList<SimpleGrouping> activeGroupings = new ArrayList<>();
 
     public TourGroup() {
         this.tickets = new ArrayList<>();
@@ -29,7 +32,13 @@ public class TourGroup {
      * Increments current level of penalty induced for abandoning reservation for this group
      */
     public void increasePenaltyLevel() {
-        ++penaltyLevel;
+        if (penaltyLevel < maxPenaltyLevel)
+            ++penaltyLevel;
+    }
+
+    public void decreasePenaltyLevel() {
+        if (penaltyLevel > 0)
+            --penaltyLevel;
     }
 
     /**
@@ -110,12 +119,17 @@ public class TourGroup {
         return false;
     }
 
+    public void sendToAllGuides(NetworkMessage networkMessage) {
+        for (Guide g : guides)
+            g.addOutgoingMessage(networkMessage);
+    }
+
     protected boolean canAddReservation() {
         return reservations.size() < maxReservations;
     }
 
     private boolean canAddTicket() {
-        return tickets.size() < maxTickets;
+        return tickets.size() < maxTickets - penaltyLevel;
     }
 
     public boolean hasTicketFor(Room room) {
@@ -171,7 +185,7 @@ public class TourGroup {
             return this.code;
         }
 
-        public static GroupingResponses get(int code) {
+        public static GroupingResponses getValue(int code) {
             GroupingResponses response = UNAFFECTED;
             switch (code) {
                 case -1:
@@ -237,11 +251,11 @@ public class TourGroup {
                 guide.out.writeObject(...);
             }*/
             ///send notification about grouping to room
-            groupingResponse = GroupingResponses.get(0); //poki co brak odpowiedzi
+            groupingResponse = GroupingResponses.getValue(0); //poki co brak odpowiedzi
         }
 
         protected void setNoParticipation() {
-            groupingResponse = GroupingResponses.get(-2);
+            groupingResponse = GroupingResponses.getValue(-2);
         }
 
 //        public void respondAboutGrouping(int response) {
