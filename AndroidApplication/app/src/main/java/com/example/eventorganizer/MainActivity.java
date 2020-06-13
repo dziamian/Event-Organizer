@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText loginText, passwordText;
     private Button loginBtn;
-    public static TaskManager connectionToServer = null;
+    public static TaskManager taskManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         passwordText = findViewById(R.id.passwordText);
         loginBtn = findViewById(R.id.loginBtn);
 
-        connectionToServer = new TaskManager();
+        taskManager = new TaskManager();
 
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this)
                 .setTitle("Connection error")
@@ -32,23 +32,23 @@ public class MainActivity extends AppCompatActivity {
                 .setCancelable(false);
 
         alertDialog.setNeutralButton(R.string.connection_error_button, ((dialog, which) -> {
-            connectionToServer.addIncomingMessage(new BaseMessage(
+            taskManager.addIncomingMessage(new BaseMessage(
                     "connect",
                     null,
                     (Runnable) () -> runOnUiThread(alertDialog::show)
             ));
         }));
 
-        new Thread(connectionToServer).start();
+        new Thread(taskManager).start();
 
-        connectionToServer.addIncomingMessage(new BaseMessage(
+        taskManager.addIncomingMessage(new BaseMessage(
                 "connect",
                 null,
                 (Runnable) () -> runOnUiThread(alertDialog::show)
         ));
 
         loginBtn.setOnClickListener((v) -> {
-            connectionToServer.addIncomingMessage(new BaseMessage(
+            taskManager.addIncomingMessage(new BaseMessage(
                     "login",
                     new String[] { loginText.getText().toString(), passwordText.getText().toString() },
                     new Runnable[] { () -> { // prawidlowe zalogowanie

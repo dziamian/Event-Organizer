@@ -13,7 +13,7 @@
             android:layout_marginRight="10dp"
             android:focusable="true"
             android:clickable="true"
-            android:background="@drawable/room_details_field">
+            android:background="@drawable/queue_details_field">
 
         <TextView
                 android:id="@+id/queue_room_name"

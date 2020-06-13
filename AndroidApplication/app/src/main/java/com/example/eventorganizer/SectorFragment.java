@@ -2,8 +2,6 @@ package com.example.eventorganizer;
 
 import android.os.Bundle;
 import android.widget.*;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,7 +55,7 @@ public class SectorFragment extends Fragment {
         });
 
         HomeActivity.setUpdatingUI(true);
-        MainActivity.connectionToServer.addIncomingMessage(new BaseMessage(
+        MainActivity.taskManager.addIncomingMessage(new BaseMessage(
                 "update",
                 null,
                 (Runnable) () -> {
