@@ -6,7 +6,8 @@ import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.function.Function;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class Room {
 
@@ -30,14 +31,14 @@ public class Room {
     private int maxSlots;
 
     private static final int RESERVATIONS_UPDATE_CHECK_DELAY = 1000;
-    protected RoomQueue queue;
+    protected ConcurrentRoomQueue queue;
 
     public Room(ObjectId id, String name, String location, String description, int maxSlots, Sector parentSector) {
         this.infoUpdate = new RoomInfoUpdate(id);
         changeState(State.OPEN);
         this.infoFixed = new RoomInfoFixed(id, parentSector.getInfoFixed().getId(), name, location, description, this.infoUpdate.getState(), this.infoUpdate.getQueueSize());
         this.maxSlots = maxSlots;
-        this.queue = new RoomQueue(this);
+        this.queue = new ConcurrentRoomQueue(this);
         this.currentVisitors = new ArrayList<>();
         this.currentReservations = new ArrayList<>();
         this.parentSector = parentSector;
@@ -55,11 +56,11 @@ public class Room {
 
     public int positionOf(TourGroup group) {
         if (group != null) {
-            int i = 0;
-            for (BasicQueue.Iterator it = queue.getIterator(); it.isValid(); it = it.getNext()) {
-                if (((TourGroup.QueueTicket)it.getData()).getOwner() == group)
-                    return i;
-                ++i;
+            int position = 0;
+            for (Iterator<TourGroup.QueueTicket> it = queue.iterator(); it.hasNext();) {
+                if (it.next().getOwner() == group)
+                    return position;
+                ++position;
             }
         }
         return -1;
@@ -159,11 +160,7 @@ public class Room {
      */
     public boolean removeGroupFromQueue(TourGroup group) {
         if (group != null && group.hasTicketFor(this)) {
-            return queue.removeFirstMatching((ticket) ->  {
-                if (ticket.getOwner() == group)
-                    return Boolean.TRUE;
-                return Boolean.FALSE;
-            });
+            return queue.removeFirstOccurrence(group);
         }
         return false;
     }
@@ -197,98 +194,122 @@ public class Room {
         }
     }
 
-    protected class RoomQueue extends BasicQueue<TourGroup.QueueTicket> {
+    class ConcurrentRoomQueue extends ConcurrentLinkedDeque<TourGroup.QueueTicket> {
+        private static final int maxQuestions = 3;
 
         private final Room owner;
-        protected final static int maxAsksForTicket = 3;
 
-        // DO SFORMATOWANIA KODZIK
         private boolean requestedGrouping;
         private boolean isDuringGrouping;
         private boolean isFullyGrouped;
-        //
 
-        private RoomQueue(Room owner) {
+        protected ConcurrentRoomQueue(Room owner) {
             this.owner = owner;
+            this.requestedGrouping = false;
             this.isDuringGrouping = false;
             this.isFullyGrouped = false;
-            this.requestedGrouping = false;
         }
 
-        protected void updateFullyGroupedStatus() {
-            this.isFullyGrouped = isFullyGrouped();
-        }
-
-        @Override
-        public void enqueue(TourGroup.QueueTicket ticket) {
-            super.enqueue(ticket);
-            if (isDuringGrouping) {
-                getTail().sendNotificationAboutGrouping();
-                return;
+        public boolean enqueue(TourGroup.QueueTicket ticket) {
+            if (isDuringGrouping && this.peekLast() != null) {
+                this.peekLast().sendNotificationAboutGrouping();
             }
-//            tryGrouping();
+            return super.offer(ticket);
         }
+    }
 
+//    protected class RoomQueue extends BasicQueue<TourGroup.QueueTicket> {
+//
+//        private final Room owner;
+//        protected final static int maxAsksForTicket = 3;
+//
+//        // DO SFORMATOWANIA KODZIK
+//        private boolean requestedGrouping;
+//        private boolean isDuringGrouping;
+//        private boolean isFullyGrouped;
+//        //
+//
+//        private RoomQueue(Room owner) {
+//            this.owner = owner;
+//            this.isDuringGrouping = false;
+//            this.isFullyGrouped = false;
+//            this.requestedGrouping = false;
+//        }
+//
+//        protected void updateFullyGroupedStatus() {
+//            this.isFullyGrouped = isFullyGrouped();
+//        }
+//
+//        @Override
+//        public void enqueue(TourGroup.QueueTicket ticket) {
+//            super.enqueue(ticket);
+//            if (isDuringGrouping) {
+//                getTail().sendNotificationAboutGrouping();
+//                return;
+//            }
+//            tryGrouping();
+//        }
+//
 //        private void sendGroupingStateInformation() {
 //            /// wyslij stany ich grupowania do wszystkich ktorzy biora udzial w grupowaniu
 //        }
-
-        protected boolean isFullyGrouped() {
-            int maxSlots = owner.maxSlots;
-            int currentAccepted = 0;
-            for (BasicQueue<TourGroup.QueueTicket>.Iterator iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
-                if (currentAccepted < maxSlots) {
-                    int response = iter.getData().getGroupingResponse();
-                    if (response == 0)
-                        return false;
-                    if (response == 1)
-                        ++currentAccepted;
-                }
-                if (currentAccepted == maxSlots)
-                    return true;
-            }
-            return false;
-        }
-
-        private boolean shouldDelete(TourGroup.QueueTicket ticket) {
-            return ticket.getTimesAsked() == Room.RoomQueue.maxAsksForTicket;
-        }
-
-        private ArrayList<TourGroup> pullGroups() {
-            int maxSlots = owner.maxSlots;
-            int size = 0;
-            ArrayList<TourGroup> groups = new ArrayList<>();
-            for (BasicQueue<TourGroup.QueueTicket>.Iterator iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
-                if (size < maxSlots) {
-                    TourGroup.QueueTicket ticket = iter.getData();
-                    int response = ticket.getGroupingResponse();
-                    if (response == -1 || response == 0) {
-                        ticket.increaseTimesAsked();
-                        if (shouldDelete(ticket))
-                            removeFirstOccurrence(ticket); ///ZMIENIC NA REMOVETICKET!
-                    }
-                    else if (response == 1) {
-                        groups.add(ticket.getOwner());
-                        removeFirstOccurrence(ticket); ///ZMIENIC NA REMOVETICKET!
-                        ++size;
-                    }
-                }
-                if (size == maxSlots)
-                    return groups;
-            }
-            return groups;
-        }
-
-        public boolean removeFirstMatching(Function<TourGroup.QueueTicket, Boolean> matcher) {
-            for (BasicQueue.Iterator it = getIterator(); it.isValid(); it = it.getNext()) {
-                if (matcher.apply((TourGroup.QueueTicket)it.getData()) == Boolean.TRUE) {
-                    this.removeAt(it);
-                    return true;
-                }
-            }
-            return false;
-        }
-
+//
+//        protected boolean isFullyGrouped() {
+//            int maxSlots = owner.maxSlots;
+//            int currentAccepted = 0;
+//            for (BasicQueue<TourGroup.QueueTicket>.Iterator iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
+//                if (currentAccepted < maxSlots) {
+//                    int response = iter.getData().getGroupingResponse();
+//                    if (response == 0)
+//                        return false;
+//                    if (response == 1)
+//                        ++currentAccepted;
+//                }
+//                if (currentAccepted == maxSlots)
+//                    return true;
+//            }
+//            return false;
+//        }
+//
+//        private boolean shouldDelete(TourGroup.QueueTicket ticket) {
+//            return ticket.getTimesAsked() == Room.RoomQueue.maxAsksForTicket;
+//        }
+//
+//        private ArrayList<TourGroup> pullGroups() {
+//            int maxSlots = owner.maxSlots;
+//            int size = 0;
+//            ArrayList<TourGroup> groups = new ArrayList<>();
+//            for (BasicQueue<TourGroup.QueueTicket>.Iterator iter = this.getIterator(); iter.isValid(); iter = iter.getNext()) {
+//                if (size < maxSlots) {
+//                    TourGroup.QueueTicket ticket = iter.getData();
+//                    int response = ticket.getGroupingResponse();
+//                    if (response == -1 || response == 0) {
+//                        ticket.increaseTimesAsked();
+//                        if (shouldDelete(ticket))
+//                            removeFirstOccurrence(ticket); ///ZMIENIC NA REMOVETICKET!
+//                    }
+//                    else if (response == 1) {
+//                        groups.add(ticket.getOwner());
+//                        removeFirstOccurrence(ticket); ///ZMIENIC NA REMOVETICKET!
+//                        ++size;
+//                    }
+//                }
+//                if (size == maxSlots)
+//                    return groups;
+//            }
+//            return groups;
+//        }
+//
+//        public boolean removeFirstMatching(Function<TourGroup.QueueTicket, Boolean> matcher) {
+//            for (BasicQueue.Iterator it = getIterator(); it.isValid(); it = it.getNext()) {
+//                if (matcher.apply((TourGroup.QueueTicket)it.getData()) == Boolean.TRUE) {
+//                    this.removeAt(it);
+//                    return true;
+//                }
+//            }
+//            return false;
+//        }
+//
 //        private void tryGrouping() {
 //            if (isDuringGrouping)
 //                return;
@@ -335,5 +356,5 @@ public class Room {
 //                owner.launchReservationTimer();
 //            }
 //        }
-    }
+//    }
 }

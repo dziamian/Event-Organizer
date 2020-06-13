@@ -8,3 +8,4 @@
 /local.properties
 *.class
 .idea/inspectionProfiles/Project_Default.xml
+AndroidApplication/app/app.iml
