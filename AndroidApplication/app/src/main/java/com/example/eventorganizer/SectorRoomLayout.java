@@ -18,12 +18,12 @@ public class SectorRoomLayout extends ItemLayout {
     }
 
     @Override
-    public void createItemHolder(View view, @Nullable Context context) {
-        setItemHolder(new RoomLayoutHolder(view, context));
+    public void createItemHolder(View view) {
+        setItemHolder(new RoomLayoutHolder(view));
     }
 
     @Override
-    protected void setItemHolderAttributes() {
+    protected void setItemHolderAttributes(@Nullable Context context) {
         ((RoomLayoutHolder) getItemHolder()).textViewName.setText(roomInfoFixed.getName());
         ((RoomLayoutHolder) getItemHolder()).textViewLocation.setText(roomInfoFixed.getLocation());
         String stateDetails;
@@ -35,6 +35,11 @@ public class SectorRoomLayout extends ItemLayout {
             ((RoomLayoutHolder) getItemHolder()).textViewRoomState.setText(roomInfoFixed.getState());
             stateDetails = "Grup w kolejce: " + roomInfoFixed.getQueueSize();
             ((RoomLayoutHolder) getItemHolder()).textViewRoomStateDetails.setText(stateDetails);
+        }
+        if (context != null) {
+            ((RoomLayoutHolder) getItemHolder()).viewRoomField.setOnClickListener(v -> {
+                ((HomeActivity) context).setRoomActivity(roomInfoFixed.getSectorId(), roomInfoFixed.getId());
+            });
         }
     }
 
@@ -49,16 +54,15 @@ public class SectorRoomLayout extends ItemLayout {
         private final TextView textViewLocation;
         private final TextView textViewRoomState;
         private final TextView textViewRoomStateDetails;
+        private final View viewRoomField;
 
-        public RoomLayoutHolder(View view, Context context) {
+        public RoomLayoutHolder(View view) {
             textViewName = view.findViewById(R.id.room_name);
             textViewLocation = view.findViewById(R.id.room_location);
             textViewRoomState = view.findViewById(R.id.room_state);
             textViewRoomStateDetails = view.findViewById(R.id.room_state_details);
 
-            view.findViewById(R.id.room_field).setOnClickListener(v -> {
-                ((HomeActivity) context).setRoomActivity(roomInfoFixed.getSectorId(), roomInfoFixed.getId());
-            });
+            viewRoomField = view.findViewById(R.id.room_field);
         }
     }
 }
