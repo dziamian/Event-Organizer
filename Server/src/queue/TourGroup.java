@@ -166,18 +166,18 @@ public class TourGroup {
             ++timesAsked;
         }
 
-//        protected void sendNotificationAboutGrouping() {
-//            for (var guide : owner.guides) {
-//                guide.out.writeObject(...);
-//            }
-//            ///send notification about grouping to room
-//            groupingResponse = 0; //poki co brak odpowiedzi
-//        }
-//
-//        protected void setNoParticipation() {
-//            groupingResponse = -2;
-//        }
-//
+        protected void sendNotificationAboutGrouping() {
+            /*for (var guide : owner.guides) {
+                guide.out.writeObject(...);
+            }*/
+            ///send notification about grouping to room
+            groupingResponse = 0; //poki co brak odpowiedzi
+        }
+
+        protected void setNoParticipation() {
+            groupingResponse = -2;
+        }
+
 //        public void respondAboutGrouping(int response) {
 //            groupingResponse = response;
 //            destination.queue.updateFullyGroupedStatus();
