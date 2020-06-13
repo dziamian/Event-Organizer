@@ -392,13 +392,13 @@ public class Server {
             } finally {
                 if (client != null) {
                     clients.remove(client);
+                    client.removeFromSystem();
                 }
                 try {
                     socket.close();
                 } catch(IOException ex) {
                     System.err.println("[ClientHandler-socket.close()]: IOException - " + ex.getMessage());
                 }
-                client.removeFromSystem();
                 System.out.println("Connection with (" + this.toString() + ") has been closed!");
             }
         }

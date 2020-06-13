@@ -112,6 +112,7 @@ public class Guide extends Client {
     @Override
     public void removeFromSystem() {
         super.removeFromSystem();
-        group.removeAllTickets();
+        int queuesRemovedFrom = group.removeFromAllQueues();
+        System.err.println("Guide removed from " + queuesRemovedFrom + " queues");
     }
 }

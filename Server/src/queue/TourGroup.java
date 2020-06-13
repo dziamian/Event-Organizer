@@ -68,20 +68,17 @@ public class TourGroup {
                     break;
                 }
             if (ticketIsValid) {
-                ticket.getDestination().removeGroupFromQueue(ticket.getOwner());
                 return tickets.remove(ticket);
             }
         }
         return false;
     }
 
-    public int removeAllTickets() {
-        int removedTickets = 0;
+    public int removeFromAllQueues() {
+        int removedTickets = tickets.size();
         for (QueueTicket t : tickets) {
-            if (t.getDestination().removeGroupFromQueue(t.getOwner()));
-            ++removedTickets;
+            t.getDestination().removeGroupFromQueue(t.getOwner());
         }
-        tickets.clear();
         return removedTickets;
     }
 
