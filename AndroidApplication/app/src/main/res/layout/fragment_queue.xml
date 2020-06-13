@@ -8,7 +8,7 @@
         tools:context=".QueueFragment">
 
         <ListView
-                android:id="@+id/room_list_view"
+                android:id="@+id/queue_list_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:listSelector="@android:color/transparent">

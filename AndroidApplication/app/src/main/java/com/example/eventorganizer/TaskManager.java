@@ -132,6 +132,9 @@ public class TaskManager implements Runnable {
                 case "add_to_queue": {
                     addGroupToQueue(message);
                 } break;
+                case "view_tickets": {
+                    viewTickets(message);
+                }
             }
         }
     }
@@ -293,16 +296,26 @@ public class TaskManager implements Runnable {
                     if ("0".equals(msg.getArgs()[0])) {
                         ((Runnable[]) message.getData())[1].run();
                     } else {
-                        GuideAccount.getInstance().addNewQueue(new ObjectId(
-                                message.getArgs()[0]),
-                                new ObjectId(message.getArgs()[1]),
-                                Integer.parseInt(msg.getArgs()[0])
-                        );
                         ((Runnable[]) message.getData())[0].run();
                     }
                     return true;
                 })
         );
+        sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
+    }
+
+    private void viewTickets(BaseMessage message) {
+        long streamId = TaskManager.nextCommunicationStream();
+        lingeringTasks.add(new LingeringTask(
+                "view_tickets",
+                streamId,
+                null,
+                (msg) -> {
+                    GuideAccount.getInstance().setQueues((QueueInfo[]) msg.getData());
+                    ((Runnable)message.getData()).run();
+                    return true;
+                }
+        ));
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 

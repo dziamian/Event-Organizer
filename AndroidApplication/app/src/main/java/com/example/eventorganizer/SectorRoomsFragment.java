@@ -56,7 +56,7 @@ public class SectorRoomsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ObjectId sectorId = new ObjectId(this.sectorId);
-        SectorInfoFixed sectorInfoFixed = TaskManager.eventInfoFixed.getSectors().get(sectorId);
+        SectorInfoFixed sectorInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().get(sectorId);
 
         ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(true);
         ((HomeActivity) getActivity()).rooms.setTitle(sectorInfoFixed.getName());
@@ -66,10 +66,10 @@ public class SectorRoomsFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_sector_rooms, container, false);
 
-        ArrayList<RoomLayout> roomList = new ArrayList<>();
-        sectorInfoFixed.getRooms().values().forEach(roomInfo -> roomList.add(new RoomLayout(roomInfo)));
+        ArrayList<SectorRoomLayout> roomList = new ArrayList<>();
+        sectorInfoFixed.getRooms().values().forEach(roomInfo -> roomList.add(new SectorRoomLayout(roomInfo)));
 
-        ItemListAdapter<RoomLayout> itemListAdapter = new ItemListAdapter<>(getActivity(), roomList);
+        ItemListAdapter<SectorRoomLayout> itemListAdapter = new ItemListAdapter<>(getActivity(), roomList);
 
         getActivity().runOnUiThread(() -> {
             ListView listView = rootView.findViewById(R.id.room_list_view);
@@ -83,9 +83,9 @@ public class SectorRoomsFragment extends Fragment {
                 (Runnable) () -> {
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
-                            int numberOfRooms = TaskManager.eventInfoUpdate.getSectors().get(sectorId).getRooms().size();
+                            int numberOfRooms = GuideAccount.getInstance().getEventInfoUpdate().getSectors().get(sectorId).getRooms().size();
                             for (int i = 0; i < numberOfRooms; ++i) {
-                                itemListAdapter.layoutList.get(i).updateItemHolderAttributes(TaskManager.eventInfoUpdate, sectorId);
+                                itemListAdapter.layoutList.get(i).updateItemHolderAttributes(GuideAccount.getInstance().getEventInfoUpdate(), sectorId);
                             }
                         });
                     }

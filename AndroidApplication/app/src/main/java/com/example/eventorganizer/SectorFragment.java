@@ -47,7 +47,7 @@ public class SectorFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_sector, container, false);
 
         ArrayList<SectorLayout> sectorList = new ArrayList<>();
-        TaskManager.eventInfoFixed.getSectors().values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
+        GuideAccount.getInstance().getEventInfoFixed().getSectors().values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
 
         ItemListAdapter<SectorLayout> itemListAdapter = new ItemListAdapter<>(getActivity(), sectorList);
 
@@ -63,8 +63,8 @@ public class SectorFragment extends Fragment {
                 (Runnable) () -> {
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
-                            for (int i = 0; i < TaskManager.eventInfoUpdate.getSectors().size(); ++i) {
-                                itemListAdapter.layoutList.get(i).updateItemHolderAttributes(TaskManager.eventInfoUpdate);
+                            for (int i = 0; i < GuideAccount.getInstance().getEventInfoUpdate().getSectors().size(); ++i) {
+                                itemListAdapter.layoutList.get(i).updateItemHolderAttributes(GuideAccount.getInstance().getEventInfoUpdate());
                             }
                         });
                     }

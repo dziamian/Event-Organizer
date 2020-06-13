@@ -1,10 +1,14 @@
 package com.example.eventorganizer;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ListView;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import network_structures.BaseMessage;
+import network_structures.QueueInfo;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -42,7 +46,36 @@ public class QueueFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
         ArrayList<QueueLayout> queuesList = new ArrayList<>();
+        //GuideAccount.getInstance().getQueues().forEach(queueInfo -> queuesList.add(new QueueLayout(queueInfo)));
 
+        ItemListAdapter<QueueLayout> itemListAdapter = new ItemListAdapter<>(getActivity(), queuesList);
+
+        getActivity().runOnUiThread(() -> {
+            ListView listView = rootView.findViewById(R.id.queue_list_view);
+            listView.setAdapter(itemListAdapter);
+        });
+
+        MainActivity.connectionToServer.addIncomingMessage(new BaseMessage(
+                "view_tickets",
+                null,
+                (Runnable) () -> {
+                    getActivity().runOnUiThread(() -> {
+                        queuesList.clear();
+                        QueueInfo[] queueArray = GuideAccount.getInstance().getQueues();
+                        Log.d("co jest", "aha");
+                        if (queueArray != null) {
+                            for (QueueInfo queueInfo : queueArray) {
+                                Log.d("wtf", "wtf");
+                                queuesList.add(new QueueLayout(queueInfo));
+                            }
+                            itemListAdapter.notifyDataSetChanged();
+                        }
+                    });
+                },
+                TaskManager.nextCommunicationStream())
+        );
+
+        //itemListAdapter.notifyDataSetChanged();
 
         return rootView;
     }

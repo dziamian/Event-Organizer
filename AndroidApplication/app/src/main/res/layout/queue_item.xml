@@ -16,7 +16,7 @@
             android:background="@drawable/room_details_field">
 
         <TextView
-                android:id="@+id/queue_name"
+                android:id="@+id/queue_room_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Czy beton ma pH?"
@@ -28,15 +28,27 @@
         />
 
         <TextView
+                android:id="@+id/queue_sector_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/queue_room_name"
+                android:text="Sektor A"
+                android:textSize="15sp"
+                android:textColor="#000000"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="2dp"
+        />
+
+        <TextView
                 android:id="@+id/queue_position"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/queue_name"
+                android:layout_below="@id/queue_sector_name"
                 android:text="Pozycja w kolejce: 10"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 android:gravity="center_horizontal"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="15dp"
         />
 
         <Button

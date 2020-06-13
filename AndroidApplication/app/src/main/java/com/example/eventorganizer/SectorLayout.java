@@ -26,8 +26,8 @@ public class SectorLayout extends ItemLayout {
         ((SectorLayoutHolder) getItemHolder()).textViewName.setText(sectorInfoFixed.getName());
         ((SectorLayoutHolder) getItemHolder()).textViewAddress.setText(sectorInfoFixed.getAddress());
         String text;
-        if (TaskManager.eventInfoUpdate != null) {
-            text = "Aktywne atrakcje: " + TaskManager.eventInfoUpdate.getSectors().get(sectorInfoFixed.getId()).getActiveRoomsCount();
+        if (GuideAccount.getInstance().getEventInfoUpdate() != null) {
+            text = "Aktywne atrakcje: " + GuideAccount.getInstance().getEventInfoUpdate().getSectors().get(sectorInfoFixed.getId()).getActiveRoomsCount();
         }
         else {
             text = "Aktywne atrakcje: " + sectorInfoFixed.getActiveRooms();
@@ -41,14 +41,14 @@ public class SectorLayout extends ItemLayout {
     }
 
     private class SectorLayoutHolder extends ItemHolder {
-        public TextView textViewName;
-        public TextView textViewAddress;
-        public TextView textViewAvailableRooms;
+        private final TextView textViewName;
+        private final TextView textViewAddress;
+        private final TextView textViewAvailableRooms;
 
         public SectorLayoutHolder(View view, Context context) {
-            textViewName = view.findViewById(R.id.sector_name);
-            textViewAddress = view.findViewById(R.id.sector_address);
-            textViewAvailableRooms = view.findViewById(R.id.sector_available_rooms);
+            this.textViewName = view.findViewById(R.id.sector_name);
+            this.textViewAddress = view.findViewById(R.id.sector_address);
+            this.textViewAvailableRooms = view.findViewById(R.id.sector_available_rooms);
 
             view.findViewById(R.id.sector_field).setOnClickListener(v -> {
                 ((HomeActivity) context).setSectorRoomsFragment(sectorInfoFixed.getId());

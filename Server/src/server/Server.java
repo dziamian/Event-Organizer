@@ -22,8 +22,6 @@ import queue.Sector;
 import queue.Room;
 import queue.TourGroup;
 
-import javax.management.QueryEval;
-
 public class Server {
     /** Main server thread task queue */
     private static final ConcurrentLinkedQueue<Task> receivedTasks = new ConcurrentLinkedQueue<>();
@@ -186,6 +184,7 @@ public class Server {
                 case "view_tickets": {
                     Room[] rooms = ((TourGroup)task.getData()).getTicketRooms();
                     QueueInfo[] queueInfo = new QueueInfo[rooms.length];
+                    System.out.println(rooms.length);
                     for (int i = 0; i < rooms.length; ++i) {
                         queueInfo[i] = new QueueInfo(
                             rooms[i].getInfoFixed().getSectorId(),
@@ -194,7 +193,7 @@ public class Server {
                         );
                     }
                     task.getResponseInterface().respond(new NetworkMessage(
-                            task.getCommand(),
+                            "view_tickets",
                             null,
                             queueInfo,
                             task.getCommunicationIdentifier()

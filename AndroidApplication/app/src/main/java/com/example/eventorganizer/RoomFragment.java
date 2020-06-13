@@ -64,7 +64,7 @@ public class RoomFragment extends Fragment {
                              Bundle savedInstanceState) {
         ObjectId sectorId = new ObjectId(this.sectorId);
         ObjectId roomId = new ObjectId(this.roomId);
-        SectorInfoFixed sectorInfoFixed = TaskManager.eventInfoFixed.getSectors().get(sectorId);
+        SectorInfoFixed sectorInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().get(sectorId);
         RoomInfoFixed roomInfoFixed = sectorInfoFixed.getRooms().get(roomId);
 
         ((HomeActivity) Objects.requireNonNull(getActivity())).rooms.setVisible(true);

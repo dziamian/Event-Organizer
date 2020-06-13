@@ -25,29 +25,27 @@ public class GuideAccount {
 
     private final EventInfoFixed eventInfoFixed;
     private EventInfoUpdate eventInfoUpdate;
-    private ArrayList<QueueInfo> queues;
+    private QueueInfo[] queues;
 
     private GuideAccount(EventInfoFixed eventInfoFixed) {
         this.eventInfoFixed = eventInfoFixed;
     }
 
     public EventInfoFixed getEventInfoFixed() {
-        return eventInfoFixed;
+        return this.eventInfoFixed;
     }
 
     public EventInfoUpdate getEventInfoUpdate() {
-        return eventInfoUpdate;
+        return this.eventInfoUpdate;
     }
 
     public void setEventInfoUpdate(EventInfoUpdate eventInfoUpdate) {
         this.eventInfoUpdate = eventInfoUpdate;
     }
 
-    public QueueInfo getQueue(int position) {
-        return queues.get(position);
-    }
+    public QueueInfo[] getQueues() { return this.queues; }
 
-    public void addNewQueue(ObjectId sectorId, ObjectId roomId, int positionInQueue) {
-        queues.add(new QueueInfo(sectorId, roomId, positionInQueue));
+    public void setQueues(QueueInfo[] queues) {
+        this.queues = queues;
     }
 }

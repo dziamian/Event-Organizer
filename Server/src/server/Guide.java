@@ -58,7 +58,8 @@ public class Guide extends Client {
                     case "update": {
                         addOutgoingMessage(new NetworkMessage("update", new String[]{"true"}, Server.getEventInfoUpdate(), message.getCommunicationIdentifier()));
                     } break;
-                    case "add_to_queue": // For these calls, following structure is expected: args[0] should be sector ObjectId, args[1] should be room ObjectId
+                    case "add_to_queue":// For these calls, following structure is expected: args[0] should be sector ObjectId, args[1] should be room ObjectId
+                    case "view_tickets":
                     case "remove_from_queue": {
                         Server.enqueueTask(new Server.Task(
                                 message.getCommand(),
