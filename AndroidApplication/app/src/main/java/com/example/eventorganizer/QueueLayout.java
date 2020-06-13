@@ -12,7 +12,7 @@ public class QueueLayout extends ItemLayout {
     private final QueueInfo queueInfo;
 
     protected QueueLayout(QueueInfo queueInfo) {
-        super(R.layout.room_item);
+        super(R.layout.queue_item);
         this.queueInfo = queueInfo;
     }
 
