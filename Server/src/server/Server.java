@@ -189,8 +189,7 @@ public class Server {
                         queueInfo[i] = new QueueInfo(
                             rooms[i].getInfoFixed().getSectorId(),
                             rooms[i].getInfoFixed().getId(),
-                            1
-                            //rooms[i].positionOf((TourGroup)task.getData())
+                            rooms[i].positionOf((TourGroup)task.getData())
                         );
                     }
                     task.getResponseInterface().respond(new NetworkMessage(
