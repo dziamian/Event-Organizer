@@ -213,7 +213,10 @@ public class Server {
                     );
                     task.getResponseInterface().respond(new NetworkMessage(
                             "remove_from_queue",
-                            new String[] { "" + room.removeGroupFromQueue((TourGroup)task.getData()) },
+                            new String[] {
+                                    "" + room.removeGroupFromQueue((TourGroup)task.getData()),
+                                    "" + ((TourGroup)task.getData()).getTicketRooms().length
+                            },
                             null,
                             task.getCommunicationIdentifier()
                     ));
@@ -269,6 +272,10 @@ public class Server {
                     System.out.println("\t\tRoom State: " + room.getState());
                 }
             }
+
+            // fixme Launching reservation handler thread, should end when server is closed but server works in infinite loop
+            ReservationHandler reservationHandler = new ReservationHandler(sectors);
+            new Thread(reservationHandler).start();
 
             // Main server task queue
             while (true) {
@@ -436,7 +443,7 @@ public class Server {
         }
     }
 
-    private class ReservationHandler implements Runnable {
+    private static class ReservationHandler implements Runnable {
         private final ConcurrentLinkedQueue<NetworkMessage> incomingMessages;
         private final Map<ObjectId, Sector> sectors;
         private final AtomicBoolean continueRunning;
@@ -465,7 +472,17 @@ public class Server {
                                 }
                             } break;
                             case RESERVED: {
-                                r.updateReservationStatus();
+                                Room.Reservation[] expiredReservations = r.updateReservationStatus();
+                                for (Room.Reservation reservation : expiredReservations)
+                                    reservation.getGroup().sendToAllGuides(new NetworkMessage(
+                                            "reservation_expired",
+                                            new String[] {
+                                                    reservation.getReservedRoomInfoFixed().getSectorId().toString(),
+                                                    reservation.getReservedRoomInfoFixed().getId().toString()
+                                            },
+                                            null,
+                                            0
+                                    ));
                             } break;
                             case TAKEN: {
 

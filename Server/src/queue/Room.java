@@ -118,17 +118,18 @@ public class Room {
         }
     }
 
-    public TourGroup[] updateReservationStatus() {
-        ArrayList<TourGroup> groups = new ArrayList<>();
+    public Reservation[] updateReservationStatus() {
+        ArrayList<Reservation> removedReservations = new ArrayList<>();
         for (Room.Reservation reservation : currentReservations) {
             if (!reservation.isActive() && reservation.expirationDate.getTime() < new Date().getTime()) {
                 currentReservations.remove(reservation);
                 reservation.getGroup().removeReservation(reservation);
-                groups.add(reservation.getGroup());
+                removedReservations.add(reservation);
             }
         }
-
-        return (TourGroup[])groups.toArray();
+        if (currentReservations.size() == 0 && state == State.RESERVED)
+            changeState(State.OPEN);
+        return (Reservation[])removedReservations.toArray();
     }
 
 //    public void updateReservations() {
@@ -251,6 +252,10 @@ public class Room {
 
         public Date getExpirationDate() {
             return expirationDate;
+        }
+
+        public RoomInfoFixed getReservedRoomInfoFixed() {
+            return reservedRoom.getInfoFixed();
         }
     }
 
