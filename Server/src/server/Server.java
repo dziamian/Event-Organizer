@@ -467,9 +467,7 @@ public class Server {
                     for (Room r : s.getRoomsValues()) {
                         switch (r.getState()) {
                             case OPEN: {
-                                if (r.getInfoUpdate().getQueueSize().get() >= r.getMaxSlots()) {
-                                    r.giveReservationsToAll();
-                                }
+                                r.giveReservationsToAll();
                             } break;
                             case RESERVED: {
                                 Room.Reservation[] expiredReservations = r.updateReservationStatus();
