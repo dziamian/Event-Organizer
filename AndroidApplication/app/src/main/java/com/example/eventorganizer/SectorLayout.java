@@ -17,12 +17,12 @@ public class SectorLayout extends ItemLayout {
     }
 
     @Override
-    public void createItemHolder(View view, @Nullable Context context) {
-        setItemHolder(new SectorLayoutHolder(view, context));
+    public void createItemHolder(View view) {
+        setItemHolder(new SectorLayoutHolder(view));
     }
 
     @Override
-    protected void setItemHolderAttributes() {
+    protected void setItemHolderAttributes(@Nullable Context context) {
         ((SectorLayoutHolder) getItemHolder()).textViewName.setText(sectorInfoFixed.getName());
         ((SectorLayoutHolder) getItemHolder()).textViewAddress.setText(sectorInfoFixed.getAddress());
         String text;
@@ -33,6 +33,12 @@ public class SectorLayout extends ItemLayout {
             text = "Aktywne atrakcje: " + sectorInfoFixed.getActiveRooms();
         }
         ((SectorLayoutHolder) getItemHolder()).textViewAvailableRooms.setText(text);
+
+        if (context != null) {
+            ((SectorLayoutHolder) getItemHolder()).viewSectorField.setOnClickListener(v -> {
+                ((HomeActivity) context).setSectorRoomsFragment(sectorInfoFixed.getId());
+            });
+        }
     }
 
     public void updateItemHolderAttributes(EventInfoUpdate update) {
@@ -44,15 +50,14 @@ public class SectorLayout extends ItemLayout {
         private final TextView textViewName;
         private final TextView textViewAddress;
         private final TextView textViewAvailableRooms;
+        private final View viewSectorField;
 
-        public SectorLayoutHolder(View view, Context context) {
+        public SectorLayoutHolder(View view) {
             this.textViewName = view.findViewById(R.id.sector_name);
             this.textViewAddress = view.findViewById(R.id.sector_address);
             this.textViewAvailableRooms = view.findViewById(R.id.sector_available_rooms);
 
-            view.findViewById(R.id.sector_field).setOnClickListener(v -> {
-                ((HomeActivity) context).setSectorRoomsFragment(sectorInfoFixed.getId());
-            });
+            this.viewSectorField = view.findViewById(R.id.sector_field);
         }
     }
 }

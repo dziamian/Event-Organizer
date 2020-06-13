@@ -17,7 +17,7 @@ public abstract class ItemLayout {
         return resourceId;
     }
 
-    public abstract void createItemHolder(View view, @Nullable Context context);
+    public abstract void createItemHolder(View view);
 
     protected ItemHolder getItemHolder() {
         return itemHolder;
@@ -31,7 +31,7 @@ public abstract class ItemLayout {
         this.itemHolder = (ItemHolder) view.getTag();
     }
 
-    protected abstract void setItemHolderAttributes();
+    protected abstract void setItemHolderAttributes(@Nullable Context context);
 
     public abstract class ItemHolder {
 

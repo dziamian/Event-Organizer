@@ -41,13 +41,13 @@ public class ItemListAdapter<T extends ItemLayout> extends BaseAdapter {
         T layout = layoutList.get(position);
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(T.getResourceId(), parent, false);
-            layout.createItemHolder(convertView, context);
+            layout.createItemHolder(convertView);
             convertView.setTag(layout.getItemHolder());
         } else {
             layout.setItemHolderFromView(convertView);
         }
 
-        layout.setItemHolderAttributes();
+        layout.setItemHolderAttributes(context);
 
         return convertView;
     }
