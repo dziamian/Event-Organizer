@@ -178,9 +178,9 @@ public class TourGroup {
             groupingResponse = -2;
         }
 
-        public void respondAboutGrouping(int response) {
-            groupingResponse = response;
-            destination.queue.updateFullyGroupedStatus();
-        }
+//        public void respondAboutGrouping(int response) {
+//            groupingResponse = response;
+//            destination.queue.updateFullyGroupedStatus();
+//        }
     }
 }

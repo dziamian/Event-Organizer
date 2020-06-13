@@ -9,3 +9,4 @@
 *.class
 .idea/inspectionProfiles/Project_Default.xml
 AndroidApplication/app/app.iml
+Server/out/production/Server/META-INF/Server.kotlin_module
