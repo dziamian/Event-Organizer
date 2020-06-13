@@ -99,6 +99,7 @@ public class Room {
         return null;
     }
 
+    // fixme
     public void giveReservationsToAll() {
         if (queue.size() >= maxSlots) {
             for (int i = 0; i < maxSlots; ++i) {
@@ -107,21 +108,39 @@ public class Room {
                 group.addReservation(reservation);
                 group.sendToAllGuides(new NetworkMessage(
                         "reservation",
-                        new String[] {},
-                        null,
-                        Server.nextCommunicationIdentifier()
+                        new String[] { infoFixed.getSectorId().toString(), infoFixed.getSectorId().toString() },
+                        reservation.getExpirationDate(),
+                        0
                 ));
+                infoUpdate.setQueueSize(queue.size());
+                changeState(State.RESERVED);
             }
         }
     }
 
-//    private void updateReservations() {
+    public TourGroup[] updateReservationStatus() {
+        ArrayList<TourGroup> groups = new ArrayList<>();
+        for (Room.Reservation reservation : currentReservations) {
+            if (!reservation.isActive() && reservation.expirationDate.getTime() < new Date().getTime()) {
+                currentReservations.remove(reservation);
+                reservation.getGroup().removeReservation(reservation);
+                groups.add(reservation.getGroup());
+            }
+        }
+
+        return (TourGroup[])groups.toArray();
+    }
+
+//    public void updateReservations() {
 //        for (Room.Reservation reservation : currentReservations) {
 //            if (!reservation.isActive() && reservation.expirationDate.getTime() < new Date().getTime()) {
 //                currentReservations.remove(reservation);
 //                reservation.getGroup().removeReservation(reservation);
 //            }
 //        }
+//        // fixme
+//        if (currentReservations.size() == 0 && state == State.RESERVED)
+//            changeState(State.OPEN);
 //    }
 //
 //    private boolean areReservationsValid() {
@@ -208,7 +227,7 @@ public class Room {
         private final Room reservedRoom;
         private final TourGroup group;
         private final Date expirationDate;
-        private final static long duration = 5 * 60 * 1000;
+        private final static long duration = 15 * 1000;// DEFAULT (5 min) : 5 * 60 * 1000;
         private boolean active;
 
         Reservation(Room reservedRoom, TourGroup group) {
@@ -228,6 +247,10 @@ public class Room {
 
         public void activate() {
             active = true;
+        }
+
+        public Date getExpirationDate() {
+            return expirationDate;
         }
     }
 

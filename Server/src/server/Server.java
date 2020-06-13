@@ -195,10 +195,12 @@ public class Server {
                     ).getRoom(
                             new ObjectId(task.getArgs()[1])
                     );
-                    int numberOfActiveTickets = ((TourGroup)task.getData()).getTicketRooms().length;
                     task.getResponseInterface().respond(new NetworkMessage(
                             "add_to_queue",
-                            new String[] { String.valueOf(room.addGroupToQueue((TourGroup)task.getData())), "" + numberOfActiveTickets },
+                            new String[] {
+                                    String.valueOf(room.addGroupToQueue((TourGroup)task.getData())),
+                                    "" + ((TourGroup)task.getData()).getTicketRooms().length
+                            },
                             null,
                             task.getCommunicationIdentifier())
                     );
@@ -456,7 +458,18 @@ public class Server {
             while (continueRunning.get()) {
                 for (Sector s : sectors.values()) {
                     for (Room r : s.getRoomsValues()) {
-                        if (r.getInfoUpdate().getQueueSize().get() >= r.getMaxSlots()) {
+                        switch (r.getState()) {
+                            case OPEN: {
+                                if (r.getInfoUpdate().getQueueSize().get() >= r.getMaxSlots()) {
+                                    r.giveReservationsToAll();
+                                }
+                            } break;
+                            case RESERVED: {
+                                r.updateReservationStatus();
+                            } break;
+                            case TAKEN: {
+
+                            } break;
                         }
                     }
                 }
