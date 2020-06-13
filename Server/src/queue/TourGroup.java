@@ -123,14 +123,48 @@ public class TourGroup {
         this.currentRoom = null;
     }
 
+    private enum GroupingResponses {
+        DECLINED(-1),
+        ACCEPTED(1),
+        PENDING(0),
+        UNAFFECTED(-2);
+
+        private final int code;
+
+        GroupingResponses(int code) {
+            this.code = code;
+        }
+
+        public int getCode() {
+            return this.code;
+        }
+
+        public static GroupingResponses get(int code) {
+            GroupingResponses response = UNAFFECTED;
+            switch (code) {
+                case -1:
+                    response = DECLINED;
+                    break;
+                case 0:
+                    response = PENDING;
+                    break;
+                case 1:
+                    response = ACCEPTED;
+                    break;
+            }
+            return response;
+        }
+    }
+
     //INNER CLASSES-------------------------------------------------------------------------------------------------
 
     public class QueueTicket {
         private final TourGroup owner;
         private final Room destination;
         private int timesAsked;
+        private GroupingResponses groupingResponse;
 
-        private int groupingResponse; // (-2) - BRAK UDZIALU, (-1) - NIE, (0) - OCZEKIWANIE, (1) - TAK
+        //private int groupingResponse; // (-2) - BRAK UDZIALU, (-1) - NIE, (0) - OCZEKIWANIE, (1) - TAK
 
         public QueueTicket(TourGroup owner, Room destination) {
             this.owner = owner;
@@ -142,7 +176,7 @@ public class TourGroup {
             return owner;
         }
 
-        protected int getGroupingResponse() {
+        protected GroupingResponses getGroupingResponse() {
             return groupingResponse;
         }
 
@@ -171,11 +205,11 @@ public class TourGroup {
                 guide.out.writeObject(...);
             }*/
             ///send notification about grouping to room
-            groupingResponse = 0; //poki co brak odpowiedzi
+            groupingResponse = GroupingResponses.get(0); //poki co brak odpowiedzi
         }
 
         protected void setNoParticipation() {
-            groupingResponse = -2;
+            groupingResponse = GroupingResponses.get(-2);
         }
 
 //        public void respondAboutGrouping(int response) {

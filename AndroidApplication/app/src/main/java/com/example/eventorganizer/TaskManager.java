@@ -25,6 +25,8 @@ public class TaskManager implements Runnable {
      * @return Next usable communication stream identifier
      */
     public synchronized static long nextCommunicationStream() {
+        if (currentCommunicationStream == 0)
+            ++currentCommunicationStream;
         return currentCommunicationStream++;
     }
 
