@@ -116,6 +116,12 @@ public class TaskManager implements Runnable {
                 case "update": {
                     startRequestingUpdates(message);
                 } break;
+                case "reservation": {
+
+                } break;
+                case "reservation_expired": {
+
+                } break;
                 case "login": {
                     loginToServer(message);
                 } break;
