@@ -190,65 +190,79 @@ public class Server {
         private void handleTask(Task task) {
             switch (task.getCommand()) {
                 case "add_to_queue": {
-                    Room room = sectors.get(
-                            new ObjectId(task.getArgs()[0])
-                    ).getRoom(
-                            new ObjectId(task.getArgs()[1])
-                    );
-                    task.getResponseInterface().respond(new NetworkMessage(
-                            "add_to_queue",
-                            new String[] {
-                                    String.valueOf(room.addGroupToQueue((TourGroup)task.getData())),
-                                    "" + ((TourGroup)task.getData()).getTicketRooms().length
-                            },
-                            null,
-                            task.getCommunicationIdentifier())
-                    );
+                    clientRequestAddToQueue(task);
                 } break;
                 case "remove_from_queue": {
-                    Room room = sectors.get(
-                            new ObjectId(task.getArgs()[0])
-                    ).getRoom(
-                            new ObjectId(task.getArgs()[1])
-                    );
-                    task.getResponseInterface().respond(new NetworkMessage(
-                            "remove_from_queue",
-                            new String[] {
-                                    "" + room.removeGroupFromQueue((TourGroup)task.getData()),
-                                    "" + ((TourGroup)task.getData()).getTicketRooms().length
-                            },
-                            null,
-                            task.getCommunicationIdentifier()
-                    ));
+                    clientRequestRemoveFromQueue(task);
                 } break;
                 case "view_tickets": {
-                    Room[] rooms = ((TourGroup)task.getData()).getTicketRooms();
-                    QueueInfo[] queueInfo = new QueueInfo[rooms.length];
-                    for (int i = 0; i < rooms.length; ++i) {
-                        queueInfo[i] = new QueueInfo(
-                            rooms[i].getInfoFixed().getSectorId(),
-                            rooms[i].getInfoFixed().getId(),
-                            rooms[i].positionOf((TourGroup)task.getData()) + 1
-                        );
-                    }
-                    task.getResponseInterface().respond(new NetworkMessage(
-                            "view_tickets",
-                            null,
-                            queueInfo,
-                            task.getCommunicationIdentifier()
-                    ));
+                    clientRequestViewTickets(task);
                 } break;
                 default : {
-                    task.getResponseInterface().respond(
-                            new NetworkMessage(
-                                    "error",
-                                    new String[] { "invalid_command" },
-                                    null,
-                                    task.getCommunicationIdentifier()
-                            )
-                    );
+                    clientInvalidRequest(task);
                 }
             }
+        }
+
+        private static void clientRequestAddToQueue(Task task) {
+            Room room = sectors.get(
+                    new ObjectId(task.getArgs()[0])
+            ).getRoom(
+                    new ObjectId(task.getArgs()[1])
+            );
+            task.getResponseInterface().respond(new NetworkMessage(
+                    "add_to_queue",
+                    new String[] {
+                            String.valueOf(room.addGroupToQueue((TourGroup)task.getData()))
+                    },
+                    null,
+                    task.getCommunicationIdentifier())
+            );
+        }
+
+        private static void clientRequestRemoveFromQueue(Task task) {
+            Room room = sectors.get(
+                    new ObjectId(task.getArgs()[0])
+            ).getRoom(
+                    new ObjectId(task.getArgs()[1])
+            );
+            task.getResponseInterface().respond(new NetworkMessage(
+                    "remove_from_queue",
+                    new String[] {
+                            "" + room.removeGroupFromQueue((TourGroup)task.getData())
+                    },
+                    null,
+                    task.getCommunicationIdentifier()
+            ));
+        }
+
+        private static void clientRequestViewTickets(Task task) {
+            Room[] rooms = ((TourGroup)task.getData()).getTicketRooms();
+            QueueInfo[] queueInfo = new QueueInfo[rooms.length];
+            for (int i = 0; i < rooms.length; ++i) {
+                queueInfo[i] = new QueueInfo(
+                        rooms[i].getInfoFixed().getSectorId(),
+                        rooms[i].getInfoFixed().getId(),
+                        rooms[i].positionOf((TourGroup)task.getData()) + 1
+                );
+            }
+            task.getResponseInterface().respond(new NetworkMessage(
+                    "view_tickets",
+                    null,
+                    queueInfo,
+                    task.getCommunicationIdentifier()
+            ));
+        }
+
+        private static void clientInvalidRequest(Task task) {
+            task.getResponseInterface().respond(
+                    new NetworkMessage(
+                            "error",
+                            new String[] { "invalid_command", task.getCommand() },
+                            null,
+                            task.getCommunicationIdentifier()
+                    )
+            );
         }
 
         /**
@@ -304,7 +318,6 @@ public class Server {
         }
 
         /**
-         *
          * @param command Command for execution
          * @param args Command execution arguments (modifiers)
          * @param data Data needed to execute command
@@ -458,6 +471,9 @@ public class Server {
             continueRunning.set(false);
         }
 
+        /**
+         * Procedure for assigning reservations to given
+         */
         @Override
         public void run() {
             if (sectors == null)

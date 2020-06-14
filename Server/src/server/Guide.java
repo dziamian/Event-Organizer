@@ -8,8 +8,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.SocketTimeoutException;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Guide extends Client {
+    private static Consumer<Server.Task> enqueueTaskForServer = Server::enqueueTask;
+    private static Function<String, Boolean> isCommandRecognizedByServer = (str) -> { return Server.isCommandRecognizedByServer(str); };
 
     private TourGroup group;
 
@@ -63,7 +67,7 @@ public class Guide extends Client {
                     case "add_to_queue":// For these calls, following structure is expected: args[0] should be sector ObjectId, args[1] should be room ObjectId
                     case "view_tickets":
                     case "remove_from_queue": {
-                        Server.enqueueTask(new Server.Task(
+                       enqueueTaskForServer.accept(new Server.Task(
                                 message.getCommand(),
                                 message.getArgs(),
                                 this.group,
@@ -72,8 +76,8 @@ public class Guide extends Client {
                         ));
                     } break;
                     default: {
-                        if (Server.isCommandRecognizedByServer(message.getCommand()))
-                            Server.enqueueTask(new Server.Task(
+                        if (isCommandRecognizedByServer.apply(message.getCommand()))
+                            enqueueTaskForServer.accept(new Server.Task(
                                     message.getCommand(),
                                     message.getArgs(),
                                     message.getData(),

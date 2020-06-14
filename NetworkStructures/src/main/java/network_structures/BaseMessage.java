@@ -54,7 +54,7 @@ public class BaseMessage {
      * makes only a shallow copy of <b>data</b> field, it's advised to abandon the NetworkMessage
      * reference thereafter.
      * @param networkMessage NetworkMessage to convert
-     * @return BaseMessage conversion NetworkMessage
+     * @return BaseMessage conversion of NetworkMessage
      */
     public static BaseMessage convertToBaseMessage(NetworkMessage networkMessage) {
         return new BaseMessage(

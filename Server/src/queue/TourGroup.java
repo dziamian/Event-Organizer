@@ -19,8 +19,6 @@ public class TourGroup {
     private final ArrayList<server.Guide> guides;
     private final static int maxGuides = 2;
 
-    //private final ArrayList<SimpleGrouping> activeGroupings = new ArrayList<>();
-
     public TourGroup() {
         this.tickets = new ArrayList<>();
         this.reservations = new ArrayList<>();
@@ -60,7 +58,7 @@ public class TourGroup {
     }
 
     public QueueTicket getTicketForRoom(Room room) {
-        for (var ticket : tickets) {
+        for (QueueTicket ticket : tickets) {
             if (ticket.getDestination() == room) {
                 return ticket;
             }
