@@ -15,7 +15,7 @@
             android:id="@+id/navigation_view"
             android:layout_width="300dp"
             android:layout_height="match_parent"
-            app:menu="@menu/nav_drawer_menu_with_rooms"
+            app:menu="@menu/nav_drawer_menu"
             app:headerLayout="@layout/nav_header"
             android:fitsSystemWindows="true"
             android:layout_gravity="start"/>

@@ -1,5 +1,6 @@
 package com.example.eventorganizer;
 
+import android.util.Log;
 import network_structures.*;
 
 import java.io.EOFException;
@@ -117,10 +118,10 @@ public class TaskManager implements Runnable {
                     startRequestingUpdates(message);
                 } break;
                 case "reservation": {
-
+                    handleReservation(message);
                 } break;
                 case "reservation_expired": {
-
+                    handleExpiredReservation(message);
                 } break;
                 case "login": {
                     loginToServer(message);
@@ -142,7 +143,7 @@ public class TaskManager implements Runnable {
                     removeFromQueue(message);
                 } break;
                 case "view_tickets": {
-                    viewTickets(message);
+                    startRequestingTickets(message);
                 } break;
             }
         }
@@ -287,12 +288,36 @@ public class TaskManager implements Runnable {
                             setDisplayedStates(roomInfoUpdate);
                         }
                     }
-                    if (HomeActivity.getUpdatingUI()) {
+                    if (HomeActivity.isUpdating()) {
                         ((Runnable) message.getData()).run();
                     }
-                    return !HomeActivity.getUpdatingUI();
+                    return !HomeActivity.isUpdating();
                 })
         );
+    }
+
+    private void handleReservation(BaseMessage message) {
+        HomeActivity activity = GuideAccount.getInstance().getCurrentActivity();
+        if (activity != null) {
+            GuideAccount.getInstance().setReservationInfo((ReservationInfo) message.getData());
+            GuideAccount.getInstance().setQueuesSize(GuideAccount.getInstance().getQueuesSize() - 1);
+            activity.runOnUiThread(() -> {
+                activity.setQueueBadgeText(GuideAccount.getInstance().getQueuesSize());
+                activity.setReservationBadgeText(1);
+            });
+        }
+    }
+
+    private void handleExpiredReservation(BaseMessage message) {
+        HomeActivity activity = GuideAccount.getInstance().getCurrentActivity();
+        if (activity != null) {
+            ReservationInfo currentReservation = GuideAccount.getInstance().getReservationInfo();
+            if (currentReservation.getSectorId().toString().equals(message.getArgs()[0])
+                    && currentReservation.getRoomId().toString().equals(message.getArgs()[1])) {
+                GuideAccount.getInstance().setReservationInfo(null);
+                activity.runOnUiThread(() -> activity.setReservationBadgeText(0));
+            }
+        }
     }
 
     private void addGroupToQueue(BaseMessage message) {
@@ -302,7 +327,7 @@ public class TaskManager implements Runnable {
                 streamId,
                 null,
                 (msg) -> {
-                    GuideAccount.getInstance().setQueuesSize(Integer.parseInt(msg.getArgs()[1]));
+                    GuideAccount.getInstance().setQueuesSize(GuideAccount.getInstance().getQueuesSize() + 1);
                     if ("0".equals(msg.getArgs()[0])) {
                         ((Runnable[]) message.getData())[1].run();
                     } else {
@@ -321,6 +346,7 @@ public class TaskManager implements Runnable {
                 streamId,
                 null,
                 (msg) -> {
+                    GuideAccount.getInstance().setQueuesSize(GuideAccount.getInstance().getQueuesSize() - 1);
                     if ("true".equals(msg.getArgs()[0])) {
                         ((Runnable[]) message.getData())[0].run();
                     } else {
@@ -332,7 +358,7 @@ public class TaskManager implements Runnable {
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
-    private void viewTickets(BaseMessage message) {
+    private void startRequestingTickets(BaseMessage message) {
         long streamId = TaskManager.nextCommunicationStream();
         lingeringTasks.add(new LingeringTask(
                 "view_tickets",
@@ -340,8 +366,11 @@ public class TaskManager implements Runnable {
                 null,
                 (msg) -> {
                     GuideAccount.getInstance().setQueues((QueueInfo[]) msg.getData());
-                    ((Runnable)message.getData()).run();
-                    return true;
+                    if (HomeActivity.isShowingTickets()) {
+                        ((Runnable) message.getData()).run();
+                        sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
+                    }
+                    return !HomeActivity.isShowingTickets();
                 }
         ));
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
@@ -409,7 +438,7 @@ public class TaskManager implements Runnable {
         }
 
         /**
-         * Getter for this lingering task's callabe
+         * Getter for this lingering task's callable
          * @return Callable
          */
         public Callable getCallable() {
