@@ -1,5 +1,6 @@
 package server;
 
+import network_structures.EventInfoUpdate;
 import network_structures.NetworkMessage;
 import queue.TourGroup;
 
@@ -10,10 +11,12 @@ import java.io.ObjectOutputStream;
 import java.net.SocketTimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class Guide extends Client {
     private static Consumer<Server.Task> enqueueTaskForServer = Server::enqueueTask;
-    private static Function<String, Boolean> isCommandRecognizedByServer = (str) -> { return Server.isCommandRecognizedByServer(str); };
+    private static Function<String, Boolean> commandRecognitionFunction = (str) -> { return Server.isCommandRecognizedByServer(str); };
+    private static Supplier<EventInfoUpdate> updateSupplier = Server::getEventInfoUpdate;
 
     private TourGroup group;
 
@@ -49,7 +52,7 @@ public class Guide extends Client {
      */
     public boolean changeGroup(TourGroup group) {
         if (group != null && this.group != group) {
-            this.group.removeGuide(this);
+            group.removeGuide(this);
             return group.addGuide(this);
         }
         return false;
@@ -62,7 +65,7 @@ public class Guide extends Client {
                 NetworkMessage message = (NetworkMessage) in.readObject();
                 switch (message.getCommand()) {
                     case "update": {
-                        addOutgoingMessage(new NetworkMessage("update", new String[]{"true"}, Server.getEventInfoUpdate(), message.getCommunicationIdentifier()));
+                        addOutgoingMessage(new NetworkMessage("update", new String[]{"true"}, updateSupplier.get(), message.getCommunicationIdentifier()));
                     } break;
                     case "add_to_queue":// For these calls, following structure is expected: args[0] should be sector ObjectId, args[1] should be room ObjectId
                     case "view_tickets":
@@ -76,7 +79,7 @@ public class Guide extends Client {
                         ));
                     } break;
                     default: {
-                        if (isCommandRecognizedByServer.apply(message.getCommand()))
+                        if (commandRecognitionFunction.apply(message.getCommand()))
                             enqueueTaskForServer.accept(new Server.Task(
                                     message.getCommand(),
                                     message.getArgs(),
