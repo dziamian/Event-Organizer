@@ -301,6 +301,7 @@ public class TaskManager implements Runnable {
         if (activity != null) {
             GuideAccount.getInstance().setReservationInfo((ReservationInfo) message.getData());
             GuideAccount.getInstance().setQueuesSize(GuideAccount.getInstance().getQueuesSize() - 1);
+            Log.d("res", "reservation");
             activity.runOnUiThread(() -> {
                 activity.setQueueBadgeText(GuideAccount.getInstance().getQueuesSize());
                 activity.setReservationBadgeText(1);

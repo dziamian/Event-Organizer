@@ -103,24 +103,27 @@ public class Room {
     public void giveReservationsToAll() {
         if (queue.size() >= maxSlots) {
             for (int i = 0; i < maxSlots; ++i) {
-                TourGroup.QueueTicket ticket = queue.poll();
+                TourGroup.QueueTicket ticket = queue.peek();
                 if (ticket == null) return;
                 TourGroup group = ticket.getOwner();
-                Reservation reservation = createReservation(group);
-                group.addReservation(reservation);
-                group.sendToAllGuides(new NetworkMessage(
-                        "reservation",
-                        new String[0],
-                        new ReservationInfo(
-                                infoFixed.getSectorId(),
-                                infoFixed.getId(),
-                                reservation.getExpirationDate()
-                        ),
-                        0
-                ));
-                infoUpdate.setQueueSize(queue.size());
-                changeState(State.RESERVED);
-                group.removeTicket(group.getTicketForRoom(this));
+                if (ticket.getOwner().canAddReservation()) {
+                    Reservation reservation = createReservation(group);
+                    group.addReservation(reservation);
+                    group.sendToAllGuides(new NetworkMessage(
+                            "reservation",
+                            new String[0],
+                            new ReservationInfo(
+                                    infoFixed.getSectorId(),
+                                    infoFixed.getId(),
+                                    reservation.getExpirationDate()
+                            ),
+                            0
+                    ));
+                    infoUpdate.setQueueSize(queue.size());
+                    changeState(State.RESERVED);
+                    group.removeTicket(group.getTicketForRoom(this));
+                    queue.remove(ticket);
+                }
             }
         }
     }
