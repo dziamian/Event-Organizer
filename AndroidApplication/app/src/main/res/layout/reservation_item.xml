@@ -2,14 +2,70 @@
 <RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
     <RelativeLayout
             android:id="@+id/reservation_field"
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="200dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:background="@drawable/layout_field_noninteractive">
 
+        <TextView
+                android:id="@+id/reservation_room_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Czy beton ma pH?"
+                android:textSize="20sp"
+                android:textColor="#000000"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_alignParentTop="true"
+        />
 
+        <TextView
+                android:id="@+id/reservation_sector_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/reservation_room_name"
+                android:text="Sektor A"
+                android:textSize="15sp"
+                android:textColor="#000000"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="2dp"
+        />
+
+        <TextView
+                android:id="@+id/reservation_timer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/reservation_sector_name"
+                android:text="Czas do końca rezerwacji: 05:00"
+                android:textColor="#000000"
+                android:textSize="18sp"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="15dp"
+        />
+
+        <Button
+                android:id="@+id/reservation_go_room"
+                android:layout_width="150dp"
+                android:layout_height="40dp"
+                android:background="@drawable/room_title_field"
+                android:textAllCaps="false"
+                android:text="Przejdź do pokoju"
+                android:textSize="15sp"
+                android:layout_marginLeft="60dp"
+                android:layout_marginRight="60dp"
+                android:layout_marginBottom="20dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentLeft="true"
+        />
 
     </RelativeLayout>
 
