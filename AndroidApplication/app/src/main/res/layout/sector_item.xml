@@ -13,13 +13,13 @@
             android:layout_marginRight="10dp"
             android:focusable="true"
             android:clickable="true"
-            android:background="@drawable/room_details_field">
+            android:background="@drawable/layout_field">
 
         <TextView
                 android:id="@+id/sector_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Sektor A"
                 android:textSize="20sp"
                 android:textColor="#000000"
                 android:gravity="center_horizontal"
@@ -32,7 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/sector_name"
-                android:text=""
+                android:text="al. Tysiąclecia Państwa Polskiego 7"
                 android:textColor="#424242"
                 android:textSize="15sp"
                 android:gravity="center_horizontal"
@@ -43,7 +43,7 @@
                 android:id="@+id/sector_available_rooms"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Aktywne atrakcje: 0"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 android:gravity="right|bottom"
