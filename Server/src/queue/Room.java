@@ -103,7 +103,9 @@ public class Room {
     public void giveReservationsToAll() {
         if (queue.size() >= maxSlots) {
             for (int i = 0; i < maxSlots; ++i) {
-                TourGroup group = queue.poll().getOwner();
+                TourGroup.QueueTicket ticket = queue.poll();
+                if (ticket == null) return;
+                TourGroup group = ticket.getOwner();
                 Reservation reservation = createReservation(group);
                 group.addReservation(reservation);
                 group.sendToAllGuides(new NetworkMessage(
