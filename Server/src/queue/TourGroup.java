@@ -40,10 +40,11 @@ public class TourGroup {
     }
 
     /**
+     * fixme
      * @return Current penalty level of this group
      */
     public int getCurrentPenaltyLevel() {
-        return penaltyLevel;
+        return 0; /* return penaltyLevel */
     }
 
     /**
@@ -127,7 +128,7 @@ public class TourGroup {
     }
 
     private boolean canAddTicket() {
-        return tickets.size() < maxTickets - penaltyLevel;
+        return tickets.size() < maxTickets - getCurrentPenaltyLevel();
     }
 
     public boolean hasTicketFor(Room room) {
