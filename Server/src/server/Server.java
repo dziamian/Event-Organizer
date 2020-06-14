@@ -100,7 +100,6 @@ public class Server {
      * @param args Unused currently
      */
     public static void main(String[] args) {
-
         Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
         mongoLogger.setLevel(Level.SEVERE);
 

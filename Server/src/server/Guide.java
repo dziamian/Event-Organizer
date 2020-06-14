@@ -65,8 +65,8 @@ public class Guide extends Client {
     }
 
     @Override
-    protected void handlingInput() throws SocketTimeoutException, EOFException {
-        while (true) {
+    public void handlingInput() throws SocketTimeoutException, EOFException {
+        while (inputThreadRunning.get()) {
             try {
                 NetworkMessage message = (NetworkMessage) in.readObject();
                 switch (message.getCommand()) {
@@ -108,7 +108,7 @@ public class Guide extends Client {
     }
 
     @Override
-    protected void handlingOutput() {
+    public void handlingOutput() {
         while (outputThreadRunning.get() || !outgoingMessages.isEmpty()) {
             NetworkMessage message = outgoingMessages.poll();
             try {
@@ -126,10 +126,12 @@ public class Guide extends Client {
 
     @Override
     public void removeFromSystem() {
+        super.dismiss();
         super.removeFromSystem();
-        if (group != null)
+        if (group != null) {
             group.removeGuide(this);
-        int queuesRemovedFrom = group.removeFromAllQueues();
-        System.out.println("Guide removed from " + queuesRemovedFrom + " queues");
+            int queuesRemovedFrom = group.removeFromAllQueues();
+            System.out.println("Guide removed from " + queuesRemovedFrom + " queues");
+        }
     }
 }
