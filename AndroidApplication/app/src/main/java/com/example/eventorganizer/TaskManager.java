@@ -354,11 +354,7 @@ public class TaskManager implements Runnable {
                 awaitingTaskInterfaces.add(awaitingTask);
             }
         }
-        LingeringTask[] returnValue = new LingeringTask[awaitingTaskInterfaces.size()];
-        for (int i = 0; i < returnValue.length; ++i) {
-            returnValue[i] = awaitingTaskInterfaces.get(i);
-        }
-        return returnValue;
+        return awaitingTaskInterfaces.toArray(new LingeringTask[0]);
     }
 
     /**
