@@ -118,7 +118,7 @@ public class Room {
                         new String[0],
                         new ReservationInfo(
                                 infoFixed.getSectorId(),
-                                infoFixed.getSectorId(),
+                                infoFixed.getId(),
                                 reservation.getExpirationDate()
                         ),
                         0
@@ -242,7 +242,7 @@ public class Room {
         private final Room reservedRoom;
         private final TourGroup group;
         private final Date expirationDate;
-        private final static long DURATION = 60 * 1000;// DEFAULT (5 min) : 5 * 60 * 1000;
+        private final static long DURATION = 15 * 1000;// DEFAULT (5 min) : 5 * 60 * 1000;
         private boolean active;
 
         Reservation(Room reservedRoom, TourGroup group) {

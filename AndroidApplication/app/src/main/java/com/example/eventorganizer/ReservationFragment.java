@@ -56,8 +56,10 @@ public class ReservationFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        HomeActivity.setUpdating(false);
+        HomeActivity.setShowingTickets(false);
+
         ((HomeActivity) Objects.requireNonNull(getActivity())).setSelectedItemId(R.id.nav_reservations);
         return inflater.inflate(R.layout.fragment_reservation, container, false);
     }

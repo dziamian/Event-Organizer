@@ -12,13 +12,13 @@
             android:layout_marginRight="10dp"
             android:focusable="true"
             android:clickable="true"
-            android:background="@drawable/room_details_field">
+            android:background="@drawable/layout_field">
 
         <TextView
                 android:id="@+id/room_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Czy beton ma pH?"
                 android:textSize="20sp"
                 android:textColor="#000000"
                 android:gravity="center_horizontal"
@@ -31,7 +31,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/room_name"
-                android:text=""
+                android:text="Pokój 1.14"
                 android:textColor="#424242"
                 android:textSize="15sp"
                 android:gravity="center_horizontal"
@@ -42,7 +42,7 @@
                 android:id="@+id/room_state_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Grup w kolejce: 0"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 android:gravity="right|bottom"
@@ -56,7 +56,7 @@
                 android:id="@+id/room_state"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Dostępny!"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 android:gravity="left|bottom"

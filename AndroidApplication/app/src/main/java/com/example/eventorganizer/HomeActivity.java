@@ -1,7 +1,6 @@
 package com.example.eventorganizer;
 
 import android.graphics.Typeface;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -22,20 +21,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static final AtomicBoolean updatingUI = new AtomicBoolean(true);
+    private static final AtomicBoolean isUpdating = new AtomicBoolean(false);
+    private static final AtomicBoolean isShowingTickets = new AtomicBoolean(false);
 
-    public static synchronized boolean getUpdatingUI() {
-        return HomeActivity.updatingUI.get();
+    public static synchronized boolean isUpdating() {
+        return HomeActivity.isUpdating.get();
     }
 
-    public static synchronized void setUpdatingUI(boolean status) {
-        HomeActivity.updatingUI.set(status);
+    public static synchronized void setUpdating(boolean status) {
+        HomeActivity.isUpdating.set(status);
+    }
+
+    public static synchronized boolean isShowingTickets() {
+        return HomeActivity.isShowingTickets.get();
+    }
+
+    public static synchronized void setShowingTickets(boolean status) {
+        HomeActivity.isShowingTickets.set(status);
     }
 
     private DrawerLayout mNavDrawer;
     private NavigationView navigationView;
     private int selectedItemId;
-    private TextView queueBadge;
+    private TextView queuesBadge;
+    private TextView reservationBadge;
 
     private MenuItem rooms;
 
@@ -45,11 +54,23 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         selectedItemId = id;
     }
 
-    public void setQueueBadgeText(String text) {
-        queueBadge.setText(text);
+    public void setQueueBadgeText(int number) {
+        if (number > 0) {
+            queuesBadge.setText(String.valueOf(number));
+        } else {
+            queuesBadge.setText("");
+        }
     }
 
-    public void setQueueBadgeColor(int color) { queueBadge.setTextColor(getResources().getColor(color)); }
+    public void setQueueBadgeColor(int color) { queuesBadge.setTextColor(getResources().getColor(color)); }
+
+    public void setReservationBadgeText(int number) {
+        if (number > 0) {
+            reservationBadge.setText(String.valueOf(number));
+        } else {
+            reservationBadge.setText("");
+        }
+    }
 
     public MenuItem getRooms() { return rooms; }
 
@@ -96,10 +117,15 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         rooms = navigationView.getMenu().findItem(R.id.nav_rooms);
 
-        queueBadge = (TextView) MenuItemCompat.getActionView(navigationView.getMenu().findItem(R.id.nav_queues));
-        queueBadge.setGravity(Gravity.CENTER_VERTICAL);
-        queueBadge.setTypeface(null, Typeface.BOLD);
-        queueBadge.setTextColor(getResources().getColor(R.color.colorBadgeUnselected));
+        queuesBadge = (TextView) MenuItemCompat.getActionView(navigationView.getMenu().findItem(R.id.nav_queues));
+        queuesBadge.setGravity(Gravity.CENTER_VERTICAL);
+        queuesBadge.setTypeface(null, Typeface.BOLD);
+        queuesBadge.setTextColor(getResources().getColor(R.color.colorBadgeUnselected));
+
+        reservationBadge = (TextView) MenuItemCompat.getActionView(navigationView.getMenu().findItem(R.id.nav_reservations));
+        reservationBadge.setGravity(Gravity.CENTER_VERTICAL);
+        reservationBadge.setTypeface(null, Typeface.BOLD);
+        reservationBadge.setTextColor(getResources().getColor(R.color.colorBadgeImportant));
 
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -109,6 +135,8 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                     .commit();
             selectedItemId = R.id.nav_sectors;
         }
+
+        GuideAccount.getInstance().setCurrentActivity(this);
     }
 
     @Override
@@ -125,14 +153,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         switch (menuItem.getItemId()) {
             case R.id.nav_sectors: {
                 if (selectedItemId != R.id.nav_sectors) {
-                    setUpdatingUI(false);
                     getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, SectorFragment.newInstance()).commit();
                 }
             } break;
             case R.id.nav_queues: {
                 if (selectedItemId != R.id.nav_queues) {
-                    setUpdatingUI(false);
                     getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, QueueFragment.newInstance()).commit();
                 }

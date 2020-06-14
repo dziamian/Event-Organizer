@@ -37,6 +37,9 @@ public class SectorFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        HomeActivity.setUpdating(false);
+        HomeActivity.setShowingTickets(false);
+
         ((HomeActivity) Objects.requireNonNull(getActivity())).getRooms().setVisible(false);
         getActivity().setTitle("Sektory");
         ((HomeActivity)getActivity()).getNavigationView().setCheckedItem(R.id.nav_sectors);
@@ -55,7 +58,7 @@ public class SectorFragment extends Fragment {
             listView.setAdapter(itemListAdapter);
         });
 
-        HomeActivity.setUpdatingUI(true);
+        HomeActivity.setUpdating(true);
         MainActivity.taskManager.addIncomingMessage(new BaseMessage(
                 "update",
                 null,

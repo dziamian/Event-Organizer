@@ -48,47 +48,32 @@ public class MainActivity extends AppCompatActivity {
         ));
 
         loginBtn.setOnClickListener((v) -> {
-            taskManager.addIncomingMessage(new BaseMessage(
-                    "login",
-                    new String[] { loginText.getText().toString(), passwordText.getText().toString() },
-                    new Runnable[] { () -> { // prawidlowe zalogowanie
-                        runOnUiThread(() -> Toast.makeText(this, "Successfully logged in!", Toast.LENGTH_SHORT).show());
+            boolean error = false;
+            if (loginText.length() == 0) {
+                loginText.setError("Login field cannot be empty!");
+                error = true;
+            }
+            if (passwordText.length() == 0) {
+                passwordText.setError("Password field cannot be empty!");
+                error = true;
+            }
+            if (!error) {
+                taskManager.addIncomingMessage(new BaseMessage(
+                        "login",
+                        new String[]{loginText.getText().toString(), passwordText.getText().toString()},
+                        new Runnable[]{() -> { // prawidlowe zalogowanie
+                            runOnUiThread(() -> Toast.makeText(this, "Successfully logged in!", Toast.LENGTH_SHORT).show());
 
-                        Intent newActivity = new Intent(MainActivity.this, HomeActivity.class);
-                        MainActivity.this.startActivity(newActivity);
+                            Intent newActivity = new Intent(MainActivity.this, HomeActivity.class);
+                            MainActivity.this.startActivity(newActivity);
 
-                        finish();
-                    }, () -> { // blad logowania
-                        runOnUiThread(() -> Toast.makeText(this, "Invalid login or password!", Toast.LENGTH_SHORT).show());
-                    }},// tutaj reakcja na odpowiedz serwera o danych logowania
-                    TaskManager.nextCommunicationStream()
-            ));
+                            finish();
+                        }, () -> { // blad logowania
+                            runOnUiThread(() -> Toast.makeText(this, "Invalid login or password!", Toast.LENGTH_SHORT).show());
+                        }},// tutaj reakcja na odpowiedz serwera o danych logowania
+                        TaskManager.nextCommunicationStream()
+                ));
+            }
         });
-
-
-
-
-
-
-
-
-        /*ConnectionToServer.establishConnection("Connection established!",
-                (msg) -> this.runOnUiThread(
-                        () -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show())
-        );
-
-        loginBtn.setOnClickListener((v) -> ConnectionToServer.loginToServer(
-                "No connection!",
-                new LoginData(loginText.getText().toString(), passwordText.getText().toString()),
-
-                (msg) -> this.runOnUiThread(
-                        () -> Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()),
-
-                () -> {
-                    Intent newActivity = new Intent(MainActivity.this, HomeActivity.class);
-                    MainActivity.this.startActivity(newActivity);
-
-                    finish();
-                }));*/
     }
 }

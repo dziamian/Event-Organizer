@@ -55,6 +55,9 @@ public class SectorRoomsFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        HomeActivity.setUpdating(false);
+        HomeActivity.setShowingTickets(false);
+
         ObjectId sectorId = new ObjectId(this.sectorId);
         SectorInfoFixed sectorInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().get(sectorId);
 
@@ -76,7 +79,7 @@ public class SectorRoomsFragment extends Fragment {
             listView.setAdapter(itemListAdapter);
         });
 
-        HomeActivity.setUpdatingUI(true);
+        HomeActivity.setUpdating(true);
         MainActivity.taskManager.addIncomingMessage(new BaseMessage(
                 "update",
                 null,

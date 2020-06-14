@@ -1,8 +1,10 @@
 package com.example.eventorganizer;
 
+import android.app.Activity;
 import network_structures.EventInfoFixed;
 import network_structures.EventInfoUpdate;
 import network_structures.QueueInfo;
+import network_structures.ReservationInfo;
 
 public class GuideAccount {
 
@@ -20,13 +22,23 @@ public class GuideAccount {
         return false;
     }
 
+    private HomeActivity currentActivity;
     private final EventInfoFixed eventInfoFixed;
     private EventInfoUpdate eventInfoUpdate;
     private QueueInfo[] queues;
-    private int queuesSize;
+    private int queuesSize = 0;
+    private ReservationInfo reservationInfo;
 
     private GuideAccount(EventInfoFixed eventInfoFixed) {
         this.eventInfoFixed = eventInfoFixed;
+    }
+
+    public HomeActivity getCurrentActivity() {
+        return this.currentActivity;
+    }
+
+    public void setCurrentActivity(HomeActivity activity) {
+        this.currentActivity = activity;
     }
 
     public EventInfoFixed getEventInfoFixed() {
@@ -52,4 +64,12 @@ public class GuideAccount {
     }
 
     public void setQueuesSize(int queuesSize) { this.queuesSize = queuesSize; }
+
+    public ReservationInfo getReservationInfo() {
+        return reservationInfo;
+    }
+
+    public void setReservationInfo(ReservationInfo reservationInfo) {
+        this.reservationInfo = reservationInfo;
+    }
 }

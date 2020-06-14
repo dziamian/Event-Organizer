@@ -59,8 +59,10 @@ public class RoomFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        HomeActivity.setUpdating(false);
+        HomeActivity.setShowingTickets(false);
+
         ObjectId sectorId = new ObjectId(this.sectorId);
         ObjectId roomId = new ObjectId(this.roomId);
         SectorInfoFixed sectorInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().get(sectorId);
@@ -85,11 +87,7 @@ public class RoomFragment extends Fragment {
                     new Runnable[] { () -> { //prawidlowe dodanie do kolejki
                         getActivity().runOnUiThread(() -> {
                             int numberOfQueues = GuideAccount.getInstance().getQueuesSize();
-                            if (numberOfQueues != 0) {
-                                ((HomeActivity) getActivity()).setQueueBadgeText(String.valueOf(GuideAccount.getInstance().getQueuesSize()));
-                            } else {
-                                ((HomeActivity) getActivity()).setQueueBadgeText("");
-                            }
+                            ((HomeActivity) getActivity()).setQueueBadgeText(GuideAccount.getInstance().getQueuesSize());
                             Toast.makeText(getContext(), "Successfully added to room's queue!", Toast.LENGTH_SHORT).show();
                         });
                     }, ()-> { //blad w trakcie dodawania do kolejki

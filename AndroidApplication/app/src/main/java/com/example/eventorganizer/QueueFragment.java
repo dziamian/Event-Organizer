@@ -55,9 +55,8 @@ public class QueueFragment extends Fragment {
                                         new String[] { queueInfo.getSectorId().toString(), queueInfo.getRoomId().toString() },
                                         new Runnable[] { () -> { //poprawnie usunieto z kolejki
                                             activity.runOnUiThread(() -> {
-
+                                                ((HomeActivity) activity).setQueueBadgeText(GuideAccount.getInstance().getQueuesSize());
                                                 Toast.makeText(getContext(), "Successfully removed from the queue!", Toast.LENGTH_SHORT).show();
-                                                viewTickets(activity);
                                             });
                                         }, () -> { //blad w trakcie usuwania z kolejki
                                             activity.runOnUiThread(() -> {
@@ -77,8 +76,10 @@ public class QueueFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        HomeActivity.setUpdating(false);
+        HomeActivity.setShowingTickets(false);
+
         ((HomeActivity) Objects.requireNonNull(getActivity())).getRooms().setVisible(false);
         getActivity().setTitle("Moje kolejki");
         ((HomeActivity)getActivity()).getNavigationView().setCheckedItem(R.id.nav_queues);
@@ -96,6 +97,7 @@ public class QueueFragment extends Fragment {
             listView.setAdapter(itemListAdapter);
         });
 
+        HomeActivity.setShowingTickets(true);
         viewTickets(getActivity());
 
         return rootView;
