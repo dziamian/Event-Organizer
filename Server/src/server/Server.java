@@ -199,7 +199,7 @@ public class Server {
                     clientRequestViewTickets(task);
                 } break;
                 default : {
-                    clientInvalidRequest(task);
+                    clientInvalidCommand(task);
                 }
             }
         }
@@ -254,11 +254,7 @@ public class Server {
             ));
         }
 
-        private static void clientRequestViewReservations(Task task) {
-
-        }
-
-        private static void clientInvalidRequest(Task task) {
+        private static void clientInvalidCommand(Task task) {
             task.getResponseInterface().respond(
                     new NetworkMessage(
                             "error",
