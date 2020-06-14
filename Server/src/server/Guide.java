@@ -16,6 +16,8 @@ public class Guide extends Client {
     public Guide(ObjectOutputStream out, ObjectInputStream in, TourGroup group) {
         super(out, in);
         this.group = group;
+        if (this.group != null)
+            this.group.addGuide(this);
     }
 
     public Guide(ObjectOutputStream out, ObjectInputStream in) {
