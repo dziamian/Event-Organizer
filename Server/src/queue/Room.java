@@ -114,6 +114,7 @@ public class Room {
                 ));
                 infoUpdate.setQueueSize(queue.size());
                 changeState(State.RESERVED);
+                group.removeTicket(group.getTicketForRoom(this));
             }
         }
     }
