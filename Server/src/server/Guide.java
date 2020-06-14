@@ -52,13 +52,6 @@ public class Guide extends Client {
     }
 
     /**
-     * @param group New group
-     */
-    protected void setGroup(TourGroup group) {
-        this.group = group;
-    }
-
-    /**
      * Attempts to assign this guide to new group
      * @param group Group to reassign this guide to
      * @return true if successful, false otherwise
