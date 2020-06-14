@@ -107,11 +107,15 @@ public class Room {
     // fixme
     public void giveReservationsToAll() {
         if (queue.size() >= maxSlots) {
-            for (int i = 0; i < maxSlots; ++i) {
-                TourGroup.QueueTicket ticket = queue.peek();
-                if (ticket == null) return;
+            int givenReservations = 0;
+            for (Iterator<TourGroup.QueueTicket> iter = queue.iterator(); iter.hasNext();) {
+                if (givenReservations == maxSlots) {
+                    break;
+                }
+                TourGroup.QueueTicket ticket = iter.next();
                 TourGroup group = ticket.getOwner();
-                if (ticket.getOwner().canAddReservation()) {
+                if (group.canAddReservation()) {
+                    iter.remove();
                     Reservation reservation = createReservation(group);
                     group.addReservation(reservation);
                     group.sendToAllGuides(new NetworkMessage(
@@ -127,7 +131,7 @@ public class Room {
                     infoUpdate.setQueueSize(queue.size());
                     changeState(State.RESERVED);
                     group.removeTicket(group.getTicketForRoom(this));
-                    queue.remove(ticket);
+                    ++givenReservations;
                 }
             }
         }
@@ -214,11 +218,13 @@ public class Room {
 //    }
 
     public int addGroupToQueue(TourGroup group) {
-        TourGroup.QueueTicket queueTicket = group.createTicket(this);
-        if (queueTicket != null) {
-            this.queue.enqueue(queueTicket);
-            this.infoUpdate.setQueueSize(infoUpdate.getQueueSize().get()+1);
-            return this.queue.size();
+        if (!group.hasReservationFor(this)) {
+            TourGroup.QueueTicket queueTicket = group.createTicket(this);
+            if (queueTicket != null) {
+                this.queue.enqueue(queueTicket);
+                this.infoUpdate.setQueueSize(infoUpdate.getQueueSize().get() + 1);
+                return this.queue.size();
+            }
         }
         return 0;
     }
@@ -245,7 +251,7 @@ public class Room {
         private final Room reservedRoom;
         private final TourGroup group;
         private final Date expirationDate;
-        private final static long DURATION = 15 * 1000;// DEFAULT (5 min) : 5 * 60 * 1000;
+        private final static long DURATION = 30 * 1000;// DEFAULT (5 min) : 5 * 60 * 1000;
         private boolean active;
 
         Reservation(Room reservedRoom, TourGroup group) {
@@ -270,6 +276,8 @@ public class Room {
         public Date getExpirationDate() {
             return expirationDate;
         }
+
+        public Room getReservedRoom() { return reservedRoom; }
 
         public RoomInfoFixed getReservedRoomInfoFixed() {
             return reservedRoom.getInfoFixed();

@@ -328,11 +328,11 @@ public class TaskManager implements Runnable {
                 streamId,
                 null,
                 (msg) -> {
-                    GuideAccount.getInstance().setQueuesSize(GuideAccount.getInstance().getQueuesSize() + 1);
                     if ("0".equals(msg.getArgs()[0])) {
                         ((Runnable[]) message.getData())[1].run();
                     } else {
                         ((Runnable[]) message.getData())[0].run();
+                        GuideAccount.getInstance().setQueuesSize(GuideAccount.getInstance().getQueuesSize() + 1);
                     }
                     return true;
                 })
