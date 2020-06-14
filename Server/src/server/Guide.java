@@ -14,17 +14,30 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Guide extends Client {
-    private static Consumer<Server.Task> enqueueTaskForServer = Server::enqueueTask;
-    private static Function<String, Boolean> commandRecognitionFunction = (str) -> { return Server.isCommandRecognizedByServer(str); };
-    private static Supplier<EventInfoUpdate> updateSupplier = Server::getEventInfoUpdate;
-
+    private final Consumer<Server.Task> enqueueTaskForServer;
+    private final Function<String, Boolean> commandRecognitionFunction;
+    private final Supplier<EventInfoUpdate> updateSupplier;
     private TourGroup group;
 
-    public Guide(ObjectOutputStream out, ObjectInputStream in, TourGroup group) {
+    public Guide(
+            ObjectOutputStream out,
+            ObjectInputStream in,
+            TourGroup group,
+            Consumer<Server.Task> enqueueTaskForServer,
+            Function<String, Boolean> commandRecognitionFunction,
+            Supplier<EventInfoUpdate> updateSupplier
+    ) {
         super(out, in);
         this.group = group;
         if (this.group != null)
-            this.group.addGuide(this);
+            group.addGuide(this);
+        this.enqueueTaskForServer = enqueueTaskForServer;
+        this.commandRecognitionFunction = commandRecognitionFunction;
+        this.updateSupplier = updateSupplier;
+    }
+
+    public Guide(ObjectOutputStream out, ObjectInputStream in, TourGroup group) {
+        this(out, in, group, Server::enqueueTask, Server::isCommandRecognizedByServer, Server::getEventInfoUpdate);
     }
 
     public Guide(ObjectOutputStream out, ObjectInputStream in) {

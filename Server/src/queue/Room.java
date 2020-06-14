@@ -1,6 +1,7 @@
 package queue;
 
 import network_structures.NetworkMessage;
+import network_structures.ReservationInfo;
 import network_structures.RoomInfoFixed;
 import network_structures.RoomInfoUpdate;
 import org.bson.types.ObjectId;
@@ -110,8 +111,12 @@ public class Room {
                 group.addReservation(reservation);
                 group.sendToAllGuides(new NetworkMessage(
                         "reservation",
-                        new String[] { infoFixed.getSectorId().toString(), infoFixed.getSectorId().toString() },
-                        reservation.getExpirationDate(),
+                        new String[0],
+                        new ReservationInfo(
+                                infoFixed.getSectorId(),
+                                infoFixed.getSectorId(),
+                                reservation.getExpirationDate()
+                        ),
                         0
                 ));
                 infoUpdate.setQueueSize(queue.size());

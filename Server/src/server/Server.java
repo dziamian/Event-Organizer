@@ -254,6 +254,10 @@ public class Server {
             ));
         }
 
+        private static void clientRequestViewReservations(Task task) {
+
+        }
+
         private static void clientInvalidRequest(Task task) {
             task.getResponseInterface().respond(
                     new NetworkMessage(
