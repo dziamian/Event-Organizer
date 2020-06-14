@@ -121,16 +121,18 @@ public class Room {
 
     public Reservation[] updateReservationStatus() {
         ArrayList<Reservation> removedReservations = new ArrayList<>();
-        for (Room.Reservation reservation : currentReservations) {
+        for (Iterator<Reservation> it = currentReservations.iterator(); it.hasNext();) {
+            Reservation reservation = it.next();
             if (!reservation.isActive() && reservation.expirationDate.getTime() < new Date().getTime()) {
-                currentReservations.remove(reservation);
+                it.remove();
                 reservation.getGroup().removeReservation(reservation);
                 removedReservations.add(reservation);
             }
         }
-        if (currentReservations.size() == 0 && state == State.RESERVED)
+        if (currentReservations.size() == 0 && state == State.RESERVED) {
             changeState(State.OPEN);
-        return (Reservation[])removedReservations.toArray();
+        }
+        return removedReservations.toArray(new Reservation[0]);
     }
 
 //    public void updateReservations() {
