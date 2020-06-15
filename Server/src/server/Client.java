@@ -27,6 +27,8 @@ public abstract class Client {
     protected ObjectOutputStream out;
     /// TODO
     protected final AtomicBoolean outputThreadRunning = new AtomicBoolean(true);
+    /// TODO
+    protected final AtomicBoolean inputThreadRunning = new AtomicBoolean(true);
     /** Stream for receiving information from this specific client */
     protected ObjectInputStream in;
 
@@ -39,6 +41,10 @@ public abstract class Client {
 
     public void stopOutputThread() {
         outputThreadRunning.set(false);
+    }
+
+    public void stopInputThread() {
+        inputThreadRunning.set(false);
     }
 
     /// TODO
@@ -95,7 +101,13 @@ public abstract class Client {
         this.out.writeObject(new NetworkMessage("event_details", null, Server.getEventInfoFixed(), 0));
     }
 
-    public void removeFromSystem() {}
+    public void removeFromSystem() {
+    }
+
+    public void dismiss() {
+        inputThreadRunning.set(false);
+        outputThreadRunning.set(false);
+    }
 
     /// TODO
     protected abstract void handlingInput() throws SocketTimeoutException, EOFException;

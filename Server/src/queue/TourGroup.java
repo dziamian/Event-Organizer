@@ -96,13 +96,23 @@ public class TourGroup {
      * @return true if guide has been added, false otherwise
      */
     public boolean addGuide(Guide guide) {
-        if (guides.size() < maxGuides && guide != null) {
+        if (guides.size() < maxGuides && guide != null && !hasThisGuide(guide)) {
             try {
                 guides.add(guide);
                 return true;
             }
             catch (Exception e) {
                 System.err.println(e.getMessage());
+            }
+        }
+        return false;
+    }
+
+    public boolean hasThisGuide(Guide guide) {
+        if (guide != null) {
+            for (Guide g : guides) {
+                if (guide.equals(g))
+                    return true;
             }
         }
         return false;
