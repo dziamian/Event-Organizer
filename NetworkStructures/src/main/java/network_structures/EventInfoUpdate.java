@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class containing changing information about event
+ * Class containing mutable information about event
  */
 public class EventInfoUpdate implements Serializable {
 

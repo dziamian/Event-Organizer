@@ -13,12 +13,28 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Class representing guide account within the system
+ */
 public class Guide extends Client {
+    /** Interface for passing task to server */
     private final Consumer<Server.Task> enqueueTaskForServer;
+    /** Interface for checking server recognition status of this command */
     private final Function<String, Boolean> commandRecognitionFunction;
+    /** Interface for supplying update information for clients */
     private final Supplier<EventInfoUpdate> updateSupplier;
+    /** Touring group this guide is a member of */
     private TourGroup group;
 
+    /**
+     * Creates guide account bound to specified group and redirects server communication interfaces to provided ones
+     * @param out Output stream connected to client
+     * @param in Input stream connected to client
+     * @param group Touring group for guide to be assigned to
+     * @param enqueueTaskForServer Interface for passing tasks to server
+     * @param commandRecognitionFunction Interface for asking server about validity of given command
+     * @param updateSupplier Interface for polling status updates from
+     */
     public Guide(
             ObjectOutputStream out,
             ObjectInputStream in,
@@ -36,15 +52,27 @@ public class Guide extends Client {
         this.updateSupplier = updateSupplier;
     }
 
+    /**
+     * Creates guide account bound to specified group
+     * @param out Output stream connected to client
+     * @param in Input stream connected to client
+     * @param group Touring group for guide to be assigned to
+     */
     public Guide(ObjectOutputStream out, ObjectInputStream in, TourGroup group) {
         this(out, in, group, Server::enqueueTask, Server::isCommandRecognizedByServer, Server::getEventInfoUpdate);
     }
 
+    /**
+     * Creates guide account unassigned to any touring group
+     * @param out Output stream connected to client
+     * @param in Touring group for guide to be assigned to
+     */
     public Guide(ObjectOutputStream out, ObjectInputStream in) {
         this(out, in, null);
     }
 
     /**
+     * Getter for this guide's current group
      * @return Current group of this guide
      */
     public TourGroup getGroup() {
@@ -71,6 +99,9 @@ public class Guide extends Client {
             try {
                 NetworkMessage message = (NetworkMessage) in.readObject();
                 switch (message.getCommand()) {
+                    case "ping": {
+                        addOutgoingMessage(new NetworkMessage("ping", null, null, message.getCommunicationIdentifier()));
+                    } break;
                     case "update": {
                         addOutgoingMessage(new NetworkMessage("update", new String[]{"true"}, updateSupplier.get(), message.getCommunicationIdentifier()));
                     } break;

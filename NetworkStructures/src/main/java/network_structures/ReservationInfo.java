@@ -5,6 +5,9 @@ import org.bson.types.ObjectId;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Class representing information about single reservation within system.
+ */
 public class ReservationInfo implements Serializable {
 
     private final ObjectId sectorId;
