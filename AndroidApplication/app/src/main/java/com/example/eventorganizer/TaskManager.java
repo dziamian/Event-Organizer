@@ -367,7 +367,6 @@ public class TaskManager implements Runnable {
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
-
     /**
      * Procedure responsible for pulling current ticket information from server.
      * Will add automatically reschedulable lingering task.
