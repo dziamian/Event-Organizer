@@ -149,6 +149,15 @@ public class TourGroup {
         return false;
     }
 
+    public boolean hasReservationFor(Room room) {
+        for (Room.Reservation reservation : reservations) {
+            if (reservation.getReservedRoom() == room) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected void addReservation(Room.Reservation reservation) {
         if (reservation != null)
             reservations.add(reservation);
