@@ -58,7 +58,8 @@ public class Guide extends Client {
      */
     public boolean changeGroup(TourGroup group) {
         if (group != null && this.group != group) {
-            group.removeGuide(this);
+            this.group.removeGuide(this);
+            this.group = group;
             return group.addGuide(this);
         }
         return false;

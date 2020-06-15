@@ -9,6 +9,7 @@ import queue.Room;
 import queue.TourGroup;
 import server.Guide;
 import server.Server;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
@@ -16,8 +17,6 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class GuideTest {
     private final ConcurrentLinkedQueue<Server.Task> taskQueue = new ConcurrentLinkedQueue<>();
@@ -27,13 +26,13 @@ class GuideTest {
 
         {
             info = new EventInfoUpdate();
-            ObjectId soid = new ObjectId("sec-01");
+            ObjectId soid = new ObjectId("616161616161616161616161");
             info.getSectors().put(
                     soid,
                     new SectorInfoUpdate(soid)
             );
             info.getSectors().values().forEach((siu) -> {
-                ObjectId roid = new ObjectId("room-01");
+                ObjectId roid = new ObjectId("616161616161616161616162");
                 RoomInfoUpdate riu = new RoomInfoUpdate(roid);
                 siu.getRooms().put(roid, riu);
                 riu.setQueueSize(0);
@@ -119,13 +118,13 @@ class GuideTest {
                 0
         );
         guide.stopOutputThread();
-        guide.addOutgoingMessage(message);
         try {
             t.join();
         } catch (InterruptedException e) {
             System.err.println(e.getMessage());
         }
-        assert sentMessagesQueue.getLast() != message : "Output thread has not stopped working";
+        guide.addOutgoingMessage(message);
+        assert sentMessagesQueue.peekLast() != message : "Output thread has not stopped working";
     }
 
     @org.junit.jupiter.api.Test
@@ -140,19 +139,32 @@ class GuideTest {
 
     @org.junit.jupiter.api.Test
     void handlingInput() {
-        new Thread(guide::handlingOutput).start();
-        new Thread(guide::handlingInput).start();
+        new Thread(
+                () -> {
+                    try {
+                        guide.handlingInput();
+                    } catch (Exception ex) {
+                        System.err.println(ex.getMessage());
+                    }
+                }
+        ).start();
         while (taskQueue.size() < 8);
-        NetworkMessage comparator = new NetworkMessage(null, null, null, 0) {
-            public boolean equals(Object obj) {
-                if (!(obj instanceof NetworkMessage))
+        Object comparator = new Object() {
+            public boolean equals(Server.Task o) {
+                if (o == null || o.getCommand() == null)
                     return false;
-                return "update".equals(((Server.Task)obj).getCommand());
+                return "update".equals(o.getCommand());
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (o instanceof Server.Task)
+                    return equals((Server.Task)o);
+                return o == this;
             }
         };
         guide.dismiss();
         assert !taskQueue.contains(comparator) : "Update request has been forwarded to server";
-        assert sentMessagesQueue.contains(comparator) : "Update request has not been served by the input thread";
     }
 
     @org.junit.jupiter.api.Test
