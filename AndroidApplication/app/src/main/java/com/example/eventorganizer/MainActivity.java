@@ -9,12 +9,27 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import network_structures.BaseMessage;
 
+/**
+ * Main activity of application including login form.
+ */
 public class MainActivity extends AppCompatActivity {
 
-    private EditText loginText, passwordText;
+    /** Object that contains field to fill login information */
+    private EditText loginText;
+    /** Object that contains field to fill password information */
+    private EditText passwordText;
+    /** Object that contains button which performs attempt to login into the server */
     private Button loginBtn;
+    /** Contains reference to {@link TaskManager} instance */
     public static TaskManager taskManager = null;
 
+    /**
+     * Initializes setup of activity. Creates all views related with login form (<b>loginText</b>, <b>passwordText</b>
+     * and <b>loginBtn</b>) and pop-up message if connection with server was not established.
+     * Initializes {@link TaskManager}. After log in, it creates new intent of {@link HomeActivity} and closes current Activity.
+     * @param savedInstanceState Contains the data which was supplied in {@link android.app.Activity#onSaveInstanceState(Bundle)}
+     *                           (currently not in use)
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             if (!error) {
                 taskManager.addIncomingMessage(new BaseMessage(
                         "login",
-                        new String[]{loginText.getText().toString(), passwordText.getText().toString()},
+                        new String[]{ loginText.getText().toString(), passwordText.getText().toString()},
                         new Runnable[]{() -> { // prawidlowe zalogowanie
                             runOnUiThread(() -> Toast.makeText(this, "Successfully logged in!", Toast.LENGTH_SHORT).show());
 

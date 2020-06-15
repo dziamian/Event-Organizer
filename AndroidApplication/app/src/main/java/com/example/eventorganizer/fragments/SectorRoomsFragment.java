@@ -1,4 +1,4 @@
-package com.example.eventorganizer;
+package com.example.eventorganizer.fragments;
 
 import android.os.Bundle;
 import android.widget.ListView;
@@ -6,6 +6,9 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.example.eventorganizer.*;
+import com.example.eventorganizer.list.ItemListAdapter;
+import com.example.eventorganizer.list.SectorRoomLayout;
 import network_structures.BaseMessage;
 import org.bson.types.ObjectId;
 
@@ -15,27 +18,26 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link SectorRoomsFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * A simple {@link Fragment} subclass responsible for displaying sector's rooms information.
  */
 public class SectorRoomsFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
+    /** Bundle's argument name */
     private static final String ARG_SECTOR_ID = "sectorID";
 
-    // TODO: Rename and change types of parameters
+    /** Sector ID */
     private String sectorId;
 
+    /**
+     * Default constructor required by API.
+     */
     public SectorRoomsFragment() {
-        // Required empty public constructor
+
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     *
-     * @return A new instance of fragment SectorRoomsFragment.
+     * Creates new instance of this fragment.
+     * @param sectorId Sector ID
+     * @return A new instance of fragment SectorRoomFragment
      */
     public static SectorRoomsFragment newInstance(String sectorId) {
         SectorRoomsFragment fragment = new SectorRoomsFragment();
@@ -59,7 +61,7 @@ public class SectorRoomsFragment extends Fragment {
         HomeActivity.setShowingTickets(false);
 
         ObjectId sectorId = new ObjectId(this.sectorId);
-        SectorInfoFixed sectorInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().get(sectorId);
+        SectorInfoFixed sectorInfoFixed = CurrentSession.getInstance().getEventInfoFixed().getSectors().get(sectorId);
 
         ((HomeActivity) Objects.requireNonNull(getActivity())).getRooms().setVisible(true);
         ((HomeActivity) getActivity()).getRooms().setTitle(sectorInfoFixed.getName());
@@ -86,9 +88,9 @@ public class SectorRoomsFragment extends Fragment {
                 (Runnable) () -> {
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
-                            int numberOfRooms = GuideAccount.getInstance().getEventInfoUpdate().getSectors().get(sectorId).getRooms().size();
+                            int numberOfRooms = CurrentSession.getInstance().getEventInfoUpdate().getSectors().get(sectorId).getRooms().size();
                             for (int i = 0; i < numberOfRooms; ++i) {
-                                itemListAdapter.layoutList.get(i).updateItemHolderAttributes(GuideAccount.getInstance().getEventInfoUpdate(), sectorId);
+                                itemListAdapter.getLayoutList().get(i).updateItemHolderAttributes(CurrentSession.getInstance().getEventInfoUpdate(), sectorId);
                             }
                         });
                     }

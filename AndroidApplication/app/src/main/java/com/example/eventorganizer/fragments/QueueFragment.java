@@ -1,4 +1,4 @@
-package com.example.eventorganizer;
+package com.example.eventorganizer.fragments;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -8,6 +8,9 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.example.eventorganizer.*;
+import com.example.eventorganizer.list.ItemListAdapter;
+import com.example.eventorganizer.list.QueueLayout;
 import network_structures.BaseMessage;
 import network_structures.QueueInfo;
 
@@ -15,30 +18,34 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link QueueFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * A simple {@link Fragment} subclass responsible for displaying queues information.
  */
 public class QueueFragment extends Fragment {
 
+    /** List with current queues */
     private ArrayList<QueueLayout> queuesList;
+    /** Adapter which is used by ListView */
     private ItemListAdapter<QueueLayout> itemListAdapter;
 
+    /**
+     * Default constructor required by API.
+     */
     public QueueFragment() {
-        // Required empty public constructor
+
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment QueueFragment.
+     * Creates new instance of this fragment.
+     * @return A new instance of fragment QueueFragment
      */
-    // TODO: Rename and change types and number of parameters
     public static QueueFragment newInstance() {
         return new QueueFragment();
     }
 
+    /**
+     * Procedure responsible for scheduling and handling 'view_tickets' request.
+     * @param activity Current activity of application
+     */
     private void viewTickets(Activity activity) {
         MainActivity.taskManager.addIncomingMessage(new BaseMessage(
                 "view_tickets",
@@ -46,7 +53,7 @@ public class QueueFragment extends Fragment {
                 (Runnable) () -> {
                     activity.runOnUiThread(() -> {
                         queuesList.clear();
-                        QueueInfo[] queueArray = GuideAccount.getInstance().getQueues();
+                        QueueInfo[] queueArray = CurrentSession.getInstance().getQueues();
                         if (queueArray != null) {
                             for (QueueInfo queueInfo : queueArray) {
                                 QueueLayout queueLayout = new QueueLayout(queueInfo);
@@ -55,7 +62,7 @@ public class QueueFragment extends Fragment {
                                         new String[] { queueInfo.getSectorId().toString(), queueInfo.getRoomId().toString() },
                                         new Runnable[] { () -> { //poprawnie usunieto z kolejki
                                             activity.runOnUiThread(() -> {
-                                                ((HomeActivity) activity).setQueueBadgeText(GuideAccount.getInstance().getQueuesSize());
+                                                ((HomeActivity) activity).setQueueBadgeText(CurrentSession.getInstance().getNumberOfQueues());
                                                 Toast.makeText(getContext(), "Successfully removed from the queue!", Toast.LENGTH_SHORT).show();
                                             });
                                         }, () -> { //blad w trakcie usuwania z kolejki

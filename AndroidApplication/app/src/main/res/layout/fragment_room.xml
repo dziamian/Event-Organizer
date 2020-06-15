@@ -4,7 +4,7 @@
              android:id="@+id/room_fragment"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             tools:context=".RoomFragment">
+             tools:context=".fragments.RoomFragment">
 
     <RelativeLayout
             android:id="@+id/room_layout"

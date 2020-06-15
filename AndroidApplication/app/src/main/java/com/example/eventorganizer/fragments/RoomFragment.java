@@ -1,4 +1,4 @@
-package com.example.eventorganizer;
+package com.example.eventorganizer.fragments;
 
 import android.os.Bundle;
 import android.widget.TextView;
@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.example.eventorganizer.*;
 import network_structures.BaseMessage;
 import network_structures.RoomInfoFixed;
 import network_structures.SectorInfoFixed;
@@ -16,30 +17,32 @@ import java.util.Objects;
 
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link RoomFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * A simple {@link Fragment} subclass responsible for displaying room information.
  */
 public class RoomFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
+    /** Bundle's argument name */
     private static final String ARG_SECTOR_ID = "sectorID";
+    /** Bundle's argument name */
     private static final String ARG_ROOM_ID = "roomID";
 
-    // TODO: Rename and change types of parameters
+    /** Sector ID */
     private String sectorId;
+    /** Room ID */
     private String roomId;
 
+    /**
+     * Default constructor required by API.
+     */
     public RoomFragment() {
-        // Required empty public constructor
+
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment RoomFragment.
+     * Creates new instance of this fragment.
+     * @param sectorId Sector ID
+     * @param roomId Room ID
+     * @return A new instance of fragment RoomFragment
      */
-    // TODO: Rename and change types and number of parameters
     public static RoomFragment newInstance(String sectorId, String roomId) {
         RoomFragment fragment = new RoomFragment();
         Bundle args = new Bundle();
@@ -65,7 +68,7 @@ public class RoomFragment extends Fragment {
 
         ObjectId sectorId = new ObjectId(this.sectorId);
         ObjectId roomId = new ObjectId(this.roomId);
-        SectorInfoFixed sectorInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().get(sectorId);
+        SectorInfoFixed sectorInfoFixed = CurrentSession.getInstance().getEventInfoFixed().getSectors().get(sectorId);
         RoomInfoFixed roomInfoFixed = sectorInfoFixed.getRooms().get(roomId);
 
         ((HomeActivity) Objects.requireNonNull(getActivity())).getRooms().setVisible(true);
@@ -86,8 +89,8 @@ public class RoomFragment extends Fragment {
                     new String[] { this.sectorId, this.roomId },
                     new Runnable[] { () -> { //prawidlowe dodanie do kolejki
                         getActivity().runOnUiThread(() -> {
-                            int numberOfQueues = GuideAccount.getInstance().getQueuesSize();
-                            ((HomeActivity) getActivity()).setQueueBadgeText(GuideAccount.getInstance().getQueuesSize());
+                            int numberOfQueues = CurrentSession.getInstance().getNumberOfQueues();
+                            ((HomeActivity) getActivity()).setQueueBadgeText(CurrentSession.getInstance().getNumberOfQueues());
                             Toast.makeText(getContext(), "Successfully added to room's queue!", Toast.LENGTH_SHORT).show();
                         });
                     }, ()-> { //blad w trakcie dodawania do kolejki

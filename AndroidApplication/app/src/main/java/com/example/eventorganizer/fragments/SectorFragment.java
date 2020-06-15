@@ -1,4 +1,4 @@
-package com.example.eventorganizer;
+package com.example.eventorganizer.fragments;
 
 import android.os.Bundle;
 import android.widget.*;
@@ -6,31 +6,30 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.example.eventorganizer.*;
+import com.example.eventorganizer.list.ItemListAdapter;
+import com.example.eventorganizer.list.SectorLayout;
 import network_structures.BaseMessage;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link SectorFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * A simple {@link Fragment} subclass responsible for displaying sectors information.
  */
 public class SectorFragment extends Fragment {
 
-    /// TODO:
+    /**
+     * Default constructor required by API.
+     */
     public SectorFragment() {
-        // Required empty public constructor
+
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param
-     * @return A new instance of fragment SectorFragment.
+     * Creates new instance of this fragment.
+     * @return A new instance of fragment SectorFragment
      */
-    // TODO: Rename and change types and number of parameters
     public static SectorFragment newInstance() {
         return new SectorFragment();
     }
@@ -49,7 +48,7 @@ public class SectorFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_sector, container, false);
 
         ArrayList<SectorLayout> sectorList = new ArrayList<>();
-        GuideAccount.getInstance().getEventInfoFixed().getSectors().values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
+        CurrentSession.getInstance().getEventInfoFixed().getSectors().values().forEach(sectorInfo -> sectorList.add(new SectorLayout(sectorInfo)));
 
         ItemListAdapter<SectorLayout> itemListAdapter = new ItemListAdapter<>(getActivity(), sectorList);
 
@@ -65,8 +64,8 @@ public class SectorFragment extends Fragment {
                 (Runnable) () -> {
                     if (getActivity() != null) {
                         getActivity().runOnUiThread(() -> {
-                            for (int i = 0; i < GuideAccount.getInstance().getEventInfoUpdate().getSectors().size(); ++i) {
-                                itemListAdapter.layoutList.get(i).updateItemHolderAttributes(GuideAccount.getInstance().getEventInfoUpdate());
+                            for (int i = 0; i < CurrentSession.getInstance().getEventInfoUpdate().getSectors().size(); ++i) {
+                                itemListAdapter.getLayoutList().get(i).updateItemHolderAttributes(CurrentSession.getInstance().getEventInfoUpdate());
                             }
                         });
                     }

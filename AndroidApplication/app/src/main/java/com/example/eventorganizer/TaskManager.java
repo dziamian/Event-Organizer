@@ -1,9 +1,7 @@
 package com.example.eventorganizer;
 
-import android.util.Log;
 import network_structures.*;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -14,13 +12,14 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
- * Task responsible for handling server communication, ran on separate thread
+ * Manager responsible for handling server communication, ran on separate thread.
  */
 public class TaskManager implements Runnable {
     /** Automatically incremented communication stream counter */
     private static long currentCommunicationStream = 1;
 
     /**
+     * Accessor function to communication stream counter.
      * @return Next usable communication stream identifier
      */
     public synchronized static long nextCommunicationStream() {
@@ -43,17 +42,17 @@ public class TaskManager implements Runnable {
     /** Socket connecting with server */
     private Socket socket = null;
 
-    /// TODO
+    /** Frequency of sending update request to server */
     private static final long UPDATE_DELAY_MS = 1000;
 
-    /// TODO
+    /** Max time for connecting with server */
     private static final int TIMEOUT_MS = 10 * 1000;
 
     /** Connection state flag */
     private boolean isConnected;
 
     /**
-     * Default constructor, does not initialize this object completely
+     * Default constructor, does not initialize this object completely.
      */
     public TaskManager() {
         this.incomingMessages = new ConcurrentLinkedQueue<>();
@@ -62,7 +61,7 @@ public class TaskManager implements Runnable {
     }
 
     /**
-     * Polls next message for interpretation
+     * Polls next message for interpretation.
      * @return Message from immediately completable queue or null if queue is empty
      */
     private BaseMessage pollIncomingMessage() {
@@ -70,7 +69,7 @@ public class TaskManager implements Runnable {
     }
 
     /**
-     * Add message into immediately completable queue
+     * Add message into immediately completable queue.
      * @param message Message to enqueue
      * @return True if message was successfully added, false otherwise - only returns false if out of memory
      */
@@ -79,7 +78,7 @@ public class TaskManager implements Runnable {
     }
 
     /**
-     * Enqueues message for sending to server
+     * Enqueues message for sending to server.
      * @param message Message to send
      * @return True if message was successfully added, false otherwise - only returns false if out of memory
      */
@@ -88,23 +87,10 @@ public class TaskManager implements Runnable {
     }
 
     /**
-     * Handler method for incoming messages
+     * Handler method for incoming messages.
      * @param message Message to process
      */
     private void handleMessage(BaseMessage message) {
-        /*
-         * Recognized client requests:
-         * 1. ping - check if server recognizes this client
-         * 2. login - log in to server providing credentials in args
-         * 3. event_info - request essential information about event, such as sectors / attractions list
-         * 4. view_tickets - view my tickets and their states
-         * 5. view_reservations - view my active reservation(s)
-         * 6. add_to_queue - add my ticket to specified room queue
-         * 7. remove_from_queue - remove my ticket from specific queue
-         * 8. abandon_reservation - abandon one of my reservations (will result in penalty)
-         * 9. update - request update on states of rooms and queues
-         * 10. grouping - answer grouping call with decision or send update with changed decision
-         */
         LingeringTask[] matchingAwaitingTasks = searchForMatchingLingeringTasks(message);
         if (matchingAwaitingTasks.length > 0) {
             for (LingeringTask matchingAwaitingTask : matchingAwaitingTasks) {
@@ -127,12 +113,12 @@ public class TaskManager implements Runnable {
                     loginToServer(message);
                 } break;
                 case "event_details": {
-                    GuideAccount.createInstance((EventInfoFixed) message.getData());
-                    Collection<SectorInfoFixed> sectorsInfoFixed = GuideAccount.getInstance().getEventInfoFixed().getSectors().values();
+                    CurrentSession.createInstance((EventInfoFixed) message.getData());
+                    Collection<SectorInfoFixed> sectorsInfoFixed = CurrentSession.getInstance().getEventInfoFixed().getSectors().values();
                     for (SectorInfoFixed sectorInfoFixed : sectorsInfoFixed) {
                         Collection<RoomInfoFixed> roomsInfoFixed = sectorInfoFixed.getRooms().values();
                         for (RoomInfoFixed roomInfoFixed : roomsInfoFixed) {
-                            setDisplayedStates(roomInfoFixed);
+                            translateStates(roomInfoFixed);
                         }
                     }
                 } break;
@@ -178,7 +164,7 @@ public class TaskManager implements Runnable {
     }
 
     /**
-     * Attempts to establish connection with server
+     * Attempts to establish connection with server.
      * @return True if successfully connected, false otherwise
      */
     private boolean establishConnection() {
@@ -194,11 +180,8 @@ public class TaskManager implements Runnable {
     }
 
     /**
-     * Adds lingering task which attempts to login into server
-     * @param message Incoming message which requested login, following structure is expected:
-     *                    command: string "login"
-     *                    args: array of two strings - first containing login, second containing password
-     *                    data: array of two Runnable callbacks - first for success, second for failure
+     * Adds lingering task which attempts to login into server.
+     * @param message Incoming message which requested login
      */
     private void loginToServer(BaseMessage message) {
         long streamId = TaskManager.nextCommunicationStream();
@@ -218,8 +201,11 @@ public class TaskManager implements Runnable {
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
-    /// TODO:
-    private void setDisplayedStates(RoomInfoUpdate roomInfoUpdate) {
+    /**
+     * Translates rooms' states received from server to proper format.
+     * @param roomInfoUpdate Object where translated forms will be kept.
+     */
+    private void translateStates(RoomInfoUpdate roomInfoUpdate) {
         switch (roomInfoUpdate.getState()) {
             case "OPEN": {
                 roomInfoUpdate.setState("Dostępny!");
@@ -236,8 +222,11 @@ public class TaskManager implements Runnable {
         }
     }
 
-    /// TODO:
-    private void setDisplayedStates(RoomInfoFixed roomInfoFixed) {
+    /**
+     * Translates rooms' states received from server to proper format.
+     * @param roomInfoFixed Object where translated forms will be kept.
+     */
+    private void translateStates(RoomInfoFixed roomInfoFixed) {
         switch (roomInfoFixed.getState()) {
             case "OPEN": {
                 roomInfoFixed.setState("Dostępny!");
@@ -256,7 +245,7 @@ public class TaskManager implements Runnable {
 
     /**
      * Creates lingering tasks responsible for pulling updates from server
-     * and passing them to the UI thread, given proper request message
+     * and passing them to the UI thread, given proper request message.
      * @param message Message containing method used for handling updates received from server
      */
     private void startRequestingUpdates(BaseMessage message) {
@@ -280,12 +269,12 @@ public class TaskManager implements Runnable {
                         }
                     }
                 }, (msg) -> {
-                    GuideAccount.getInstance().setEventInfoUpdate((EventInfoUpdate) msg.getData());
-                    Collection<SectorInfoUpdate> sectorsInfoUpdate = GuideAccount.getInstance().getEventInfoUpdate().getSectors().values();
+                    CurrentSession.getInstance().setEventInfoUpdate((EventInfoUpdate) msg.getData());
+                    Collection<SectorInfoUpdate> sectorsInfoUpdate = CurrentSession.getInstance().getEventInfoUpdate().getSectors().values();
                     for (SectorInfoUpdate sectorInfoUpdate : sectorsInfoUpdate) {
                         Collection<RoomInfoUpdate> roomsInfoUpdate = sectorInfoUpdate.getRooms().values();
                         for (RoomInfoUpdate roomInfoUpdate : roomsInfoUpdate) {
-                            setDisplayedStates(roomInfoUpdate);
+                            translateStates(roomInfoUpdate);
                         }
                     }
                     if (HomeActivity.isUpdating()) {
@@ -296,31 +285,45 @@ public class TaskManager implements Runnable {
         );
     }
 
+    /**
+     * Reacts for receiving reservation from server,
+     * changes state in client's session and UI if it is possible.
+     * @param message Message containing information about reservation received from server
+     */
     private void handleReservation(BaseMessage message) {
-        HomeActivity activity = GuideAccount.getInstance().getCurrentActivity();
+        HomeActivity activity = CurrentSession.getInstance().getHomeActivity();
         if (activity != null) {
-            GuideAccount.getInstance().setReservationInfo((ReservationInfo) message.getData());
-            GuideAccount.getInstance().setQueuesSize(GuideAccount.getInstance().getQueuesSize() - 1);
-            Log.d("res", "reservation");
+            CurrentSession.getInstance().setReservationInfo((ReservationInfo) message.getData());
+            CurrentSession.getInstance().setNumberOfQueues(CurrentSession.getInstance().getNumberOfQueues() - 1);
             activity.runOnUiThread(() -> {
-                activity.setQueueBadgeText(GuideAccount.getInstance().getQueuesSize());
+                activity.setQueueBadgeText(CurrentSession.getInstance().getNumberOfQueues());
                 activity.setReservationBadgeText(1);
             });
         }
     }
 
+    /**
+     * Reacts for expiration of reservation received from server,
+     * changes state in client's session and UI if it is possible.
+     * @param message Message containing method used for handling ex received from server
+     */
     private void handleExpiredReservation(BaseMessage message) {
-        HomeActivity activity = GuideAccount.getInstance().getCurrentActivity();
+        HomeActivity activity = CurrentSession.getInstance().getHomeActivity();
         if (activity != null) {
-            ReservationInfo currentReservation = GuideAccount.getInstance().getReservationInfo();
+            ReservationInfo currentReservation = CurrentSession.getInstance().getReservationInfo();
             if (currentReservation.getSectorId().toString().equals(message.getArgs()[0])
                     && currentReservation.getRoomId().toString().equals(message.getArgs()[1])) {
-                GuideAccount.getInstance().setReservationInfo(null);
+                CurrentSession.getInstance().setReservationInfo(null);
                 activity.runOnUiThread(() -> activity.setReservationBadgeText(0));
             }
         }
     }
 
+    /**
+     * Procedure responsible for handling and passing to server <b>add_to_queue</b> request.
+     * Will create lingering task for handling server response, if applicable.
+     * @param message Message which invoked <b>add_to_queue</b> request
+     */
     private void addGroupToQueue(BaseMessage message) {
         long streamId = TaskManager.nextCommunicationStream();
         lingeringTasks.add(new LingeringTask(
@@ -332,7 +335,7 @@ public class TaskManager implements Runnable {
                         ((Runnable[]) message.getData())[1].run();
                     } else {
                         ((Runnable[]) message.getData())[0].run();
-                        GuideAccount.getInstance().setQueuesSize(GuideAccount.getInstance().getQueuesSize() + 1);
+                        CurrentSession.getInstance().setNumberOfQueues(CurrentSession.getInstance().getNumberOfQueues() + 1);
                     }
                     return true;
                 })
@@ -340,6 +343,11 @@ public class TaskManager implements Runnable {
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
+    /**
+     * Procedure responsible for handling and passing to server <b>remove_from_queue</b> request.
+     * Will create lingering task for handling server response, if applicable.
+     * @param message Message which invoked <b>remove_from_queue</b> request
+     */
     private void removeFromQueue(BaseMessage message) {
         long streamId = TaskManager.nextCommunicationStream();
         lingeringTasks.add(new LingeringTask(
@@ -347,7 +355,7 @@ public class TaskManager implements Runnable {
                 streamId,
                 null,
                 (msg) -> {
-                    GuideAccount.getInstance().setQueuesSize(GuideAccount.getInstance().getQueuesSize() - 1);
+                    CurrentSession.getInstance().setNumberOfQueues(CurrentSession.getInstance().getNumberOfQueues() - 1);
                     if ("true".equals(msg.getArgs()[0])) {
                         ((Runnable[]) message.getData())[0].run();
                     } else {
@@ -359,6 +367,12 @@ public class TaskManager implements Runnable {
         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
     }
 
+
+    /**
+     * Procedure responsible for pulling current ticket information from server.
+     * Will add automatically reschedulable lingering task.
+     * @param message Message which invoked <b>view_ticket</b> request
+     */
     private void startRequestingTickets(BaseMessage message) {
         long streamId = TaskManager.nextCommunicationStream();
         lingeringTasks.add(new LingeringTask(
@@ -366,7 +380,7 @@ public class TaskManager implements Runnable {
                 streamId,
                 null,
                 (msg) -> {
-                    GuideAccount.getInstance().setQueues((QueueInfo[]) msg.getData());
+                    CurrentSession.getInstance().setQueues((QueueInfo[]) msg.getData());
                     if (HomeActivity.isShowingTickets()) {
                         ((Runnable) message.getData()).run();
                         sendMessage(new NetworkMessage(message.getCommand(), message.getArgs(), null, streamId));
@@ -486,12 +500,10 @@ public class TaskManager implements Runnable {
         private NetworkMessage receive() {
             try {
                 return (NetworkMessage) this.in.readObject();
-            } catch (EOFException e) {
-                /// reconnect handling
             } catch (ClassNotFoundException e) {
-                e.printStackTrace(); //do zmiany pozniej
+                e.printStackTrace();
             } catch (IOException e) {
-                e.printStackTrace(); //do zmiany pozniej
+                e.printStackTrace();
             }
             return null;
         }
@@ -550,7 +562,7 @@ public class TaskManager implements Runnable {
             try {
                 this.out.writeObject(message);
             } catch (IOException e) {
-                e.printStackTrace(); //do zmiany pozniej
+                e.printStackTrace();
             }
         }
 

@@ -5,7 +5,7 @@
         android:id="@+id/reservation_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ReservationFragment">
+        tools:context=".fragments.ReservationFragment">
 
         <ListView
                 android:id="@+id/reservation_list_view"

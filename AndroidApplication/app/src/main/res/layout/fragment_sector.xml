@@ -5,7 +5,7 @@
         android:id="@+id/sector_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".SectorFragment">
+        tools:context=".fragments.SectorFragment">
 
         <ListView
                 android:id="@+id/sector_list_view"

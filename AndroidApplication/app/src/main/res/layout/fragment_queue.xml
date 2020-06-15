@@ -5,7 +5,7 @@
         android:id="@+id/queue_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".QueueFragment">
+        tools:context=".fragments.QueueFragment">
 
         <ListView
                 android:id="@+id/queue_list_view"

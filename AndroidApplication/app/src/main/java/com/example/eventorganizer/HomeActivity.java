@@ -14,46 +14,88 @@ import androidx.core.view.GravityCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
+import com.example.eventorganizer.fragments.*;
 import com.google.android.material.navigation.NavigationView;
 import org.bson.types.ObjectId;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Activity that is used after successful log in. Linking every {@link androidx.fragment.app.Fragment} subclasses from
+ * <b>fragments</b> package.
+ */
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+    /** Static object that tells {@link TaskManager} to keep updating {@link network_structures.EventInfoUpdate} from server */
     private static final AtomicBoolean isUpdating = new AtomicBoolean(false);
+    /** Static object that tells {@link TaskManager} to keep updating {@link network_structures.QueueInfo} from server */
     private static final AtomicBoolean isShowingTickets = new AtomicBoolean(false);
 
+    /**
+     * Returns the state of <b>isUpdating</b>.
+     * @return State of <b>isUpdating</b>
+     */
     public static synchronized boolean isUpdating() {
         return HomeActivity.isUpdating.get();
     }
 
+    /**
+     * Assigns the state of <b>isUpdating</b>.
+     * @param status Current state to assign
+     */
     public static synchronized void setUpdating(boolean status) {
         HomeActivity.isUpdating.set(status);
     }
 
+    /**
+     * Returns the state of <b>isShowingTickets</b>.
+     * @return State of <b>isShowingTickets</b>
+     */
     public static synchronized boolean isShowingTickets() {
         return HomeActivity.isShowingTickets.get();
     }
 
+    /**
+     * Assigns the state of <b>isShowingTickets</b>.
+     * @param status Current state to assign
+     */
     public static synchronized void setShowingTickets(boolean status) {
         HomeActivity.isShowingTickets.set(status);
     }
 
+    /** Object that is responsible for drawing {@link NavigationView} and handle events related with it */
     private DrawerLayout mNavDrawer;
+    /** Object that contains side menu */
     private NavigationView navigationView;
+    /** Current selected item ID in side menu */
     private int selectedItemId;
+    /** Badge for 'nav_queues' item in side menu */
     private TextView queuesBadge;
+    /** Badge for 'nav_reservations' item in side menu */
     private TextView reservationBadge;
 
+    /** Object that contains reference to 'nav_rooms' item in side menu */
     private MenuItem rooms;
 
+    /**
+     * Returns reference of <b>navigationView</b>.
+     * @return Reference of <b>navigationView</b>
+     */
     public NavigationView getNavigationView() { return navigationView; }
 
+    /**
+     * Assigns new selected item's ID of side menu.
+     * @param id Selected item's ID
+     */
     public void setSelectedItemId(int id) {
         selectedItemId = id;
     }
 
+    /**
+     * Assigns new number of queues (or empty text if this number is less than zero or equals) in 'nav_queue'
+     * item of side menu.
+     * @param number Current number of queues
+     */
     public void setQueueBadgeText(int number) {
         if (number > 0) {
             queuesBadge.setText(String.valueOf(number));
@@ -62,8 +104,16 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    /**
+     * Assigns new color from colors' resources to 'nav_queue' badge.
+     * @param color Color identifier
+     */
     public void setQueueBadgeColor(int color) { queuesBadge.setTextColor(getResources().getColor(color)); }
 
+    /**
+     * Assigns new number of reservations (or empty text if this number is less than zero or equals) in 'nav_reservation'
+     * @param number Current number of reservations
+     */
     public void setReservationBadgeText(int number) {
         if (number > 0) {
             reservationBadge.setText(String.valueOf(number));
@@ -72,8 +122,16 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    /**
+     * Returns reference to rooms menu item.
+     * @return Reference to rooms menu item
+     */
     public MenuItem getRooms() { return rooms; }
 
+    /**
+     * Uses provided sectorId to set new {@link SectorRoomsFragment}.
+     * @param sectorId Sector ID of choice
+     */
     public void setSectorRoomsFragment(ObjectId sectorId) {
         getSupportFragmentManager()
                 .beginTransaction()
@@ -82,7 +140,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 .commit();
     }
 
-    public void setRoomActivity(ObjectId sectorId, ObjectId roomId) {
+    /**
+     * Uses provided identifiers to set new {@link RoomFragment}.
+     * @param sectorId Sector ID of choice
+     * @param roomId Room ID of choice
+     */
+    public void setRoomFragment(ObjectId sectorId, ObjectId roomId) {
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.fragment_layout, RoomFragment.newInstance(sectorId.toString(), roomId.toString()))
@@ -90,6 +153,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 .commit();
     }
 
+    /**
+     * Method used for initializing activity by creating UI elements and {@link SectorFragment} instance.
+     * @param savedInstanceState Contains the data which was supplied in {@link android.app.Activity#onSaveInstanceState(Bundle)}
+     *                           (currently not in use)
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,9 +204,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             selectedItemId = R.id.nav_sectors;
         }
 
-        GuideAccount.getInstance().setCurrentActivity(this);
+        CurrentSession.getInstance().setHomeActivity(this);
     }
 
+    /**
+     * Callback for back button.
+     */
     @Override
     public void onBackPressed() {
         if (mNavDrawer.isDrawerOpen(GravityCompat.START)) {
@@ -148,6 +219,11 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    /**
+     * General callback for activating various menu items.
+     * @param menuItem Item which invoked callback
+     * @return Always true
+     */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
@@ -165,22 +241,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             } break;
             case R.id.nav_reservations: {
                 if (selectedItemId != R.id.nav_reservations) {
-                    setQueueBadgeColor(R.color.colorBadgeUnselected);
                     getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, ReservationFragment.newInstance()).commit();
-                    /*getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    setTitle("Moje rezerwacje");
-                    getSupportFragmentManager().beginTransaction().replace(R.id.fragment_layout, new ReservationFragment()).commit();
-                    rooms.setVisible(false);*/
                 }
             } break;
         }
         mNavDrawer.closeDrawer(GravityCompat.START);
         return true;
-    }
-
-    @Override
-    public void onPointerCaptureChanged(boolean hasCapture) {
-
     }
 }
