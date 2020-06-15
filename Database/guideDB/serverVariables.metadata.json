@@ -1,1 +1,1 @@
-{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"guideDB.serverVariables"}],"uuid":"135fefd60a6842359d2a99128029589c"}
+{"options":{},"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_","ns":"guideDB.serverVariables"}],"uuid":"75ba38b79cd14c1ea04ef54799b9cd65"}
