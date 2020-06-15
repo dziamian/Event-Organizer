@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Class containing unchanging information about event
+ * Class containing immutable information about event.
  */
 public class EventInfoFixed implements Serializable {
 

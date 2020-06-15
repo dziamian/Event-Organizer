@@ -5,6 +5,9 @@ import org.bson.types.ObjectId;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Class representing mutable information about specific room.
+ */
 public class RoomInfoUpdate implements Serializable {
 
     private final ObjectId id;

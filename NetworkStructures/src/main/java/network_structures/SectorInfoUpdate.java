@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Class representing mutable information about specific sector.
+ */
 public class SectorInfoUpdate implements Serializable {
 
     private final ObjectId id;

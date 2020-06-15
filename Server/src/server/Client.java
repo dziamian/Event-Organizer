@@ -2,7 +2,6 @@ package server;
 
 import com.mongodb.BasicDBObject;
 import network_structures.NetworkMessage;
-import network_structures.SectorInfoFixed;
 import org.bson.Document;
 import queue.TourGroup;
 
@@ -21,33 +20,51 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class Client {
 
-    /// TODO
+    /** Messages enqueued for sending to client */
     protected ConcurrentLinkedQueue<NetworkMessage> outgoingMessages;
     /** Stream for sending information to this specific client */
     protected ObjectOutputStream out;
-    /// TODO
+    /** Condition for output thread to work */
     protected final AtomicBoolean outputThreadRunning = new AtomicBoolean(true);
-    /// TODO
+    /** Condition for input thread to work */
     protected final AtomicBoolean inputThreadRunning = new AtomicBoolean(true);
     /** Stream for receiving information from this specific client */
     protected ObjectInputStream in;
 
-    /// TODO
-    public Client(ObjectOutputStream out, ObjectInputStream in) {
+    /**
+     * Creates basic client connection with provided streams
+     * @param out Output stream connected to client
+     * @param in Input stream connected to client
+     */
+    protected Client(ObjectOutputStream out, ObjectInputStream in) {
         this.outgoingMessages = new ConcurrentLinkedQueue<>();
         this.out = out;
         this.in = in;
     }
 
+    /**
+     * Stops client output thread
+     */
     public void stopOutputThread() {
         outputThreadRunning.set(false);
     }
 
+
+    /**
+     * Stops client input thread
+     */
     public void stopInputThread() {
         inputThreadRunning.set(false);
     }
 
-    /// TODO
+    /**
+     * Creates proper subclass of Client depending on his assigned role within the system
+     * @param out Output stream connected to client
+     * @param in Input stream connected to client
+     * @return New client of proper type
+     * @throws SocketTimeoutException if client takes too long to respond
+     * @throws EOFException if client's socket has been closed
+     */
     public static Client createSpecifiedClient(ObjectOutputStream out, ObjectInputStream in) throws SocketTimeoutException, EOFException {
         Client client = null;
         try {
@@ -101,22 +118,38 @@ public abstract class Client {
         this.out.writeObject(new NetworkMessage("event_details", null, Server.getEventInfoFixed(), 0));
     }
 
-    public void removeFromSystem() {
-    }
+    /**
+     * Empty procedure to override in subclasses used for removing all references to given client from the system, mostly used when client disconnects
+     */
+    public void removeFromSystem() {}
 
+    /**
+     * Closes client's communication threads (can be restarted later)
+     */
     public void dismiss() {
         inputThreadRunning.set(false);
         outputThreadRunning.set(false);
     }
 
-    /// TODO
+    /**
+     * Method responsible for receiving and filtering data received from the client.
+     * @throws SocketTimeoutException when client response time is longer than given maximum
+     * @throws EOFException when client socket has been closed
+     */
     protected abstract void handlingInput() throws SocketTimeoutException, EOFException;
 
-    /// TODO
+    /**
+     * Method responsible for handling sending outgoing data to the client through provided output stream.
+     */
+    protected abstract void handlingOutput();
+
+    /**
+     * Adds message for sending to this client. Detailed description of message structure can be found in {@link NetworkMessage}.
+     * @param message Message to be sent
+     * @return True if message has been successfully enqueued for sending, false otherwise
+     */
     public boolean addOutgoingMessage(NetworkMessage message) {
         return outgoingMessages.offer(message);
     }
 
-    /// TODO
-    protected abstract void handlingOutput();
 }

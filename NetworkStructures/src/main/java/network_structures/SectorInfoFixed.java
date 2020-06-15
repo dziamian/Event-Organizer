@@ -9,6 +9,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bson.types.ObjectId;
 
+/**
+ * Class representing immutable information about specific sector.
+ */
 public class SectorInfoFixed implements Serializable {
 
     private ObjectId id;

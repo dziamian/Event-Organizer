@@ -9,7 +9,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-// Structure for task queues
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -22,13 +21,12 @@ import queue.Sector;
 import queue.Room;
 import queue.TourGroup;
 
+/**
+ * Class responsible for running the server, including initialization of database connection,
+ * loading event data from database, setting up queue structure and launching client connection listener.
+ * Individual client connections are handled by {@link Client} subclasses, notably {@link Guide}.
+ */
 public class Server {
-    private static final IncrementedCounter communicationStreamIdentifiers = new IncrementedCounter(1);
-
-    public static long nextCommunicationIdentifier() {
-        return communicationStreamIdentifiers.getNext();
-    }
-
     /** Main server thread task queue */
     private static final ConcurrentLinkedQueue<Task> receivedTasks = new ConcurrentLinkedQueue<>();
 
@@ -40,32 +38,25 @@ public class Server {
     /** Database connection */
     private static MongoDatabase database;
 
-    // private static MongoClient mongoClient;
-
     /*
      * Recognized client requests:
      * 1. ping - check if server recognizes this client
      * 2. login - log in to server providing credentials in args
      * 3. event_info - request essential information about event, such as sectors / attractions list
      * 4. view_tickets - view my tickets and their states
-     * 5. view_reservations - view my active reservation(s)
      * 6. add_to_queue - add my ticket to specified room queue
      * 7. remove_from_queue - remove my ticket from specific queue
-     * 8. abandon_reservation - abandon one of my reservations (will result in penalty)
      * 9. update - request update on states of rooms and queues
      * 10. grouping - answer grouping call with decision or send update with changed decision
      */
+    /** Array containing all requests recognized by server */
     private static final String[] recognizedCommands = new String[] {
         "ping",
         "login",
-        "event_info",
         "view_tickets",
-        "view_reservations",
         "add_to_queue",
         "remove_from_queue",
-        "abandon_reservation",
         "update",
-        "grouping"
     };
 
     /**
@@ -82,22 +73,21 @@ public class Server {
         return false;
     }
 
+    /** Map containing all sectors used on this event */
     private static final ConcurrentMap<ObjectId, Sector> sectors = new ConcurrentHashMap<>();
-    /// TODO
+    /** Immutable event information */
     private static final EventInfoFixed eventInfoFixed = new EventInfoFixed();
-    /// TODO
+    /** Mutable event information */
     private static final EventInfoUpdate eventInfoUpdate = new EventInfoUpdate();
 
-    /// Delay defining frequency for passive server to check for activation condition
+    /** Delay defining frequency for passive server to check for activation condition */
     private static final long DATE_CHECKING_DELAY = 1000;
-    /// Date given event is starting - server will be in passive state until then
+    /** Date given event is starting - server will be in passive state until then */
     private static long eventStartingDate;
-    /// Server state flag
-    private static boolean eventHasStarted = false;
 
     /**
-     * Server socket thread, launching system thread (main thread) and connecting with clients
-     * @param args Unused currently
+     * Server socket thread, launching system thread (main thread) and connecting with clients.
+     * @param args Ignored
      */
     public static void main(String[] args) {
         Logger mongoLogger = Logger.getLogger("org.mongodb.driver");
@@ -106,6 +96,10 @@ public class Server {
         database = MongoClients.create().getDatabase("guideDB");
 
         serverSetup();
+
+        File errorLogFile = new File("serverlog.txt");
+        System.setErr(new PrintStream(new FileOutputStream(FileDescriptor.err)));
+
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Listening on port " + serverSocket.getLocalPort() + "...\n");
@@ -122,23 +116,31 @@ public class Server {
     }
 
     /**
-     * Getter for event information
+     * Getter for event information.
      * @return Event information
      */
     public static EventInfoFixed getEventInfoFixed() {
         return eventInfoFixed;
     }
 
+    /**
+     * Getter for mutable event information.
+     * @return Mutable event information
+     */
     public static EventInfoUpdate getEventInfoUpdate() {
         return eventInfoUpdate;
     }
 
+    /**
+     * Getter for database handle.
+     * @return Database handle
+     */
     public static MongoDatabase getDatabase() {
         return database;
     }
 
     /**
-     * Enqueues task for completion by system thread
+     * Enqueues task for completion by system thread.
      * @param task Task for main thread
      */
     public static void enqueueTask(Task task) {
@@ -146,7 +148,7 @@ public class Server {
     }
 
     /**
-     * Initializes server
+     * Method responsible for initializing critical server structures from database.
      */
     private static void serverSetup() {
 
@@ -177,7 +179,7 @@ public class Server {
     }
 
     /**
-     * Main server task running on separate thread, responsible for system management
+     * Main server task running on separate thread, responsible for system management.
      */
     private static class MainServerTask implements Runnable {
 
@@ -198,11 +200,15 @@ public class Server {
                     clientRequestViewTickets(task);
                 } break;
                 default : {
-                    clientInvalidCommand(task);
+                    clientInvalidRequest(task);
                 }
             }
         }
 
+        /**
+         * Method responsible for handling addition to room queue requests.
+         * @param task {@link Task} containing request details
+         */
         private static void clientRequestAddToQueue(Task task) {
             Room room = sectors.get(
                     new ObjectId(task.getArgs()[0])
@@ -219,6 +225,10 @@ public class Server {
             );
         }
 
+        /**
+         * Method responsible for handling queue removal requests.
+         * @param task {@link Task} containing request details
+         */
         private static void clientRequestRemoveFromQueue(Task task) {
             Room room = sectors.get(
                     new ObjectId(task.getArgs()[0])
@@ -235,6 +245,10 @@ public class Server {
             ));
         }
 
+        /**
+         * Method responsible for handling requests to view group's tickets.
+         * @param task {@link Task} containing request details
+         */
         private static void clientRequestViewTickets(Task task) {
             Room[] rooms = ((TourGroup)task.getData()).getTicketRooms();
             QueueInfo[] queueInfo = new QueueInfo[rooms.length];
@@ -253,7 +267,11 @@ public class Server {
             ));
         }
 
-        private static void clientInvalidCommand(Task task) {
+        /**
+         * Method responsible for handling invalid client requests.
+         * @param task {@link Task} containing request details
+         */
+        private static void clientInvalidRequest(Task task) {
             task.getResponseInterface().respond(
                     new NetworkMessage(
                             "error",
@@ -265,7 +283,8 @@ public class Server {
         }
 
         /**
-         * Main loop
+         * Main loop, launches if {@link Server#eventStartingDate} has been passed
+         * and handles received tasks in infinite loop.
          */
         @Override
         public void run() {
@@ -274,10 +293,9 @@ public class Server {
                 try { Thread.sleep(DATE_CHECKING_DELAY); } catch (InterruptedException e) { System.out.println(e.getMessage()); }
             }
 
-            eventHasStarted = true;
             System.out.println("Event has started! All queues are open!");
 
-            // Checking if every sector and room has been loaded properly //
+            // Checking if every sector and room has been loaded properly
             for (Sector sector : sectors.values()) {
                 System.out.println(sector.getInfoFixed().getName() + ":");
                 for (Room room : sector.getRoomsValues()) {
@@ -286,11 +304,10 @@ public class Server {
                 }
             }
 
-            // fixme Launching reservation handler thread, should end when server is closed but server works in infinite loop
             ReservationHandler reservationHandler = new ReservationHandler(sectors);
             new Thread(reservationHandler).start();
 
-            // Main server task queue
+            // Main server task handling queue
             while (true) {
                 Task task = receivedTasks.poll();
                 if (task != null)
@@ -300,14 +317,16 @@ public class Server {
     }
 
     /**
-     * Main thread task structure
+     * Structure representing task given to main server thread, containing all the data necessary
+     * to handle the task and respond to requester.
      */
     public static class Task extends BaseMessage {
 
-        /** Client to respond */
+        /** Interface representing client (or middleman) the response should be sent to */
         private final ClientHandler.RespondToClientInterface messageResponseInterface;
 
         /**
+         * Constructs task based on given {@link BaseMessage}.
          * @param message Base message to copy content from
          * @param messageResponseInterface Client interface to respond to
          */
@@ -317,6 +336,7 @@ public class Server {
         }
 
         /**
+         * Constructs task given exact parameters.
          * @param command Command for execution
          * @param args Command execution arguments (modifiers)
          * @param data Data needed to execute command
@@ -329,7 +349,7 @@ public class Server {
         }
 
         /**
-         * Getter for client response interface
+         * Getter for client response interface.
          * @return Client response interface
          */
         public ClientHandler.RespondToClientInterface getResponseInterface() {
@@ -341,7 +361,7 @@ public class Server {
      * Client handler task running on separate thread, responsible for communication between client and main thread
      */
     private static class ClientHandler implements Runnable {
-        /// TODO
+        /** Maximum time before client connection is aborted by server in milliseconds */
         public static final int TIMEOUT_MS = 15 * 60 * 1000;
 
         /** Socket connected to client */
@@ -352,7 +372,6 @@ public class Server {
          */
         public ClientHandler(Socket socket) {
             this.socket = socket;
-            // this.clientMessageQueue = new ConcurrentLinkedQueue<>();
         }
 
         /**
@@ -365,7 +384,7 @@ public class Server {
         }
 
         /**
-         * Main loop
+         * Main loop responsible for assuring that IO routines for this client have been started
          */
         @Override
         public void run() {
@@ -431,7 +450,7 @@ public class Server {
         }
 
         /**
-         * Interface for responding to client who provided task to server
+         * Interface for responding to client who provided this task to server
          */
         public interface RespondToClientInterface {
             void respond(NetworkMessage message);
@@ -439,39 +458,32 @@ public class Server {
     }
 
     /**
-     * Simple incremented counter skipping zero
+     * Engine object responsible for assigning reservations to eligible touring groups during server operation.
+     * It should be given access to server's sectors mapping and launched on separate thread <i>before</i> server begins
+     * handling incoming requests.
      */
-    private static class IncrementedCounter {
-        private long value;
-
-        IncrementedCounter(int startingValue) {
-            this.value = startingValue;
-        }
-
-        public synchronized long getNext() {
-            if (value == 0)
-                ++value;
-            return value++;
-        }
-    }
-
     private static class ReservationHandler implements Runnable {
-        private final ConcurrentLinkedQueue<NetworkMessage> incomingMessages;
         private final Map<ObjectId, Sector> sectors;
         private final AtomicBoolean continueRunning;
 
+        /**
+         * Creates new reservation handler for specified area.
+         * @param sectors Sectors reservation handler will be responsible for
+         */
         public ReservationHandler(Map<ObjectId, Sector> sectors) {
             continueRunning = new AtomicBoolean(true);
-            this.incomingMessages = new ConcurrentLinkedQueue<>();
             this.sectors = sectors;
         }
 
+        /**
+         * Stops this reservation handler from running.
+         */
         public void stop() {
             continueRunning.set(false);
         }
 
         /**
-         * Procedure for assigning reservations to given
+         * Main loop assigning reservations to eligible groups and updating information about rooms.
          */
         @Override
         public void run() {

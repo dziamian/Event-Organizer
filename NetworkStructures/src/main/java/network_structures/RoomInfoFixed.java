@@ -5,6 +5,9 @@ import org.bson.types.ObjectId;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Class containing immutable information about specific room.
+ */
 public class RoomInfoFixed implements Serializable {
 
     private ObjectId sectorId;
@@ -29,6 +32,9 @@ public class RoomInfoFixed implements Serializable {
         return id;
     }
 
+    /**
+     * @return {@link RoomInfoFixed#id}
+     */
     public ObjectId getSectorId() { return sectorId; }
 
     public String getName() {
